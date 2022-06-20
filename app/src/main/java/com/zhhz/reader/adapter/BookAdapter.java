@@ -76,10 +76,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         } else {
             view = new View(parent.getContext());
         }
-        if (onClickListener!=null){
+        if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
         }
-        if (onLongClickListener!=null){
+        if (onLongClickListener != null) {
             view.setOnLongClickListener(onLongClickListener);
         }
         return new ViewHolder(view);
