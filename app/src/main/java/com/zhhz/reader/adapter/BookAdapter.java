@@ -25,6 +25,18 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     private final Context context;
 
+    private View.OnClickListener onClickListener;
+
+    private View.OnLongClickListener onLongClickListener;
+
+    public void setOnClickListener(View.OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+
+    public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
+        this.onLongClickListener = onLongClickListener;
+    }
+
     public void setItemData(ArrayList<BookBean> mData) {
         this.itemData = mData;
     }
@@ -58,10 +70,20 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view;
         if (viewType == 1) {
-            return new ViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.book_grid_item_layout, parent, false));
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.book_grid_item_layout, parent, false);
+        } else {
+            view = new View(parent.getContext());
         }
-        return new ViewHolder(new View(parent.getContext()));
+		
+        if (onClickListener!=null){
+            view.setOnClickListener(onClickListener);
+        }
+        if (onLongClickListener!=null){
+            view.setOnLongClickListener(onLongClickListener);
+        }
+        return new ViewHolder(view);
     }
 
     @Override
