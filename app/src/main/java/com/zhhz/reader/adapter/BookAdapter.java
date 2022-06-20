@@ -76,7 +76,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         } else {
             view = new View(parent.getContext());
         }
-		
         if (onClickListener!=null){
             view.setOnClickListener(onClickListener);
         }
