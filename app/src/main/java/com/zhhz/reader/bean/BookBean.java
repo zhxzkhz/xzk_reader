@@ -1,6 +1,10 @@
 package com.zhhz.reader.bean;
 
-public class BookBean {
+import androidx.annotation.NonNull;
+
+import java.io.Serializable;
+
+public class BookBean implements Serializable {
 
     private String book_id;
     private String title;
@@ -83,6 +87,22 @@ public class BookBean {
 
     public void setStatus(boolean status) {
         this.status = status;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "BookBean{" +
+                "book_id='" + book_id + '\'' +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", cover='" + cover + '\'' +
+                ", categories='" + categories + '\'' +
+                ", latestChapter='" + latestChapter + '\'' +
+                ", update=" + update +
+                ", intro='" + intro + '\'' +
+                ", status=" + status +
+                '}';
     }
 
 }

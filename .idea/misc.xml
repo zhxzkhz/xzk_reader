@@ -4,13 +4,21 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Android/reader/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.22" />
+        <entry key="..\:/Android/reader/app/src/main/res/drawable/baseline_search_24.xml" value="0.2355" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_dashboard_black_24dp.xml" value="0.22" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.22" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_launcher_background.xml" value="0.22" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.22" />
-        <entry key="..\:/Android/reader/app/src/main/res/layout/activity_main.xml" value="0.36614583333333334" />
+        <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_settings_black_24.xml" value="0.2355" />
+        <entry key="..\:/Android/reader/app/src/main/res/drawable/search_rectangle_background.xml" value="0.2355" />
+        <entry key="..\:/Android/reader/app/src/main/res/drawable/search_text_icon.xml" value="0.1955" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/activity_main.xml" value="0.3605128205128205" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/activity_main2.xml" value="0.178125" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/activity_search.xml" value="0.16354166666666667" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/book_grid_item_layout.xml" value="0.5" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/book_reader.xml" value="0.23229166666666667" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_bookrack.xml" value="0.36614583333333334" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_search.xml" value="0.36614583333333334" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/item_book_layout.xml" value="0.3515625" />
         <entry key="..\:/Android/reader/app/src/main/res/menu/bottom_nav_menu.xml" value="0.17291666666666666" />
       </map>

@@ -14,14 +14,12 @@ import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.module.AppGlideModule;
 
-
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
-
 
 
 @GlideModule
@@ -74,18 +72,6 @@ public class XluaGlideModule extends AppGlideModule {
                 }
             });
         }
-
-
-/*
-        builder.addInterceptor(new Interceptor() {
-            @Override
-            public Response intercept(Chain chain) throws IOException {
-                // 拦截请求，获取到该次请求的request
-                Request request = chain.request();
-                Request.Builder r = request.newBuilder().header("user-agent", "okhttp/3.8.1");
-                return chain.proceed(r.build());
-            }
-        });*/
 
         //添加拦截器（ProgressInterceptor 用于进度获取）
         //builder.addInterceptor(new ProgressInterceptor());

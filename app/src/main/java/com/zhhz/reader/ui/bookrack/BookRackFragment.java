@@ -1,19 +1,20 @@
 package com.zhhz.reader.ui.bookrack;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.zhhz.reader.activity.BookReaderActivity;
+import com.zhhz.reader.activity.SearchActivity;
 import com.zhhz.reader.adapter.BookAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookrackBinding;
@@ -26,12 +27,19 @@ public class BookRackFragment extends Fragment {
     private BookRackViewModel bookrackViewModel;
     private FragmentBookrackBinding binding;
     private BookAdapter bookAdapter;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         bookrackViewModel = new ViewModelProvider(this).get(BookRackViewModel.class);
 
         binding = FragmentBookrackBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        System.out.println(root.getParent());
+        //设置点击事件
+        binding.searchView.setOnClickListener(view -> {
+            Intent intent = new Intent(BookRackFragment.this.getContext(), SearchActivity.class);
+            startActivity(intent);
+        });
 
         bookAdapter = new BookAdapter(BookRackFragment.this.getContext());
         bookAdapter.setHasStableIds(true);
@@ -40,6 +48,18 @@ public class BookRackFragment extends Fragment {
         binding.rv.setLayoutManager(new GridLayoutManager(BookRackFragment.this.getContext(), 3, GridLayoutManager.VERTICAL, false));
         //固定高度
         binding.rv.setHasFixedSize(true);
+
+        bookAdapter.setOnClickListener(view -> {
+            Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
+            Bundle bundle = new Bundle();
+            //获取点击事件位置
+            int position = binding.rv.getChildAdapterPosition(view);
+            bundle.putSerializable("book",bookAdapter.getItemData().get(position));
+            intent.putExtras(bundle);
+            startActivity(intent);
+            BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
+
         binding.rv.setAdapter(bookAdapter);
 
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {

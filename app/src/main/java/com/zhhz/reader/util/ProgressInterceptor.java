@@ -7,10 +7,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okhttp3.Interceptor;
 
 public class ProgressInterceptor implements Interceptor {
     public static final Map<String, ProgressListener> LISTENER_MAP = new HashMap<>();

@@ -1,13 +1,10 @@
 package com.zhhz.reader.ui.bookrack;
 
-import android.app.Application;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.zhhz.reader.bean.BookBean;
-import com.zhhz.reader.sql.SQLiteUtil;
 
 import java.util.ArrayList;
 

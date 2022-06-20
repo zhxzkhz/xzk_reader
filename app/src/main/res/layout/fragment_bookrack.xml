@@ -1,17 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.bookrack.BookRackFragment">
-<com.scwang.smart.refresh.layout.SmartRefreshLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/design_default_color_error">
-    <androidx.recyclerview.widget.RecyclerView
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="start|center"
+        android:paddingStart="10dp"
+        android:text="@string/title_home"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry" />
+
+    <com.zhhz.reader.view.DrawableCenterTextView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="42dp"
+        android:background="@drawable/search_rectangle_background"
+        android:drawableStart="@drawable/search_text_icon"
+        android:gravity="center"
+        android:text="@string/search_text"
+        android:textColor="@color/gray"
+        android:textSize="15sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/action_bar" />
+
+    <com.scwang.smart.refresh.layout.SmartRefreshLayout
+        android:id="@+id/refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/rv"/>
-</com.scwang.smart.refresh.layout.SmartRefreshLayout>
+        android:layout_marginTop="90dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_view">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="5dp" />
+    </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,7 +13,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class XluaPreloadModelProvider implements ListPreloader.PreloadModelProvider<String> {
     private final Context context;

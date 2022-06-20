@@ -1,14 +1,9 @@
-package com.zhhz.reader;
+package com.zhhz.reader.activity;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.os.Bundle;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentContainerView;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -16,9 +11,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.scwang.smart.refresh.header.ClassicsHeader;
 import com.scwang.smart.refresh.layout.SmartRefreshLayout;
-import com.scwang.smart.refresh.layout.api.RefreshHeader;
-import com.scwang.smart.refresh.layout.api.RefreshLayout;
-import com.scwang.smart.refresh.layout.listener.DefaultRefreshHeaderCreator;
+import com.zhhz.reader.R;
 import com.zhhz.reader.databinding.ActivityMainBinding;
 import com.zhhz.reader.sql.SQLiteUtil;
 
@@ -45,14 +38,14 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        BottomNavigationView navView = findViewById(R.id.nav_view);
+
         // 将每个菜单ID作为一组ID传递，因为每个菜单应被视为顶级界面。
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
+                R.id.navigation_bookrack, R.id.navigation_rule, R.id.navigation_setting)
                 .build();
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 

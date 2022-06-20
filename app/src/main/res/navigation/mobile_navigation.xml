@@ -3,22 +3,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_bookrack">
 
     <fragment
-        android:id="@+id/navigation_home"
+        android:id="@+id/navigation_bookrack"
         android:name="com.zhhz.reader.ui.bookrack.BookRackFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_bookrack" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
+        android:id="@+id/navigation_rule"
         android:name="com.zhhz.reader.ui.rule.RuleFragment"
         android:label="@string/title_rule"
         tools:layout="@layout/fragment_rule" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
+        android:id="@+id/navigation_setting"
         android:name="com.zhhz.reader.ui.setting.SettingFragment"
         android:label="@string/title_setting"
         tools:layout="@layout/fragment_setting" />
