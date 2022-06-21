@@ -4,4 +4,5 @@
     <string name="title_rule">规则</string>
     <string name="title_setting">设置</string>
     <string name="search_text">搜索书名或者作者</string>
+    <string name="search_clear">取消</string>
 </resources>

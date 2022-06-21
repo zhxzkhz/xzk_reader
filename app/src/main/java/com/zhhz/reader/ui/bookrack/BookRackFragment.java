@@ -34,11 +34,12 @@ public class BookRackFragment extends Fragment {
 
         binding = FragmentBookrackBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        System.out.println(root.getParent());
+
         //设置点击事件
         binding.searchView.setOnClickListener(view -> {
             Intent intent = new Intent(BookRackFragment.this.getContext(), SearchActivity.class);
             startActivity(intent);
+            BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
         bookAdapter = new BookAdapter(BookRackFragment.this.getContext());

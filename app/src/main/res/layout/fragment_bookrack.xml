@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="42dp"
         android:background="@drawable/search_rectangle_background"
-        android:drawableStart="@drawable/search_text_icon"
+        android:drawableStart="@drawable/search_icon"
         android:gravity="center"
         android:text="@string/search_text"
         android:textColor="@color/gray"

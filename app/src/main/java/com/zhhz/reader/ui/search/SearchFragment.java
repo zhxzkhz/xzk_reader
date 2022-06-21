@@ -10,11 +10,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.zhhz.reader.R;
+import com.zhhz.reader.databinding.FragmentSearchBinding;
+import com.zhhz.reader.view.SearchEditText;
 
 public class SearchFragment extends Fragment {
 
     private SearchViewModel mViewModel;
+    private FragmentSearchBinding binding;
 
     public static SearchFragment newInstance() {
         return new SearchFragment();
@@ -31,7 +33,14 @@ public class SearchFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_search, container, false);
+        binding = FragmentSearchBinding.inflate(inflater, container, false);
+        View root = binding.getRoot();
+        binding.searchClear.setOnClickListener(view -> requireActivity().finish());
+        binding.message.setOnSearchFocusListener((v, hasFocus) -> System.out.println(v));
+        binding.message.changeSearchLogo(true);
+
+
+        return root;
     }
 
 }
