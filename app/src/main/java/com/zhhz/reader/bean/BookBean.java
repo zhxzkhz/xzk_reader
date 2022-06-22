@@ -1,7 +1,5 @@
 package com.zhhz.reader.bean;
 
-import androidx.annotation.NonNull;
-
 import java.io.Serializable;
 
 public class BookBean implements Serializable {
@@ -11,8 +9,9 @@ public class BookBean implements Serializable {
     private String author;
     private String cover;
     private String categories;
+    private String catalogue;
     private String latestChapter;
-    private boolean update;
+    private String update_time;
     private String intro;
     //是否完结
     private boolean status;
@@ -57,6 +56,14 @@ public class BookBean implements Serializable {
         this.categories = categories;
     }
 
+    public String getCatalogue() {
+        return catalogue;
+    }
+
+    public void setCatalogue(String catalogue) {
+        this.catalogue = catalogue;
+    }
+
     public String getLatestChapter() {
         return latestChapter;
     }
@@ -65,12 +72,12 @@ public class BookBean implements Serializable {
         this.latestChapter = latestChapter;
     }
 
-    public boolean isUpdate() {
-        return update;
+    public String getUpdate_time() {
+        return update_time;
     }
 
-    public void setUpdate(boolean update) {
-        this.update = update;
+    public void setUpdateTime(String update_time) {
+        this.update_time = update_time;
     }
 
     public String getIntro() {
@@ -89,7 +96,6 @@ public class BookBean implements Serializable {
         this.status = status;
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "BookBean{" +
@@ -98,11 +104,11 @@ public class BookBean implements Serializable {
                 ", author='" + author + '\'' +
                 ", cover='" + cover + '\'' +
                 ", categories='" + categories + '\'' +
+                ", catalogue='" + catalogue + '\'' +
                 ", latestChapter='" + latestChapter + '\'' +
-                ", update=" + update +
+                ", update_time='" + update_time + '\'' +
                 ", intro='" + intro + '\'' +
                 ", status=" + status +
                 '}';
     }
-
 }

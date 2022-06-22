@@ -1,17 +1,11 @@
 package com.zhhz.reader.rule;
 
-import static com.zhhz.reader.rule.RuleAnalysis.client;
-
-import android.util.Log;
-
-import androidx.annotation.NonNull;
-
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.lua.LuaVirtual;
+import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.bean.SearchBean;
 import com.zhhz.reader.util.Auto_Base64;
-import com.zhhz.reader.util.DiskCache;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
@@ -19,15 +13,12 @@ import org.jsoup.select.Elements;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,63 +27,20 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+public class JsoupAnalysis extends Analysis {
 
-public class JsoupAnalysis {
-
-    public static String save_path = null;
-
-    private JSONObject json;
-    //规则网站地址
-    private String url;
-    //规则名字
-    private String name;
-    //是否属于漫画
-    private boolean comic;
-    //规则使用文本编码
-    private String charset;
-    //用于标记 响应协议；
-    private String http;
     //特殊表
     private HashMap<String, String> replace_map;
     //书本信息
     private JSONObject detail;
 
-    private static JSONObject readText(String path) throws IOException {
-        File file = new File(path);
-        if (!file.isFile()) throw new FileNotFoundException("文件未找到");
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(path);
-            int size = fis.available();
-            byte[] bytes = new byte[size];
-            if (fis.read(bytes) != size) throw new IOException("文件读取异常");
-            fis.close();
-            return JSONObject.parseObject(new String(bytes));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        throw new IOException("加载异常");
+    public JsoupAnalysis(String path) throws IOException {
+        super(path);
+        replace_init();
     }
 
-    public JsoupAnalysis(String path) throws IOException, ClassNotFoundException {
-        this(readText(path));
-    }
-
-    public JsoupAnalysis(JSONObject jsonObject) throws IOException, ClassNotFoundException {
-        this.json = jsonObject;
-        this.url = jsonObject.getString("url");
-        this.name = jsonObject.getString("name");
-        this.comic = (boolean) jsonObject.getBooleanValue("comic");
-        this.charset = (String) (jsonObject.getJSONObject("search").getOrDefault("charset", "utf8"));
-        if (this.charset == null) this.charset = "utf8";
-        this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
+    public JsoupAnalysis(JSONObject jsonObject) {
+        super(jsonObject);
         replace_init();
     }
 
@@ -108,53 +56,6 @@ public class JsoupAnalysis {
         replace_map.put("\n\n", "\n");
     }
 
-    public JSONObject getJson() {
-        return json;
-    }
-
-    public void setJson(JSONObject json) {
-        this.json = json;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public boolean isComic() {
-        return comic;
-    }
-
-    public void setComic(boolean comic) {
-        this.comic = comic;
-    }
-
-    public String getCharset() {
-        return charset;
-    }
-
-    public void setCharset(String charset) {
-        this.charset = charset;
-    }
-
-    public String getHttp() {
-        return http;
-    }
-
-    public void setHttp(String http) {
-        this.http = http;
-    }
 
     public HashMap<String, String> getReplace_map() {
         return replace_map;
@@ -197,7 +98,7 @@ public class JsoupAnalysis {
         }
 
         if (detail != null && reg.contains("$")) {
-            reg = reg.replace("${title}", (CharSequence) Objects.requireNonNull(detail.getOrDefault("书名", ""))).replace("${author}", (CharSequence) Objects.requireNonNull(detail.getOrDefault("作者", "")));
+            reg = reg.replace("${title}", (CharSequence) Objects.requireNonNull(detail.getOrDefault("title", ""))).replace("${author}", (CharSequence) Objects.requireNonNull(detail.getOrDefault("author", "")));
         }
 
         String x_reg = "([^-]*)->(.*)";
@@ -239,63 +140,12 @@ public class JsoupAnalysis {
             }
         }
 
-
         return String.valueOf(s);
     }
 
-    public String to_http(String relative_path, String url) {
-        if (relative_path.length() > 0 && !relative_path.startsWith("http")) {
-            if (relative_path.startsWith("//")) {
-                return http + ":" + relative_path;
-            } else if (relative_path.startsWith("/")) {
-                return http + "://" + this.url + relative_path;
-            } else if (!relative_path.startsWith(".")) {
-                return url.substring(0, url.lastIndexOf('/')) + "/" + relative_path;
-            } else {
-                if (url.endsWith("/")) {
-                    url = url.substring(0, url.length() - 1);
-                }
-                String[] arr_url = url.split("/");
-                String[] arr = relative_path.split("/");
-                StringBuilder sb = new StringBuilder();
-                int i = 0;
-                int i1 = 3;
-                for (String s : arr) {
-                    if (s.equals(".")) {
-                        sb.append(arr_url[2]);
-                    } else if (s.equals("..")) {
-                        i++;
-                    } else {
-                        if (i < arr_url.length - 2) {
-                            for (; i1 < arr_url.length - i; i1++) {
-                                sb.append('/');
-                                sb.append(arr_url[2 + i1]);
-                            }
-                        }
-                    }
-                }
-                return sb.toString();
-            }
-        }
-
-
-        return relative_path;
-    }
-
-    private boolean isNil(Object o, CallBack callback) {
-        if (o == null) {
-            callback.run(null, null, null);
-            return false;
-        }
-        return true;
-    }
-
-    public void BookSearch(@NonNull JsoupAnalysis jsoupAnalysis, String key_word, CallBack callback, int index) {
-        jsoupAnalysis.BookSearch(key_word, callback, index);
-    }
-
+    @Override
     public void BookSearch(String key_word, CallBack callback, int index) {
-        if (json.getOrDefault("encode", null) != null) {
+        if (json.getString("encode") != null) {
             try {
                 key_word = URLEncoder.encode(key_word, this.charset);
             } catch (UnsupportedEncodingException e) {
@@ -303,77 +153,127 @@ public class JsoupAnalysis {
             }
         }
         String url = json.getJSONObject("search").getString("url").replace("${key}", key_word);
-        String page = (String) json.getJSONObject("search").getOrDefault("page", null);
+        String page = json.getJSONObject("search").getString("page");
         if (page != null) {
             url = url.replace("${page}", page);
         }
         final String url_s = url;
-        Http(url, (a, b, c) -> {
-            if (a == null) {
-                callback.run(null, b, c);
+        Http(url, (data, msg, label) -> {
+            if (data == null) {
+                callback.run(null, msg, label);
                 return;
             }
 
-            Element data = (Element) a;
-            List<HashMap<String, Object>> al = new ArrayList<>();
+            Element element = (Element) data;
+            List<SearchBean> al = new ArrayList<>();
             JSONObject search = json.getJSONObject("search");
 
-            Elements list = data.select(search.getString("list"));
+            Elements list = element.select(search.getString("list"));
             for (Element dl : list) {
-                HashMap<String, Object> hm = new HashMap<>();
-                hm.put("来源", name);
+                SearchBean SearchBean = new SearchBean();
+                SearchBean.setName(name);
                 List<Integer> source = new ArrayList<>();
                 source.add(index);
-                hm.put("rule", source);
-
+                SearchBean.setSource(source);
                 String[] rule = parse_array(search.getString("name"));
-                hm.put("书名", parse_jsoup(dl.select(rule[0]), rule[1]));
+                SearchBean.setTitle(parse_jsoup(dl.select(rule[0]), rule[1]));
 
                 String[] detail = parse_array(search.getString("detail"));
-                hm.put("地址", to_http(parse_jsoup(dl.select(detail[0]), detail[1] != null ? detail[1] : "attr->href"), url_s));
+                SearchBean.setUrl(to_http(parse_jsoup(dl.select(detail[0]), detail[1] != null ? detail[1] : "attr->href"), url_s));
 
                 if (search.get("author") != null) {
                     String[] author = parse_array(search.getString("author"));
-                    hm.put("作者", parse_jsoup(dl.select(author[0]), author[1] != null ? author[1] : null));
+                    SearchBean.setAuthor(parse_jsoup(dl.select(author[0]), author[1] != null ? author[1] : null));
                 }
 
                 if (search.get("cover") != null) {
                     String[] cover = parse_array(search.getString("cover"));
-                    hm.put("封面", to_http(parse_jsoup(dl.select(cover[0]), cover[1] != null ? cover[1] : "attr->src"), url_s));
+                    SearchBean.setCover(to_http(parse_jsoup(dl.select(cover[0]), cover[1] != null ? cover[1] : "attr->src"), url_s));
                 }
 
-                al.add(hm);
+                al.add(SearchBean);
             }
 
             callback.run(al, null, null);
         });
     }
 
-    public void BookDirectory(@NonNull JsoupAnalysis jsoupAnalysis, String url, CallBack callback) {
-        jsoupAnalysis.BookDirectory(url, callback);
+    @Override
+    public void BookDetail(String url, CallBack callback) {
+        Http(url, (data, msg, label) -> {
+            if (data == null) {
+                callback.run(null, msg, label);
+                return;
+            }
+            Element element = (Element) data;
+            BookBean book = new BookBean();
+            JSONObject detail_x = json.getJSONObject("detail");
+            if (detail_x.get("name") != null) {
+                String[] obj = parse_array(detail_x.getString("name"));
+                book.setTitle(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+            }
+            if (detail_x.get("author") != null) {
+                String[] obj = parse_array(detail_x.getString("author"));
+                book.setAuthor(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+            }
+            if (detail_x.get("summary") != null) {
+                String[] obj = parse_array(detail_x.getString("summary"));
+                book.setIntro(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+            }
+            if (detail_x.get("cover") != null) {
+                String[] obj = parse_array(detail_x.getString("cover"));
+                book.setCover(to_http(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : "attr->src"), url));
+            }
+            if (detail_x.get("update") != null) {
+                String[] obj = parse_array(detail_x.getString("update"));
+                book.setUpdateTime(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+            }
+
+            if (detail_x.get("status") != null) {
+                String[] obj = parse_array(detail_x.getString("status"));
+                book.setStatus(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null).contains("完结"));
+            }
+
+            if (detail_x.get("lastChapter") != null) {
+                String[] obj = parse_array(detail_x.getString("lastChapter"));
+                book.setLatestChapter(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+            }
+            if (detail_x.getString("catalog") == null) {
+                book.setCatalogue(url);
+            } else if (detail_x.getString("catalog").startsWith("true@")) {
+                String x_url = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(5)), element, JsoupAnalysis.this);
+                book.setCatalogue(x_url);
+            } else {
+                String[] obj = parse_array(detail_x.getString("catalog"));
+                String str = to_http(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : "attr->href"), url);
+                book.setCatalogue(str);
+            }
+
+            callback.run(book, null, null);
+        });
     }
 
+    @Override
     public void BookDirectory(String url, CallBack callback) {
 
-        Http(url, (a, b, c) -> {
-            if (a == null) {
-                callback.run(null, b, c);
+        Http(url, (data, msg, label) -> {
+            if (data == null) {
+                callback.run(null, msg, label);
                 return;
             }
             JSONObject catalog = json.getJSONObject("catalog");
-            Element data = (Element) a;
+            Element element = (Element) data;
+
             if (catalog.getString("lua") != null) {
-                lua_callback.callBack = callback;
-                LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(catalog.getString("lua")),url, data, lua_callback.class, JsoupAnalysis.this);
+                LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(catalog.getString("lua")), url, element, callback, JsoupAnalysis.this);
                 return;
             }
 
-
-            LinkedHashMap<String, Object> lhm = CatalogAnalysis(url, data);
+            LinkedHashMap<String, Object> lhm = CatalogAnalysis(url, element);
 
             if (catalog.getString("page") != null && catalog.getString("page").length() > 0) {
                 String[] tmp = parse_array(catalog.getString("page"));
-                String page = to_http(parse_jsoup(data.select(tmp[0]), tmp[1] != null ? tmp[1] : "attr->href"), url);
+                String page = to_http(parse_jsoup(element.select(tmp[0]), tmp[1] != null ? tmp[1] : "attr->href"), url);
                 if (page.length() > 0 && !page.equals(url)) {
                     BookDirectory(page, (a1, b1, c1) -> {
                         if (a1 != null) {
@@ -384,74 +284,12 @@ public class JsoupAnalysis {
                         }
                     });
                 } else {
-                    callback.run(lhm, url, c);
+                    callback.run(lhm, url, label);
                 }
             } else {
-                callback.run(lhm, url, c);
+                callback.run(lhm, url, label);
             }
         });
-    }
-
-    public void BookDetail(@NonNull JsoupAnalysis jsoupAnalysis, String url, CallBack callback) {
-        jsoupAnalysis.BookDetail(url, callback);
-    }
-
-    public void BookDetail(String url, CallBack callback) {
-        Http(url, (a, b, c) -> {
-            if (a == null) {
-                callback.run(null, b, c);
-                return;
-            }
-            Element data = (Element) a;
-            HashMap<String, Object> map = new HashMap<>();
-            JSONObject detail_x = json.getJSONObject("detail");
-            if (detail_x.get("name") != null) {
-                String[] obj = parse_array(detail_x.getString("name"));
-                map.put("书名", parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : null));
-            }
-            if (detail_x.get("author") != null) {
-                String[] obj = parse_array(detail_x.getString("author"));
-                map.put("作者", parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : null));
-            }
-            if (detail_x.get("summary") != null) {
-                String[] obj = parse_array(detail_x.getString("summary"));
-                map.put("简介", parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : null));
-            }
-            if (detail_x.get("cover") != null) {
-                String[] obj = parse_array(detail_x.getString("cover"));
-                map.put("封面", to_http(parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : "attr->src"), url));
-            }
-            if (detail_x.get("update") != null) {
-                String[] obj = parse_array(detail_x.getString("update"));
-                map.put("更新时间", parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : null));
-            }
-            if (detail_x.get("lastChapter") != null) {
-                String[] obj = parse_array(detail_x.getString("lastChapter"));
-                map.put("最新章节", parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : null));
-            }
-            if (detail_x.getString("catalog") == null) {
-                map.put("目录地址", url);
-                if (json.getJSONObject("catalog").get("page") == null && json.getJSONObject("catalog").getString("lua") == null) {
-                    map.put("目录", CatalogAnalysis(url, data));
-                }
-            } else if (detail_x.getString("catalog").startsWith("true@")) {
-                String x_url = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(5)),data, JsoupAnalysis.this);
-                map.put("目录地址", x_url);
-            } else {
-                String[] obj = parse_array(detail_x.getString("catalog"));
-                String str = to_http(parse_jsoup(data.select(obj[0]), obj[1] != null ? obj[1] : "attr->href"), url);
-                if (str.equals(url) && json.getJSONObject("catalog").getString("page") == null && json.getJSONObject("catalog").getString("lua") == null) {
-                    map.put("目录", CatalogAnalysis(url, data));
-                }
-                map.put("目录地址", str);
-            }
-            detail = new JSONObject(map);
-            callback.run(map, null, null);
-        });
-    }
-
-    public LinkedHashMap<String, Object> CatalogAnalysis(@NonNull JsoupAnalysis jsoupAnalysis, String url, Element data) {
-        return jsoupAnalysis.CatalogAnalysis(url, data);
     }
 
     public LinkedHashMap<String, Object> CatalogAnalysis(String url, Element data) {
@@ -552,20 +390,18 @@ public class JsoupAnalysis {
         return a;
     }
 
-    public void Chapters(@NonNull JsoupAnalysis jsoupAnalysis, String url, CallBack callback, Object random) {
-        jsoupAnalysis.Chapters(url, callback, random);
-    }
-
-    public void Chapters(String url, CallBack callback, Object random) {
-        File file = new File(save_path + "/book_chapter/" + url.substring(url.lastIndexOf('/') + 1));
+    @Override
+    public void BookChapters(BookBean book, CallBack callback, Object random) {
+        String url = book.getCatalogue();
+        File file = new File(save_path + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
 
         if (!Objects.requireNonNull(file.getParentFile()).isDirectory()) {
-            if (file.getParentFile().mkdirs()){
-                Log.d("Chapters","创建成功");
+            if (file.getParentFile().mkdirs()) {
+                System.out.println("Chapters -> 创建成功");
             }
         }
         if (file.isFile()) {
-            try (FileInputStream fis = new FileInputStream(file);) {
+            try (FileInputStream fis = new FileInputStream(file)) {
                 int size = fis.available();
                 byte[] bytes = new byte[size];
                 if (fis.read(bytes) == size) {
@@ -577,40 +413,38 @@ public class JsoupAnalysis {
             }
         }
 
-        BookContent(url, (a, b, c) -> {
-            if (a == null) {
-                callback.run(null, b, c);
+        System.out.println("开始请求");
+
+        BookContent(url, (data, msg, label) -> {
+            if (data == null) {
+                callback.run(null, msg, label);
                 return;
             }
             FileOutputStream fos;
             try {
                 fos = new FileOutputStream(file);
-                fos.write(((String) a).getBytes());
+                fos.write(((String) data).getBytes());
                 fos.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            callback.run(a, b, c);
+            callback.run(data, msg, label);
         }, random);
 
     }
 
-    public void BookContent(@NonNull JsoupAnalysis jsoupAnalysis, String url, CallBack callback, Object random) {
-        jsoupAnalysis.BookContent(url, callback, random);
-    }
-
-    public void BookContent(String url, CallBack callback, Object random) {
-
-        Http_Get(url, (a, b, c) -> {
-            if (a == null) {
-                callback.run(null, b, c);
+    @Override
+    public void BookContent(String url, CallBack callback, Object label) {
+        Http_Get(url, (data, msg, __) -> {
+            if (data == null) {
+                callback.run(null, msg, label);
                 return;
             }
-            ((Document) a).outputSettings().prettyPrint(false);
+            ((Document) data).outputSettings().prettyPrint(false);
             JSONObject chapter = json.getJSONObject("chapter");
-            String[] content_x = parse_array(chapter.getString("content"));
-            Element data = (Element) a;
-            Elements content = data.select(content_x[0]);
+            String[] content_x = JsoupAnalysis.this.parse_array(chapter.getString("content"));
+            Element element = (Element) data;
+            Elements content = element.select(content_x[0]);
             StringBuilder filter_str = new StringBuilder();
             StringBuilder sb = new StringBuilder();
             if (chapter.get("filter") != null) {
@@ -626,8 +460,8 @@ public class JsoupAnalysis {
                     content1 = content.select(content_x[0] + ">" + filter_str.substring(1));
                 }
 
-                for (Element element : content1) {
-                    element.remove();
+                for (Element ele : content1) {
+                    ele.remove();
                 }
 
                 if (content.size() == 1) {
@@ -642,23 +476,21 @@ public class JsoupAnalysis {
                     sb.append("\n");
                     sb.append(textNode.text().trim());
                 }
+
             }
 
-            String str;
+            String str = sb.toString();
+
+            if (!JsoupAnalysis.this.isComic()) {
+                for (Map.Entry<String, String> entry : replace_map.entrySet()) {
+                    str = str.replace(entry.getKey(), entry.getValue());
+                }
+            }
 
             //屏蔽规则
             if (chapter.get("purify") != null) {
-                str = sb.toString();
                 for (Object purify : chapter.getJSONArray("purify")) {
                     str = str.replace((CharSequence) purify, "");
-                }
-            } else {
-                str = sb.toString();
-            }
-
-            if (!str.startsWith("http://")) {
-                for (Map.Entry<String, String> entry : replace_map.entrySet()) {
-                    str = str.replace(entry.getKey(), entry.getValue());
                 }
             }
 
@@ -666,168 +498,33 @@ public class JsoupAnalysis {
 
             //执行lua
             if (chapter.getString("lua") != null) {
-                str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")),str, JsoupAnalysis.this,url,callback,random,data);
-                if (str!=null && str.equals("false")){
+                str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")), element, str, url, callback, label, JsoupAnalysis.this);
+                //返回false代表 lua 内部处理
+                if (str != null && str.equals("false")) {
                     return;
                 }
             }
 
             if (chapter.getString("page") != null) {
-                String[] tmp = parse_array(chapter.getString("page"));
-                String page = to_http(parse_jsoup(data.select(tmp[0]), tmp[1] != null ? tmp[1] : "attr->href"), url);
+                String[] tmp = JsoupAnalysis.this.parse_array(chapter.getString("page"));
+                String page = JsoupAnalysis.this.to_http(JsoupAnalysis.this.parse_jsoup(element.select(tmp[0]), tmp[1] != null ? tmp[1] : "attr->href"), url);
                 if (page.length() > 0 && !page.equals(url)) {
                     String finalStr = str;
-                    BookContent(page, (a1, b1, c1) -> {
-                        if (a1 == null) {
-                            callback.run(null, b1, c1);
+                    JsoupAnalysis.this.BookContent(page, (data_a, msg_a, label_a) -> {
+                        if (data_a == null) {
+                            callback.run(null, msg_a, label_a);
                         } else {
-                            callback.run(finalStr + a1, b1, c1);
+                            callback.run(finalStr + data_a, msg_a, label_a);
                         }
-                    }, random);
+                    }, label);
                 } else {
-                    callback.run(str, random, b);
+                    callback.run(str, msg, label);
                 }
             } else {
-                callback.run(str, random, b);
+                callback.run(str, msg, label);
             }
         });
     }
 
-
-    public void Http(JsoupAnalysis o, String data, CallBack callBack) {
-        o.Http(data, callBack);
-    }
-
-    public void Http(String data, CallBack callBack) {
-        if (data.contains("@post->")) {
-            Http_Post(data, callBack);
-        } else {
-            Http_Get(data, callBack);
-        }
-    }
-
-
-    public void Http_Post(JsoupAnalysis p, String url, CallBack callback) {
-        p.Http_Post(url, callback);
-    }
-
-    public void Http_Post(String url, CallBack callback) {
-        String header = null, data;
-        MediaType mt;
-        String[] arr = url.split("@post->", 2);
-        if (arr[1] != null && arr[1].contains("$header")) {
-            String[] ar = arr[1].split("\\$header", 2);
-            data = ar[0];
-            header = ar[1];
-        } else {
-            data = arr[1];
-        }
-
-        assert data != null;
-        if (data.startsWith("{")) {
-            mt = MediaType.parse("application/json");
-        } else {
-            mt = MediaType.parse("application/x-www-form-urlencoded;charset=" + charset);
-        }
-
-        Request.Builder builder = new Request.Builder().url(arr[0]).post(RequestBody.create(mt, data));
-        if (header != null) {
-            JSONObject jsonObject = JSONObject.parseObject(header);
-            for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
-                builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
-            }
-        }
-        init_header(builder);
-        newCall(builder.build(), callback);
-    }
-
-    public void Http_Get(JsoupAnalysis o, String url, CallBack callback) {
-        o.Http_Get(url, callback);
-    }
-
-    public void Http_Get(String url, CallBack callback) {
-        String header = null;
-        if (url.contains("$header")) {
-            String[] ar = url.split("\\$header", 2);
-            url = ar[0];
-            header = ar[1];
-        }
-        Request.Builder builder = new Request.Builder().url(url);
-        init_header(builder);
-        if (header != null) {
-            JSONObject jsonObject = JSONObject.parseObject(header);
-            for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
-                builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
-            }
-        }
-        newCall(builder.build(), callback);
-    }
-
-    private void init_header(Request.Builder builder) {
-        if (json.get("header") != null) {
-            JSONObject header = JSONObject.parseObject(this.json.getString("header"));
-            for (Map.Entry<String, Object> entry : header.entrySet()) {
-                builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
-            }
-            header.clear();
-        }
-    }
-
-    private void newCall(Request request, CallBack callback) {
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                callback.run(null, e.getMessage(), null);
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.code() == 200 && response.body() != null) {
-                    MediaType contentType = Objects.requireNonNull(response.body()).contentType();
-                    String charset = null;
-                    if (contentType != null && contentType.charset() != null) {
-                        charset = Objects.requireNonNull(contentType.charset()).name();
-                    }
-                    if (charset == null) {
-                        charset = JsoupAnalysis.this.charset;
-                    }
-
-                    String s = new String(Objects.requireNonNull(response.body()).bytes(), charset);
-
-                    DiskCache.FileSave(DiskCache.path, call, s);
-                    callback.run(Jsoup.parse(s), null, null);
-                } else {
-                    callback.run(null, response.message(), null);
-                }
-            }
-        });
-    }
-
-    @FunctionalInterface
-    public interface CallBack {
-        /**
-         * @param a 数据
-         * @param b 报错提示
-         * @param c 未知
-         */
-        void run(Object a, Object b, Object c);
-
-    }
-
-    public static class lua_callback implements Serializable {
-        public static CallBack callBack;
-
-        public lua_callback(Object a) {
-            callBack.run(a, null, null);
-        }
-
-        public lua_callback(Object a, Object b) {
-            callBack.run(a, b, null);
-        }
-
-        public lua_callback(Object a, Object b, Object c) {
-            callBack.run(a, b, c);
-        }
-    }
 
 }

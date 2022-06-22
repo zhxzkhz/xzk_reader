@@ -30,7 +30,10 @@ public class DiskCache {
     //缓存删除时间标记
     private static boolean cache_delete_tag = true;
 
-    private static long cache_time = System.currentTimeMillis();
+    private static long currentTimeMillis = System.currentTimeMillis();
+
+    //测试缓存时间调整到 300 分钟
+    private static final long cache_time =  1000 * 60 * 300;
 
     public static String path = null;
 
@@ -39,8 +42,8 @@ public class DiskCache {
         long time = System.currentTimeMillis();
 
         //大于5分钟执行删除
-        if ((time - cache_time) > 1000 * 60 * 5) {
-            cache_time = time;
+        if ((time - currentTimeMillis) > cache_time) {
+            currentTimeMillis = time;
             cache_delete_tag = true;
         }
 
@@ -52,8 +55,10 @@ public class DiskCache {
             //删除缓存时间大于五分钟的
             if (files != null) {
                 for (File file1 : files) {
-                    if ((time - file1.lastModified()) > 1000 * 60 * 5) {
-                        file1.delete();
+                    if ((time - file1.lastModified()) > cache_time) {
+                        if (file1.delete()){
+                            System.out.println("delete_cache -> 缓存已清除");
+                        };
                     }
                 }
             }

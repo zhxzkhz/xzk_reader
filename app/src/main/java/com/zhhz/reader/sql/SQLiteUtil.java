@@ -20,7 +20,7 @@ public class SQLiteUtil {
     public static void insertBook(BookBean book) {
         helper = new BookSqliteHelper(context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
-        database.execSQL("insert into bookrack (book_id,title,author,cover,categories,latestChapter,update_time,intro) values(?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getCategories(), book.getLatestChapter(), book.isUpdate() ? 0 : 1, book.getIntro()});
+        database.execSQL("insert into bookrack (book_id,title,author,cover,categories,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getCategories(),book.getCatalogue(),book.getLatestChapter(), book.isStatus() ? 1 : 0, book.getUpdate_time(), book.getIntro()});
         database.close();
     }
 
@@ -36,9 +36,11 @@ public class SQLiteUtil {
             bookBean.setAuthor(query.getString(2));
             bookBean.setCover(query.getString(3));
             bookBean.setCategories(query.getString(4));
-            bookBean.setLatestChapter(query.getString(5));
-            bookBean.setUpdate(query.getInt(6) == 0);
-            bookBean.setIntro(query.getString(7));
+            bookBean.setCatalogue(query.getString(5));
+            bookBean.setLatestChapter(query.getString(6));
+            bookBean.setStatus(query.getInt(7) == 1);
+            bookBean.setUpdateTime(query.getString(8));
+            bookBean.setIntro(query.getString(9));
             list.add(bookBean);
         }
         query.close();
@@ -57,9 +59,11 @@ public class SQLiteUtil {
         bookBean.setAuthor(query.getString(2));
         bookBean.setCover(query.getString(3));
         bookBean.setCategories(query.getString(4));
-        bookBean.setLatestChapter(query.getString(5));
-        bookBean.setUpdate(query.getInt(6) == 0);
-        bookBean.setIntro(query.getString(7));
+        bookBean.setCatalogue(query.getString(5));
+        bookBean.setLatestChapter(query.getString(6));
+        bookBean.setStatus(query.getInt(7) == 0);
+        bookBean.setUpdateTime(query.getString(8));
+        bookBean.setIntro(query.getString(9));
         query.close();
         database.close();
         return bookBean;
