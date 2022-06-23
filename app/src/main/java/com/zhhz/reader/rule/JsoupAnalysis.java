@@ -3,7 +3,7 @@ package com.zhhz.reader.rule;
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.lua.LuaVirtual;
 import com.zhhz.reader.bean.BookBean;
-import com.zhhz.reader.bean.SearchBean;
+import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.Auto_Base64;
 
 import org.jsoup.nodes.Document;
@@ -165,33 +165,33 @@ public class JsoupAnalysis extends Analysis {
             }
 
             Element element = (Element) data;
-            List<SearchBean> al = new ArrayList<>();
+            List<SearchResultBean> al = new ArrayList<>();
             JSONObject search = json.getJSONObject("search");
 
             Elements list = element.select(search.getString("list"));
             for (Element dl : list) {
-                SearchBean SearchBean = new SearchBean();
-                SearchBean.setName(name);
+                SearchResultBean SearchResultBean = new SearchResultBean();
+                SearchResultBean.setName(name);
                 List<Integer> source = new ArrayList<>();
                 source.add(index);
-                SearchBean.setSource(source);
+                SearchResultBean.setSource(source);
                 String[] rule = parse_array(search.getString("name"));
-                SearchBean.setTitle(parse_jsoup(dl.select(rule[0]), rule[1]));
+                SearchResultBean.setTitle(parse_jsoup(dl.select(rule[0]), rule[1]));
 
                 String[] detail = parse_array(search.getString("detail"));
-                SearchBean.setUrl(to_http(parse_jsoup(dl.select(detail[0]), detail[1] != null ? detail[1] : "attr->href"), url_s));
+                SearchResultBean.setUrl(to_http(parse_jsoup(dl.select(detail[0]), detail[1] != null ? detail[1] : "attr->href"), url_s));
 
                 if (search.get("author") != null) {
                     String[] author = parse_array(search.getString("author"));
-                    SearchBean.setAuthor(parse_jsoup(dl.select(author[0]), author[1] != null ? author[1] : null));
+                    SearchResultBean.setAuthor(parse_jsoup(dl.select(author[0]), author[1] != null ? author[1] : null));
                 }
 
                 if (search.get("cover") != null) {
                     String[] cover = parse_array(search.getString("cover"));
-                    SearchBean.setCover(to_http(parse_jsoup(dl.select(cover[0]), cover[1] != null ? cover[1] : "attr->src"), url_s));
+                    SearchResultBean.setCover(to_http(parse_jsoup(dl.select(cover[0]), cover[1] != null ? cover[1] : "attr->src"), url_s));
                 }
 
-                al.add(SearchBean);
+                al.add(SearchResultBean);
             }
 
             callback.run(al, null, null);

@@ -3,7 +3,7 @@ package com.zhhz.reader.bean;
 import java.io.Serializable;
 import java.util.List;
 
-public class SearchBean implements Serializable {
+public class SearchResultBean implements Serializable {
     private String name;
     private List<Integer> source;
     private String title;
@@ -57,5 +57,17 @@ public class SearchBean implements Serializable {
 
     public void setCover(String cover) {
         this.cover = cover;
+    }
+
+    @Override
+    public String toString() {
+        return "SearchResultBean{" +
+                "name='" + name + '\'' +
+                ", source=" + source +
+                ", title='" + title + '\'' +
+                ", url='" + url + '\'' +
+                ", author='" + author + '\'' +
+                ", cover='" + cover + '\'' +
+                '}';
     }
 }

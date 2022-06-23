@@ -2,7 +2,6 @@ package com.zhhz.reader.util;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.Base64;
 
 
 /**

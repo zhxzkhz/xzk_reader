@@ -18,13 +18,16 @@
         android:theme="@style/Theme.小说阅读器"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".activity.SearchActivity"
-            android:theme="@style/Theme.Material3.Light.NoActionBar"
+            android:name=".activity.DetailedActivity"
             android:exported="false" />
         <activity
+            android:name=".activity.SearchActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
+        <activity
             android:name=".activity.MainActivity"
-            android:theme="@style/Theme.Material3.Light.NoActionBar"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.Material3.Light.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

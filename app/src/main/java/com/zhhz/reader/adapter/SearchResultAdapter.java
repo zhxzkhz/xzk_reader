@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 
 // ① 创建Adapter
-public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
+public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapter.ViewHolder> {
 
     private ArrayList<SearchResultBean> itemData;
 
@@ -51,11 +51,11 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
         }
     }
 
-    public SearchAdapter(Context context) {
+    public SearchResultAdapter(Context context) {
         this.context = context;
     }
 
-    public SearchAdapter(Context context, ArrayList<SearchResultBean> data) {
+    public SearchResultAdapter(Context context, ArrayList<SearchResultBean> data) {
         this.context = context;
         this.itemData = data;
     }

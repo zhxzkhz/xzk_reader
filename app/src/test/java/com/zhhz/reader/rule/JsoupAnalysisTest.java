@@ -3,7 +3,7 @@ package com.zhhz.reader.rule;
 import static org.junit.Assert.*;
 
 import com.zhhz.reader.bean.BookBean;
-import com.zhhz.reader.bean.SearchBean;
+import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.DiskCache;
 
 import org.junit.BeforeClass;
@@ -32,8 +32,8 @@ public class JsoupAnalysisTest {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         analysis.BookSearch("魔王", (data, msg, label) -> {
             countDownLatch.countDown();
-            assertTrue(((List<SearchBean>) data).size() > 0);
-            detail_url = ((List<SearchBean>) data).get(0).getUrl();
+            assertTrue(((List<SearchResultBean>) data).size() > 0);
+            detail_url = ((List<SearchResultBean>) data).get(0).getUrl();
             System.out.println("\033[0;32mBookSearch -> 通过 : " + detail_url);
         },1);
         try {
