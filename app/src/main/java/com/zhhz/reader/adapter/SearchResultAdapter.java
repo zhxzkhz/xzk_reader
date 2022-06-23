@@ -53,6 +53,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     public SearchResultAdapter(Context context) {
         this.context = context;
+        this.itemData = new ArrayList<>();
     }
 
     public SearchResultAdapter(Context context, ArrayList<SearchResultBean> data) {
@@ -65,8 +66,11 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
+        System.out.println(viewType);
         if (viewType == 1) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.book_grid_item_layout, parent, false);
+        } else if (viewType == 2){
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.book_linear_item_layout, parent, false);
         } else {
             view = new View(parent.getContext());
         }
@@ -102,7 +106,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     @Override
     public int getItemViewType(int type) {
-        return 1;
+        return 2;
     }
 
 

@@ -3,13 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/linearLayout"
     android:layout_width="120dp"
-    android:layout_height="201dp">
+    android:layout_height="191dp">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_marginTop="4dp"
         android:id="@+id/item_image"
         android:layout_width="100dp"
-        android:layout_height="150dp"
+        android:layout_height="140dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"

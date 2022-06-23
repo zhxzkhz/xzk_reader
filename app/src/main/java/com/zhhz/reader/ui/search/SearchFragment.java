@@ -29,12 +29,6 @@ public class SearchFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
-        mViewModel.getData().observe(getViewLifecycleOwner(), new Observer<List<SearchResultBean>>() {
-            @Override
-            public void onChanged(List<SearchResultBean> searchResultBeans) {
-
-            }
-        });
     }
 
     @Nullable

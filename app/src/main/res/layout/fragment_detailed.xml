@@ -14,10 +14,10 @@
         android:text="Button"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/detailed_title"/>
+        app:layout_constraintRight_toLeftOf="@id/search_text"/>
 
     <TextView
-        android:id="@+id/detailed_title"
+        android:id="@+id/search_text"
         android:layout_width="0dp"
         android:layout_height="54dp"
         android:gravity="center_vertical"

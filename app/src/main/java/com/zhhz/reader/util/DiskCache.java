@@ -72,6 +72,7 @@ public class DiskCache {
         //post提交取消缓存
         if (chain.request().method().equalsIgnoreCase("POST")) return chain.proceed(chain.request());
         File file = DiskCache.urlToFile(chain.request().url(), path);
+        System.out.println("file -》 " + file);
         if (file != null && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file)){
                 int size = fis.available();

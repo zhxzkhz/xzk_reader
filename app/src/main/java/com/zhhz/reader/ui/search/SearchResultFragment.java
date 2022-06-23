@@ -1,5 +1,6 @@
 package com.zhhz.reader.ui.search;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.DetailedActivity;
@@ -29,19 +31,25 @@ public class SearchResultFragment extends Fragment {
     private static SearchResultFragment searchResultFragment;
 
     public static SearchResultFragment getInstance() {
-        if (searchResultFragment!=null) return searchResultFragment;
+        if (searchResultFragment != null) return searchResultFragment;
         return searchResultFragment = new SearchResultFragment();
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        SearchViewModel mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        mViewModel.getData().observe(getViewLifecycleOwner(), list -> {
+            DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(), list));
+            searchResultAdapter.setItemData(list);
+            result.dispatchUpdatesTo(searchResultAdapter);
+        });
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        SearchViewModel mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
-        mViewModel.getData().observe(getViewLifecycleOwner(), list -> {
-            searchResultAdapter.setItemData(list);
-            DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(), list));
-            result.dispatchUpdatesTo(searchResultAdapter);
-        });
+
     }
 
     @Nullable
@@ -50,20 +58,20 @@ public class SearchResultFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentSearchResultBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-        searchResultAdapter  = new SearchResultAdapter(SearchResultFragment.this.getContext());
+        searchResultAdapter = new SearchResultAdapter(getContext());
         searchResultAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
         binding.searchResult.setItemAnimator(new DefaultItemAnimator());
-        binding.searchResult.setLayoutManager(new GridLayoutManager(SearchResultFragment.this.getContext(), 3, GridLayoutManager.VERTICAL, false));
+        binding.searchResult.setLayoutManager(new LinearLayoutManager(getContext()));
         //固定高度
         binding.searchResult.setHasFixedSize(true);
-
+        binding.searchResult.setAdapter(searchResultAdapter);
         searchResultAdapter.setOnClickListener(view -> {
             Intent intent = new Intent(SearchResultFragment.this.getContext(), DetailedActivity.class);
             Bundle bundle = new Bundle();
             //获取点击事件位置
             int position = binding.searchResult.getChildAdapterPosition(view);
-            bundle.putSerializable("book",searchResultAdapter.getItemData().get(position));
+            bundle.putSerializable("book", searchResultAdapter.getItemData().get(position));
             intent.putExtras(bundle);
             startActivity(intent);
             SearchResultFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
@@ -77,12 +85,13 @@ public class SearchResultFragment extends Fragment {
         searchResultFragment = null;
     }
 
-    private static class SearchResultDiffCallback extends DiffUtil.Callback{
+    private static class SearchResultDiffCallback extends DiffUtil.Callback {
         private final ArrayList<SearchResultBean> oldData;
         private final ArrayList<SearchResultBean> newData;
-        public SearchResultDiffCallback(ArrayList<SearchResultBean> oldData,ArrayList<SearchResultBean> newData) {
-            this.oldData=oldData;
-            this.newData=newData;
+
+        public SearchResultDiffCallback(ArrayList<SearchResultBean> oldData, ArrayList<SearchResultBean> newData) {
+            this.oldData = oldData;
+            this.newData = newData;
         }
 
         @Override

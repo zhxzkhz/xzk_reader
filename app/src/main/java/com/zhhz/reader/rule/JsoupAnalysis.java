@@ -193,7 +193,6 @@ public class JsoupAnalysis extends Analysis {
 
                 al.add(SearchResultBean);
             }
-
             callback.run(al, null, null);
         });
     }

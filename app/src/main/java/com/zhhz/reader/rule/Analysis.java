@@ -72,7 +72,6 @@ public abstract class Analysis {
     }
 
 
-
     public JSONObject getJson() {
         return json;
     }
@@ -170,7 +169,7 @@ public abstract class Analysis {
 
     public abstract void BookContent(String url, CallBack callback, Object random);
 
-    public void Http(String data, CallBack callBack){
+    public void Http(String data, CallBack callBack) {
         if (data.contains("@post->")) {
             Http_Post(data, callBack);
         } else {
@@ -254,9 +253,7 @@ public abstract class Analysis {
                     if (charset == null) {
                         charset = Analysis.this.charset;
                     }
-
                     String s = new String(Objects.requireNonNull(response.body()).bytes(), charset);
-
                     DiskCache.FileSave(DiskCache.path, call, s);
                     callback.run(Jsoup.parse(s), null, null);
                 } else {
@@ -267,12 +264,11 @@ public abstract class Analysis {
     }
 
 
-
     @FunctionalInterface
     public interface CallBack {
         /**
-         * @param data 数据
-         * @param msg 报错提示
+         * @param data  数据
+         * @param msg   报错提示
          * @param label 随机数，用于标记
          */
         void run(Object data, Object msg, Object label);

@@ -2,6 +2,7 @@ package com.zhhz.reader.ui.bookrack;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,10 +65,13 @@ public class BookRackFragment extends Fragment {
         binding.rv.setAdapter(bookAdapter);
 
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
-            bookAdapter.setItemData(list);
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(new BookRackDiffCallback(bookAdapter.getItemData(), list));
+            bookAdapter.setItemData(list);
             result.dispatchUpdatesTo(bookAdapter);
         });
+
+        new Handler().postDelayed(() -> binding.searchView.callOnClick(),100);
+
         return root;
     }
 

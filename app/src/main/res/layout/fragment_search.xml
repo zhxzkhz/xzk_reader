@@ -7,7 +7,7 @@
     tools:context=".ui.search.SearchFragment">
 
     <com.zhhz.reader.view.SearchEditText
-        android:id="@+id/detailed_title"
+        android:id="@+id/search_text"
         android:layout_width="match_parent"
         android:layout_height="46dp"
         android:layout_marginEnd="42dp"
@@ -15,7 +15,7 @@
         android:drawablePadding="10dp"
         android:hint="@string/search_text"
         android:singleLine="true"
-        app:layout_constraintRight_toLeftOf="@id/detailed_title"
+        app:layout_constraintRight_toLeftOf="@id/search_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintWidth="match_parent" />
