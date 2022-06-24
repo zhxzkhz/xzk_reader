@@ -1,5 +1,7 @@
 package com.zhhz.reader.bean;
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 
 public class BookBean implements Serializable {
@@ -96,6 +98,7 @@ public class BookBean implements Serializable {
         this.status = status;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "BookBean{" +

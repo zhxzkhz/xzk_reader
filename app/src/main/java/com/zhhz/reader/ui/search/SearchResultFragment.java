@@ -1,6 +1,5 @@
 package com.zhhz.reader.ui.search;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -13,14 +12,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.DetailedActivity;
 import com.zhhz.reader.adapter.SearchResultAdapter;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.databinding.FragmentSearchResultBinding;
+import com.zhhz.reader.view.RecycleViewDivider;
 
 import java.util.ArrayList;
 
@@ -65,14 +63,14 @@ public class SearchResultFragment extends Fragment {
         binding.searchResult.setLayoutManager(new LinearLayoutManager(getContext()));
         //固定高度
         binding.searchResult.setHasFixedSize(true);
+        binding.searchResult.addItemDecoration(new RecycleViewDivider(this.getContext(),1));
         binding.searchResult.setAdapter(searchResultAdapter);
+
         searchResultAdapter.setOnClickListener(view -> {
             Intent intent = new Intent(SearchResultFragment.this.getContext(), DetailedActivity.class);
-            Bundle bundle = new Bundle();
             //获取点击事件位置
             int position = binding.searchResult.getChildAdapterPosition(view);
-            bundle.putSerializable("book", searchResultAdapter.getItemData().get(position));
-            intent.putExtras(bundle);
+            intent.putExtra("book", searchResultAdapter.getItemData().get(position));
             startActivity(intent);
             SearchResultFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });

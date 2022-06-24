@@ -13,6 +13,7 @@
         <entry key="..\:/Android/reader/app/src/main/res/drawable/search_icon.xml" value="0.1955" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/search_rectangle_background.xml" value="0.2355" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/search_text_icon.xml" value="0.1955" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/activity_detailed.xml" value="0.36614583333333334" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/activity_main.xml" value="0.3605128205128205" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/activity_main2.xml" value="0.178125" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/activity_search.xml" value="0.16354166666666667" />
@@ -20,6 +21,7 @@
         <entry key="..\:/Android/reader/app/src/main/res/layout/book_linear_item_layout.xml" value="0.25" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/book_reader.xml" value="0.23229166666666667" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_bookrack.xml" value="0.36614583333333334" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_detailed.xml" value="0.36614583333333334" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_search.xml" value="0.25" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_search_result.xml" value="0.1078125" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/item_book_layout.xml" value="0.3515625" />

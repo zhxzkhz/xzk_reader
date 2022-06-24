@@ -3,6 +3,7 @@ package com.zhhz.reader.rule;
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.StringUtil;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -31,11 +32,11 @@ public class RuleAnalysis {
         } else if (type == 1) {
 
         }
-        if (bool) analyses_map.put(jsonObject.getString("url"),analysis);
+        if (bool) analyses_map.put(StringUtil.getMD5(jsonObject.toJSONString()),analysis);
     }
 
-    public void BookSearch(String key_word, Analysis.CallBack callback, int index){
-        analysis.BookSearch(key_word, callback, index);
+    public void BookSearch(String key_word, Analysis.CallBack callback, String md5){
+        analysis.BookSearch(key_word, callback, md5);
     }
 
     public void BookDirectory(String url, Analysis.CallBack callback){

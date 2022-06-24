@@ -19,7 +19,8 @@
         android:usesCleartextTraffic="true">
         <activity
             android:name=".activity.DetailedActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@style/Theme.Material3.Light.NoActionBar"/>
         <activity
             android:name=".activity.SearchActivity"
             android:exported="false"

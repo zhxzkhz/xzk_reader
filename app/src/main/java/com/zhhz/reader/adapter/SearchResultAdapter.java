@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.SearchResultBean;
+import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
@@ -42,12 +43,16 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public AppCompatImageView imageView;
-        public AppCompatTextView textView;
+        public AppCompatTextView title;
+        public AppCompatTextView author;
+        public AppCompatTextView last;
 
         private ViewHolder(View v) {
             super(v);
             this.imageView = v.findViewById(R.id.item_image);
-            this.textView = v.findViewById(R.id.item_title);
+            this.title = v.findViewById(R.id.item_title);
+            this.author = v.findViewById(R.id.item_author);
+            this.last = v.findViewById(R.id.item_latest);
         }
     }
 
@@ -83,7 +88,10 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SearchResultBean book = itemData.get(position);
-        holder.textView.setText(book.getTitle());
+        holder.title.setText(book.getTitle());
+        if (holder.author!=null && book.getAuthor()!=null){
+            holder.author.setText(book.getAuthor());
+        }
         if (book.getCover() != null) {
             GlideApp.with(context)
                     .asBitmap()

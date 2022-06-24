@@ -35,7 +35,7 @@ public class JsoupAnalysisTest {
             assertTrue(((List<SearchResultBean>) data).size() > 0);
             detail_url = ((List<SearchResultBean>) data).get(0).getUrl();
             System.out.println("\033[0;32mBookSearch -> 通过 : " + detail_url);
-        },1);
+        },"1");
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {

@@ -5,4 +5,6 @@
     <string name="title_setting">设置</string>
     <string name="search_text">搜索书名或者作者</string>
     <string name="search_clear">取消</string>
+    <string name="detailed_intro">简介：</string>
+    <string name="detailed_update_time">目录</string>
 </resources>

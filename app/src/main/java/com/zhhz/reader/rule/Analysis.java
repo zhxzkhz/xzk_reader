@@ -159,7 +159,7 @@ public abstract class Analysis {
         return relative_path;
     }
 
-    public abstract void BookSearch(String key_word, CallBack callback, int index);
+    public abstract void BookSearch(String key_word, CallBack callback, String md5);
 
     public abstract void BookDirectory(String url, CallBack callback);
 

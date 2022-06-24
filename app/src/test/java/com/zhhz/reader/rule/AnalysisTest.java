@@ -25,7 +25,7 @@ public class AnalysisTest {
             System.out.printf("耗时 -> %d%n", System.currentTimeMillis() -time);
             System.out.println("\033[0;32mBookSearch -> 通过 : " );
             countDownLatch.countDown();
-        },1);
+        },"1");
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {

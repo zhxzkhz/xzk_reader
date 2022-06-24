@@ -144,7 +144,7 @@ public class JsoupAnalysis extends Analysis {
     }
 
     @Override
-    public void BookSearch(String key_word, CallBack callback, int index) {
+    public void BookSearch(String key_word, CallBack callback, String md5) {
         if (json.getString("encode") != null) {
             try {
                 key_word = URLEncoder.encode(key_word, this.charset);
@@ -172,8 +172,8 @@ public class JsoupAnalysis extends Analysis {
             for (Element dl : list) {
                 SearchResultBean SearchResultBean = new SearchResultBean();
                 SearchResultBean.setName(name);
-                List<Integer> source = new ArrayList<>();
-                source.add(index);
+                List<String> source = new ArrayList<>();
+                source.add(md5);
                 SearchResultBean.setSource(source);
                 String[] rule = parse_array(search.getString("name"));
                 SearchResultBean.setTitle(parse_jsoup(dl.select(rule[0]), rule[1]));
@@ -268,18 +268,18 @@ public class JsoupAnalysis extends Analysis {
                 return;
             }
 
-            LinkedHashMap<String, Object> lhm = CatalogAnalysis(url, element);
+            LinkedHashMap<String, String> lhm = CatalogAnalysis(url, element);
 
             if (catalog.getString("page") != null && catalog.getString("page").length() > 0) {
                 String[] tmp = parse_array(catalog.getString("page"));
                 String page = to_http(parse_jsoup(element.select(tmp[0]), tmp[1] != null ? tmp[1] : "attr->href"), url);
                 if (page.length() > 0 && !page.equals(url)) {
-                    BookDirectory(page, (a1, b1, c1) -> {
-                        if (a1 != null) {
-                            lhm.putAll((LinkedHashMap<String, Object>) a1);
-                            callback.run(lhm, b1, c1);
+                    BookDirectory(page, (data_a, msg_a, label_a) -> {
+                        if (data_a != null) {
+                            lhm.putAll((LinkedHashMap<String, String>) data_a);
+                            callback.run(lhm, msg_a, label_a);
                         } else {
-                            callback.run(null, b1, c1);
+                            callback.run(null, msg_a, label_a);
                         }
                     });
                 } else {
@@ -291,8 +291,8 @@ public class JsoupAnalysis extends Analysis {
         });
     }
 
-    public LinkedHashMap<String, Object> CatalogAnalysis(String url, Element data) {
-        LinkedHashMap<String, Object> lhm = new LinkedHashMap<>();
+    public LinkedHashMap<String, String> CatalogAnalysis(String url, Element data) {
+        LinkedHashMap<String, String> lhm = new LinkedHashMap<>();
         String[] booklet_name = null;
         Elements list;
         JSONObject catalog = json.getJSONObject("catalog");
@@ -360,7 +360,7 @@ public class JsoupAnalysis extends Analysis {
                 booklet_names = element.select(booklet_name[0]);
             }
             if (booklet_names != null && booklet_names.size() > 0) {
-                lhm.put(parse_jsoup(booklet_names, booklet_name[1]), false);
+                lhm.put(parse_jsoup(booklet_names, booklet_name[1]), null);
             } else {
                 String[] chapter = parse_array(catalog.getString("chapter"));
                 String a_url = parse_jsoup(element.select(chapter[0]), chapter[1] != null ? chapter[1] : "attr->href");

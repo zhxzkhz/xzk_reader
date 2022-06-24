@@ -49,12 +49,16 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public AppCompatImageView imageView;
-        public AppCompatTextView textView;
+        public AppCompatTextView title;
+        public AppCompatTextView author;
+        public AppCompatTextView last;
 
         private ViewHolder(View v) {
             super(v);
             this.imageView = v.findViewById(R.id.item_image);
-            this.textView = v.findViewById(R.id.item_title);
+            this.title = v.findViewById(R.id.item_title);
+            this.author = v.findViewById(R.id.item_author);
+            this.last = v.findViewById(R.id.item_latest);
         }
     }
 
@@ -90,7 +94,13 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BookBean book = itemData.get(position);
-        holder.textView.setText(book.getTitle());
+        holder.title.setText(book.getTitle());
+        if (holder.author!=null && book.getAuthor()!=null){
+            holder.author.setText(book.getAuthor());
+        }
+        if (holder.last!=null && book.getAuthor()!=null){
+            holder.last.setText(book.getLatestChapter());
+        }
         if (book.getCover() != null) {
             GlideApp.with(context)
                     .asBitmap()

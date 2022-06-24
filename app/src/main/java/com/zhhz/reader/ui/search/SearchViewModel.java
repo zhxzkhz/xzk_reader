@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.rule.Analysis;
 import com.zhhz.reader.rule.RuleAnalysis;
+import com.zhhz.reader.util.StringUtil;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -24,19 +25,12 @@ public class SearchViewModel extends ViewModel {
         for (Map.Entry<String, Analysis> entry : RuleAnalysis.analyses_map.entrySet()) {
             String s = entry.getKey();
             Analysis analysis = entry.getValue();
-            int index = 0;
-            Iterator<String> iterator = RuleAnalysis.analyses_map.keySet().iterator();
-            for (int i = 0; iterator.hasNext(); i++) {
-                if (s.equals(iterator.next())) {
-                    index = i;
-                    break;
-                }
-            }
+
             long time = System.currentTimeMillis();
             analysis.BookSearch(key, (data, msg, label) -> {
                 System.out.printf("耗时 -> %d%n", System.currentTimeMillis() -time);
                 SearchViewModel.this.data.postValue(((ArrayList<SearchResultBean>) data));
-            }, index);
+            }, StringUtil.getMD5(analysis.getJson().toJSONString()));
         }
     }
 
