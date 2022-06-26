@@ -17,10 +17,10 @@ public class SQLiteUtil {
     @SuppressLint("StaticFieldLeak")
     public static Context context;
 
-    public static void insertBook(BookBean book) {
+    public static void saveBook(BookBean book) {
         helper = new BookSqliteHelper(context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
-        database.execSQL("insert into bookrack (book_id,title,author,cover,categories,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getCategories(),book.getCatalogue(),book.getLatestChapter(), book.isStatus() ? 1 : 0, book.getUpdate_time(), book.getIntro()});
+        database.execSQL("replace into bookrack (book_id,title,author,cover,categories,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getCategories(),book.getCatalogue(),book.getLatestChapter(), book.isStatus() ? 1 : 0, book.getUpdate_time(), book.getIntro()});
         database.close();
     }
 
@@ -68,5 +68,7 @@ public class SQLiteUtil {
         database.close();
         return bookBean;
     }
+
+
 
 }

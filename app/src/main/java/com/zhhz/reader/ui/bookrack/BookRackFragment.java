@@ -2,7 +2,6 @@ package com.zhhz.reader.ui.bookrack;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,13 +35,6 @@ public class BookRackFragment extends Fragment {
         binding = FragmentBookrackBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        //设置点击事件
-        binding.searchView.setOnClickListener(view -> {
-            Intent intent = new Intent(BookRackFragment.this.getContext(), SearchActivity.class);
-            startActivity(intent);
-            BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        });
-
         bookAdapter = new BookAdapter(BookRackFragment.this.getContext());
         bookAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
@@ -50,19 +42,22 @@ public class BookRackFragment extends Fragment {
         binding.rv.setLayoutManager(new GridLayoutManager(BookRackFragment.this.getContext(), 3, GridLayoutManager.VERTICAL, false));
         //固定高度
         binding.rv.setHasFixedSize(true);
-
+        binding.rv.setAdapter(bookAdapter);
         bookAdapter.setOnClickListener(view -> {
             Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
-            Bundle bundle = new Bundle();
             //获取点击事件位置
             int position = binding.rv.getChildAdapterPosition(view);
-            bundle.putSerializable("book",bookAdapter.getItemData().get(position));
-            intent.putExtras(bundle);
+            intent.putExtra("book",bookAdapter.getItemData().get(position));
             startActivity(intent);
             BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
-        binding.rv.setAdapter(bookAdapter);
+        //设置点击事件
+        binding.searchView.setOnClickListener(view -> {
+            Intent intent = new Intent(BookRackFragment.this.getContext(), SearchActivity.class);
+            startActivity(intent);
+            BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
 
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(new BookRackDiffCallback(bookAdapter.getItemData(), list));
@@ -70,7 +65,7 @@ public class BookRackFragment extends Fragment {
             result.dispatchUpdatesTo(bookAdapter);
         });
 
-        new Handler().postDelayed(() -> binding.searchView.callOnClick(),100);
+        //new Handler().postDelayed(() -> binding.searchView.callOnClick(),100);
 
         return root;
     }

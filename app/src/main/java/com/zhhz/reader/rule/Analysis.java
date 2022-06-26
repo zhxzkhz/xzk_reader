@@ -65,7 +65,7 @@ public abstract class Analysis {
         this.json = jsonObject;
         this.url = jsonObject.getString("url");
         this.name = jsonObject.getString("name");
-        this.comic = (boolean) jsonObject.getBooleanValue("comic");
+        this.comic = jsonObject.getBooleanValue("comic");
         this.charset = (String) (jsonObject.getJSONObject("search").getOrDefault("charset", "utf8"));
         if (this.charset == null) this.charset = "utf8";
         this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
@@ -165,7 +165,7 @@ public abstract class Analysis {
 
     public abstract void BookDetail(String url, CallBack callback);
 
-    public abstract void BookChapters(BookBean url, CallBack callback, Object random);
+    public abstract void BookChapters(BookBean book, String url, CallBack callback, Object random);
 
     public abstract void BookContent(String url, CallBack callback, Object random);
 

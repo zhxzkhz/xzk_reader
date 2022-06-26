@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,6 +20,7 @@ import com.zhhz.reader.adapter.CatalogueAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.databinding.FragmentDetailedBinding;
+import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.GlideApp;
 import com.zhhz.reader.view.RecycleViewDivider;
 
@@ -43,24 +43,26 @@ public class DetailedFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mViewModel = new ViewModelProvider(this).get(DetailedViewModel.class);
     }
 
     @SuppressLint({"NotifyDataSetChanged", "SetTextI18n"})
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(DetailedViewModel.class);
         mViewModel.getData().observe(getViewLifecycleOwner(), bean -> {
             bookBean = bean;
             System.out.println(bean);
             binding.detailedText.setText(bean.getTitle());
             binding.detailedLayout.itemTitle.setText(bean.getTitle());
-            GlideApp.with(this)
-                    .asBitmap()
-                    .load(bean.getCover())
-                    .centerCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.DATA)
-                    .into(binding.detailedLayout.itemImage);
+            if (bean.getCover() != null) {
+                GlideApp.with(this)
+                        .asBitmap()
+                        .load(bean.getCover())
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.DATA)
+                        .into(binding.detailedLayout.itemImage);
+            }
             binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
             binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
@@ -72,6 +74,12 @@ public class DetailedFragment extends Fragment {
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
             catalogueAdapter.setItemData(map);
             catalogueAdapter.notifyDataSetChanged();
+
+            int[] pro = mViewModel.readProgress(bookBean.getBook_id());
+            if (pro[0] + pro[1] > 0) {
+                binding.startRead.setText("继续阅读");
+            }
+            binding.startRead.setClickable(true);
         });
         mViewModel.queryDetailed(searchResultBean, 0);
     }
@@ -99,10 +107,29 @@ public class DetailedFragment extends Fragment {
         binding.detailedRv.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.detailedRv.setAdapter(catalogueAdapter);
 
+        binding.startRead.setText("开始阅读");
+        binding.startRead.setClickable(false);
+
+        binding.startRead.setOnClickListener((view) -> {
+            SQLiteUtil.saveBook(bookBean);
+            mViewModel.saveDirectory(bookBean.getBook_id());
+            mViewModel.saveRule(searchResultBean,bookBean.getBook_id(),0);
+            Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
+            intent.putExtra("book",bookBean);
+            startActivity(intent);
+            DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
+
+        binding.detailedBack.setOnClickListener((view) -> requireActivity().finish());
+
         catalogueAdapter.setOnClickListener(view -> {
+            SQLiteUtil.saveBook(bookBean);
             Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
             //获取点击事件位置
             int position = binding.detailedRv.getChildAdapterPosition(view);
+            mViewModel.saveDirectory(bookBean.getBook_id());
+            mViewModel.saveRule(searchResultBean,bookBean.getBook_id(),0);
+            mViewModel.saveProgress(bookBean.getBook_id(), position);
             intent.putExtra("book", bookBean);
             startActivity(intent);
             DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

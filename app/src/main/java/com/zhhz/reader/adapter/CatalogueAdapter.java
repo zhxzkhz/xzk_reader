@@ -1,6 +1,7 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,8 +27,8 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
 
     private LinkedHashMap<String, String> itemData;
 
-    private ArrayList<String> title;
-    private ArrayList<String> url;
+    private final ArrayList<String> title;
+    private final ArrayList<String> url;
 
     private final Context context;
 
@@ -72,7 +73,8 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         AppCompatTextView view = new AppCompatTextView(parent.getContext());
-        view.setPadding(10,5,10,5);
+        view.setPadding(25,15,10,15);
+        view.setGravity(Gravity.CENTER_VERTICAL);
         if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
         }

@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DesignSurface">
+    <option name="filePathToDrawableBackgroundType">
+      <map>
+        <entry key="..\:/Android/reader/app/src/main/res/drawable/no_cover.xml" value="WHITE" />
+      </map>
+    </option>
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Android/reader/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.22" />
@@ -10,6 +15,7 @@
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_launcher_background.xml" value="0.22" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.22" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/ic_settings_black_24.xml" value="0.2355" />
+        <entry key="..\:/Android/reader/app/src/main/res/drawable/no_cover.xml" value="0.2175" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/search_icon.xml" value="0.1955" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/search_rectangle_background.xml" value="0.2355" />
         <entry key="..\:/Android/reader/app/src/main/res/drawable/search_text_icon.xml" value="0.1955" />
@@ -21,6 +27,7 @@
         <entry key="..\:/Android/reader/app/src/main/res/layout/book_linear_item_layout.xml" value="0.25" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/book_reader.xml" value="0.23229166666666667" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_bookrack.xml" value="0.36614583333333334" />
+        <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_bookreader.xml" value="0.19166666666666668" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_detailed.xml" value="0.36614583333333334" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_search.xml" value="0.25" />
         <entry key="..\:/Android/reader/app/src/main/res/layout/fragment_search_result.xml" value="0.1078125" />
@@ -28,6 +35,7 @@
         <entry key="..\:/Android/reader/app/src/main/res/menu/bottom_nav_menu.xml" value="0.17291666666666666" />
       </map>
     </option>
+    <option name="lastSelectedDrawableBackgroundType" value="WHITE" />
   </component>
   <component name="EntryPointsManager">
     <list size="1">

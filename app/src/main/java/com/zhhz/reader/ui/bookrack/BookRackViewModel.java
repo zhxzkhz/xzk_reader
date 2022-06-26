@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.sql.SQLiteUtil;
 
 import java.util.ArrayList;
 
@@ -15,6 +16,7 @@ public class BookRackViewModel extends ViewModel {
     public BookRackViewModel() {
         data = new MutableLiveData<>();
         //data.postValue(SQLiteUtil.readBooks());
+/*
         ArrayList<BookBean> list = new ArrayList<>();
         BookBean bookBean = new BookBean();
         bookBean.setBook_id("1");
@@ -25,8 +27,9 @@ public class BookRackViewModel extends ViewModel {
         list.add(bookBean);
         list.add(bookBean);
         list.add(bookBean);
+*/
 
-        data.setValue(list);
+        data.setValue(SQLiteUtil.readBooks());
     }
 
     public LiveData<ArrayList<BookBean>> getData() {

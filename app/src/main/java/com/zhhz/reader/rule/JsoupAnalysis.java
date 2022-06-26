@@ -5,6 +5,8 @@ import com.zhhz.lua.LuaVirtual;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.Auto_Base64;
+import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.StringUtil;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -248,6 +250,7 @@ public class JsoupAnalysis extends Analysis {
                 book.setCatalogue(str);
             }
 
+            book.setBook_id(StringUtil.getMD5(book.getTitle() + "▶☀◀" + book.getAuthor()));
             callback.run(book, null, null);
         });
     }
@@ -390,13 +393,13 @@ public class JsoupAnalysis extends Analysis {
     }
 
     @Override
-    public void BookChapters(BookBean book, CallBack callback, Object random) {
-        String url = book.getCatalogue();
-        File file = new File(save_path + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
+    public void BookChapters(BookBean book,String url, CallBack callback, Object random) {
+
+        File file = new File(DiskCache.path+ File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
 
         if (!Objects.requireNonNull(file.getParentFile()).isDirectory()) {
-            if (file.getParentFile().mkdirs()) {
-                System.out.println("Chapters -> 创建成功");
+            if (!file.getParentFile().mkdirs()) {
+                callback.run(null,"目录创建失败",random);
             }
         }
         if (file.isFile()) {
@@ -404,7 +407,7 @@ public class JsoupAnalysis extends Analysis {
                 int size = fis.available();
                 byte[] bytes = new byte[size];
                 if (fis.read(bytes) == size) {
-                    callback.run(new String(bytes), random, null);
+                    callback.run(new String(bytes), null , random);
                     return;
                 }
             } catch (IOException e) {
@@ -412,21 +415,18 @@ public class JsoupAnalysis extends Analysis {
             }
         }
 
-        System.out.println("开始请求");
-
         BookContent(url, (data, msg, label) -> {
             if (data == null) {
                 callback.run(null, msg, label);
                 return;
             }
-            FileOutputStream fos;
-            try {
-                fos = new FileOutputStream(file);
+
+            try (FileOutputStream fos = new FileOutputStream(file)){
                 fos.write(((String) data).getBytes());
-                fos.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
             callback.run(data, msg, label);
         }, random);
 

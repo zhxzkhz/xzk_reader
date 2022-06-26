@@ -14,6 +14,7 @@ import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.module.AppGlideModule;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -44,8 +45,7 @@ public class XluaGlideModule extends AppGlideModule {
     @Override
     public void applyOptions(@NonNull Context context, @NonNull GlideBuilder builder) {
         //储存上限10G图片
-        builder.setDiskCache(new DiskLruCacheFactory("/storage/emulated/0/星空/image_discCache/", 10L * 1024 * 1024 * 1024));
-        super.applyOptions(context, builder);
+        builder.setDiskCache(new DiskLruCacheFactory(DiskCache.path + File.separator + "Disc_ImageCache", 10L * 1024 * 1024 * 1024));
     }
 
     @Override

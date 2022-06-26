@@ -34,6 +34,16 @@ public class RuleAnalysis {
         }
         if (bool) analyses_map.put(StringUtil.getMD5(jsonObject.toJSONString()),analysis);
     }
+    public RuleAnalysis(JSONObject jsonObject,Boolean bool) {
+        int type = jsonObject.getIntValue("type");
+        // 0 为 jsoup ， 1 为 json
+        if ( type== 0){
+            analysis = new JsoupAnalysis(jsonObject);
+        } else if (type == 1) {
+
+        }
+        if (bool) analyses_map.put(StringUtil.getMD5(jsonObject.toJSONString()),analysis);
+    }
 
     public void BookSearch(String key_word, Analysis.CallBack callback, String md5){
         analysis.BookSearch(key_word, callback, md5);
@@ -47,8 +57,11 @@ public class RuleAnalysis {
         analysis.BookDetail(url, callback);
     }
 
-    public void BookChapters(BookBean url, Analysis.CallBack callback, Object random){
-        analysis.BookChapters(url, callback, random);
+    public void BookChapters(BookBean bookBean,String url, Analysis.CallBack callback, Object random){
+        analysis.BookChapters(bookBean, url, callback, random);
     }
 
+    public Analysis getAnalysis() {
+        return analysis;
+    }
 }

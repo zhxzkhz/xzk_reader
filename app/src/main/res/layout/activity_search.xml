@@ -33,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="1px"
         app:layout_constraintTop_toBottomOf="@id/search_text"
-        android:background="@color/gray"/>
+        android:background="@color/gray_a"/>
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/search_fragment"

@@ -7,6 +7,7 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/item_image"
+        android:src="@drawable/no_cover"
         android:layout_marginStart="20dp"
         android:layout_width="85dp"
         android:layout_height="119dp"
@@ -19,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="115dp"
-        android:textSize="15sp"
+        android:textSize="16.5sp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"

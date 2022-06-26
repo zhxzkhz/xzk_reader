@@ -35,7 +35,15 @@ public class DiskCache {
     //测试缓存时间调整到 300 分钟
     private static final long cache_time =  1000 * 60 * 300;
 
-    public static String path = null;
+    public static String path = "/storage/emulated/0/星☆空";
+
+    static {
+        if (!new File(path).isDirectory()){
+            if (!new File(path).mkdirs()){
+                path = SQLiteUtil.context.getExternalFilesDir("").getAbsolutePath();
+            }
+        }
+    }
 
     private static void delete_cache(){
 
@@ -72,7 +80,6 @@ public class DiskCache {
         //post提交取消缓存
         if (chain.request().method().equalsIgnoreCase("POST")) return chain.proceed(chain.request());
         File file = DiskCache.urlToFile(chain.request().url(), path);
-        System.out.println("file -》 " + file);
         if (file != null && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file)){
                 int size = fis.available();

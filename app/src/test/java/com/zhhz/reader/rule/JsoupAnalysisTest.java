@@ -78,8 +78,7 @@ public class JsoupAnalysisTest {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         BookBean bookBean = new BookBean();
         bookBean.setBook_id(UUID.randomUUID().toString());
-        bookBean.setCatalogue("https://www.cyewx.com/27/27075/11713970.html");
-        analysis.BookChapters(bookBean, (data, msg, label) -> {
+        analysis.BookChapters(bookBean,"https://www.cyewx.com/27/27075/11713970.html", (data, msg, label) -> {
             assertNotNull(data);
             System.out.println("\033[0;32mbookSearch -> 通过 -> " + data);
             countDownLatch.countDown();
