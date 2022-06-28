@@ -14,8 +14,10 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.zhhz.reader.R;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookreaderBinding;
+import com.zhhz.reader.view.ReadTextView;
 
 import java.util.Objects;
 
@@ -34,11 +36,11 @@ public class BookReaderFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel = new ViewModelProvider(this).get(BookReaderViewModel.class);
+        mViewModel = new ViewModelProvider(requireActivity()).get(BookReaderViewModel.class);
         mViewModel.setBook((BookBean) requireActivity().getIntent().getSerializableExtra("book"));
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint({"ClickableViewAccessibility", "CommitTransaction"})
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -50,7 +52,7 @@ public class BookReaderFragment extends Fragment {
         binding.readerText.setTitleColor(Color.GRAY);
 
         binding.readerText.setUpdateCallBack(() -> {
-            mViewModel.saveProgress(mViewModel.getProgress(),mViewModel.getStart());
+            mViewModel.saveProgress(mViewModel.getProgress(),binding.readerText.getTextStart());
             return false;
         });
 
@@ -74,6 +76,23 @@ public class BookReaderFragment extends Fragment {
                 Toast.makeText(requireContext(), "已经是第一章了", Toast.LENGTH_SHORT).show();
                 return false;
             }
+        });
+
+        binding.readerText.setMenuClick(() -> {
+            System.out.println("BookMenuFragment.getInstance().isVisible() = " + BookMenuFragment.getInstance().isVisible());
+            System.out.println("BookMenuFragment.getInstance().isAdded() = " + BookMenuFragment.getInstance().isAdded());
+            if (BookMenuFragment.getInstance().isVisible()) {
+                getParentFragmentManager().beginTransaction().hide(BookMenuFragment.getInstance()).commitNow();
+            } else {
+                if (BookMenuFragment.getInstance().isAdded()) {
+                    getParentFragmentManager().beginTransaction().show(BookMenuFragment.getInstance()).commitNow();
+                } else {
+                    getParentFragmentManager().beginTransaction()
+                            .add(R.id.container, BookMenuFragment.getInstance())
+                            .commitNow();
+                }
+            }
+            return false;
         });
 
         error_btn = new AppCompatButton(requireContext());
@@ -104,6 +123,9 @@ public class BookReaderFragment extends Fragment {
         });
 
         mViewModel.queryCatalogue();
+        int[] r = mViewModel.readProgress();
+        mViewModel.setProgress(r[0]);
+        mViewModel.setStart(r[1]);
         mViewModel.getContent();
 
     }

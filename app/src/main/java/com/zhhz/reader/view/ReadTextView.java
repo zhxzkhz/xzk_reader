@@ -460,7 +460,7 @@ public class ReadTextView extends View {
         upOnClick = func;
     }
 
-    public void setMenuPage(CallBack func) {
+    public void setMenuClick(CallBack func) {
         menuOnClick = func;
     }
 

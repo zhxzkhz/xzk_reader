@@ -16,12 +16,12 @@
         android:padding="10dp"
         android:scaleType="centerCrop"
         android:src="@drawable/back_icon"
-        app:layout_constraintRight_toLeftOf="@id/detailed_text"
+        app:layout_constraintRight_toLeftOf="@id/detailed_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/detailed_text"
+        android:id="@+id/detailed_title"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:gravity="center_vertical"
@@ -34,7 +34,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        app:layout_constraintTop_toBottomOf="@id/detailed_text"
+        app:layout_constraintTop_toBottomOf="@id/detailed_title"
         android:background="@color/gray_a"/>
 
     <include
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="141dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/detailed_text" />
+        app:layout_constraintTop_toBottomOf="@id/detailed_title" />
 
     <View
         android:layout_width="match_parent"
@@ -93,8 +93,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@+id/start_read"
-        app:layout_constraintTop_toBottomOf="@+id/detailed_update_time"
-        tools:listitem="@layout/recycler_view_item" />
+        app:layout_constraintTop_toBottomOf="@+id/detailed_update_time" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/start_read"

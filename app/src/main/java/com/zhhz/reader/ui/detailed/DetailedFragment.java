@@ -53,7 +53,7 @@ public class DetailedFragment extends Fragment {
         mViewModel.getData().observe(getViewLifecycleOwner(), bean -> {
             bookBean = bean;
             System.out.println(bean);
-            binding.detailedText.setText(bean.getTitle());
+            binding.detailedTitle.setText(bean.getTitle());
             binding.detailedLayout.itemTitle.setText(bean.getTitle());
             if (bean.getCover() != null) {
                 GlideApp.with(this)
@@ -92,7 +92,7 @@ public class DetailedFragment extends Fragment {
         View root = binding.getRoot();
 
         searchResultBean = (SearchResultBean) requireActivity().getIntent().getSerializableExtra("book");
-        binding.detailedText.setText(searchResultBean.getTitle());
+        binding.detailedTitle.setText(searchResultBean.getTitle());
         binding.detailedLayout.itemTitle.setText(searchResultBean.getTitle());
         binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
         binding.detailedLayout.itemLatest.setText(null);

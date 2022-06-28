@@ -9,7 +9,7 @@
     tools:context=".ui.search.SearchFragment">
 
     <com.zhhz.reader.view.SearchEditText
-        android:id="@+id/detailed_text"
+        android:id="@+id/detailed_title"
         android:layout_width="0dp"
         android:layout_height="120dp"
         android:background="@drawable/search_rectangle_background"
@@ -28,6 +28,6 @@
         android:background="@color/transparent"
         android:text="@string/search_clear"
 
-        app:layout_constraintTop_toBottomOf="@+id/detailed_text" />
+        app:layout_constraintTop_toBottomOf="@+id/detailed_title" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

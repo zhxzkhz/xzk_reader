@@ -40,6 +40,8 @@ public class BookReaderViewModel extends ViewModel {
     private String uuid;
 
     private BookBean book;
+    //缓存错误次数
+    private int cache_error = 0;
 
     public BookReaderViewModel() {
         this.data_catalogue = new MutableLiveData<>();
@@ -57,6 +59,10 @@ public class BookReaderViewModel extends ViewModel {
         this.book = book;
     }
 
+    public BookBean getBook() {
+        return book;
+    }
+
     public void queryCatalogue() {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "chapter");
         try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
@@ -72,6 +78,10 @@ public class BookReaderViewModel extends ViewModel {
         getContent(false);
     }
 
+    /**
+     *  获取内容
+     * @param bool 是否往上一页翻
+     */
     public void getContent(boolean bool) {
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
@@ -84,6 +94,10 @@ public class BookReaderViewModel extends ViewModel {
                     map.put("error", msg.toString());
                 } else {
                     map.put("content", data.toString());
+                    //自动缓存下一章
+                    if (isHaveNextChapters()){
+                        cacheBook(progress);
+                    }
                 }
                 data_content.postValue(map);
             }
@@ -101,6 +115,10 @@ public class BookReaderViewModel extends ViewModel {
         }
     }
 
+    /**
+     *  获取阅读章节和位置
+     * @return 章节和位置
+     */
     public int[] readProgress() {
         // 0 章节进度 1 阅读进度
         int[] pro = new int[2];
@@ -136,6 +154,37 @@ public class BookReaderViewModel extends ViewModel {
         this.start = start;
     }
 
+    public void cacheBook(int progress){
+        cacheBook(progress,false);
+    }
+
+    /**
+     * 缓存下一章节
+     * @param progress 开始缓存位置
+     * @param bool 是否缓存所有章节
+     */
+    public void cacheBook(int progress,boolean bool){
+        progress = progress>-1 ? this.progress : progress;
+        progress++;
+        uuid = UUID.randomUUID().toString();
+        String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
+        int finalProgress = progress;
+        rule.BookChapters(book, url, (data, msg, label) -> {
+                if (msg != null) {
+                    cache_error++;
+                    //失败三次取消缓存
+                    if (cache_error < 3){
+                        cacheBook(finalProgress,bool);
+                    } else {
+                        cache_error = 0;
+                    }
+                } else if (bool){
+                    if (isHaveNextChapters(finalProgress)){
+                        cacheBook(finalProgress+1, true);
+                    }
+                }
+        }, uuid);
+    }
 
     public boolean isHaveNextChapters() {
         return isHaveNextChapters(-1);
