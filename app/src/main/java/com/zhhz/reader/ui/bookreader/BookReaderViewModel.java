@@ -96,7 +96,7 @@ public class BookReaderViewModel extends ViewModel {
                     map.put("content", data.toString());
                     //自动缓存下一章
                     if (isHaveNextChapters()){
-                        cacheBook(progress);
+                        //cacheBook(progress);
                     }
                 }
                 data_content.postValue(map);
@@ -109,7 +109,7 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public void saveProgress(int progress, int start) {
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "progress"));) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "progress"))) {
             bufferedWriter.write(progress + "," + start);
         } catch (IOException ignored) {
         }
@@ -127,7 +127,7 @@ public class BookReaderViewModel extends ViewModel {
             saveProgress(0);
             return pro;
         }
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file));) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String[] progress = bufferedReader.readLine().split(",");
             bufferedReader.close();
             pro[0] = Integer.parseInt(progress[0]);
@@ -243,6 +243,13 @@ public class BookReaderViewModel extends ViewModel {
     public void loadPreviousChapters(){
         progress = _havePreviousChapters(progress);
         getContent(true);
+    }
+
+    public void jumpChapters(int pos){
+        start = 0;
+        progress = pos;
+        saveProgress(progress);
+        getContent();
     }
 
     public boolean isSubtitle(int progress) {

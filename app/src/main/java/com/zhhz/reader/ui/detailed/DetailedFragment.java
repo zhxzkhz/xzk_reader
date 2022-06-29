@@ -52,7 +52,6 @@ public class DetailedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mViewModel.getData().observe(getViewLifecycleOwner(), bean -> {
             bookBean = bean;
-            System.out.println(bean);
             binding.detailedTitle.setText(bean.getTitle());
             binding.detailedLayout.itemTitle.setText(bean.getTitle());
             if (bean.getCover() != null) {
@@ -77,7 +76,7 @@ public class DetailedFragment extends Fragment {
 
             int[] pro = mViewModel.readProgress(bookBean.getBook_id());
             if (pro[0] + pro[1] > 0) {
-                binding.startRead.setText("继续阅读");
+                binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
             }
             binding.startRead.setClickable(true);
         });
@@ -97,7 +96,7 @@ public class DetailedFragment extends Fragment {
         binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
         binding.detailedLayout.itemLatest.setText(null);
 
-        catalogueAdapter = new CatalogueAdapter(getContext());
+        catalogueAdapter = new CatalogueAdapter();
         catalogueAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
         binding.detailedRv.setItemAnimator(new DefaultItemAnimator());

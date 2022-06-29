@@ -28,8 +28,7 @@ public class SearchViewModel extends ViewModel {
 
             long time = System.currentTimeMillis();
             analysis.BookSearch(key, (data, msg, label) -> {
-                System.out.printf("耗时 -> %d%n", System.currentTimeMillis() -time);
-                SearchViewModel.this.data.postValue(((ArrayList<SearchResultBean>) data));
+                SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data);
             }, StringUtil.getMD5(analysis.getJson().toJSONString()));
         }
     }

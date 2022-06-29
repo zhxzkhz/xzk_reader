@@ -42,7 +42,7 @@ public abstract class Analysis {
 
     public static JSONObject readText(String path) throws IOException {
         File file = new File(path);
-        if (!file.isFile()) throw new FileNotFoundException("文件未找到");
+        if (!file.isFile()) throw new FileNotFoundException("文件未找到 -> " + file);
         FileInputStream fis;
         try {
             fis = new FileInputStream(path);

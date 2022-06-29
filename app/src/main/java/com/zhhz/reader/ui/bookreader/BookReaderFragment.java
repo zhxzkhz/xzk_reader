@@ -37,10 +37,8 @@ public class BookReaderFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mViewModel = new ViewModelProvider(requireActivity()).get(BookReaderViewModel.class);
-        mViewModel.setBook((BookBean) requireActivity().getIntent().getSerializableExtra("book"));
     }
 
-    @SuppressLint({"ClickableViewAccessibility", "CommitTransaction"})
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -78,19 +76,10 @@ public class BookReaderFragment extends Fragment {
             }
         });
 
+
         binding.readerText.setMenuClick(() -> {
-            System.out.println("BookMenuFragment.getInstance().isVisible() = " + BookMenuFragment.getInstance().isVisible());
-            System.out.println("BookMenuFragment.getInstance().isAdded() = " + BookMenuFragment.getInstance().isAdded());
-            if (BookMenuFragment.getInstance().isVisible()) {
-                getParentFragmentManager().beginTransaction().hide(BookMenuFragment.getInstance()).commitNow();
-            } else {
-                if (BookMenuFragment.getInstance().isAdded()) {
-                    getParentFragmentManager().beginTransaction().show(BookMenuFragment.getInstance()).commitNow();
-                } else {
-                    getParentFragmentManager().beginTransaction()
-                            .add(R.id.container, BookMenuFragment.getInstance())
-                            .commitNow();
-                }
+            if (container != null) {
+                container.callOnClick();
             }
             return false;
         });
@@ -120,6 +109,7 @@ public class BookReaderFragment extends Fragment {
         mViewModel.getChapters().observe(getViewLifecycleOwner(), title -> {
             binding.progress.show();
             binding.readerText.setTitle(title);
+            binding.readerText.setText(null);
         });
 
         mViewModel.queryCatalogue();
@@ -129,4 +119,5 @@ public class BookReaderFragment extends Fragment {
         mViewModel.getContent();
 
     }
+
 }

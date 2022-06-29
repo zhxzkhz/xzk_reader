@@ -1,8 +1,6 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,20 +16,14 @@ import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 
 // ① 创建Adapter
-public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.ViewHolder> {
+public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> {
 
-    private LinkedHashMap<String, String> itemData;
+    private ArrayList<String> itemData;
 
-    private final ArrayList<String> title;
-    //private final ArrayList<String> url;
-
-    private int pos = -1;
+    private final Context context;
 
     private View.OnClickListener onClickListener;
 
@@ -39,50 +31,41 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
         this.onClickListener = onClickListener;
     }
 
-    public void setItemData(LinkedHashMap<String, String> mData) {
+    public void setItemData(ArrayList<String> mData) {
         this.itemData = mData;
-        for (Map.Entry<String, String> entry : mData.entrySet()) {
-            title.add(entry.getKey());
-            //url.add(entry.getValue());
-        }
     }
 
-    public int getPos() {
-        return pos;
-    }
-
-    public void setPos(int pos) {
-        this.pos = pos;
-    }
-
-    public ArrayList<String> getTitle() {
-        return title;
+    public ArrayList<String> getItemData() {
+        return itemData;
     }
 
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
+        public AppCompatImageView imageView;
+        public AppCompatTextView title;
 
-        public AppCompatTextView textView;
-
-        private ViewHolder(AppCompatTextView v) {
+        private ViewHolder(View v) {
             super(v);
-            this.textView = v;
+            this.imageView = v.findViewById(R.id.item_image);
+            this.title = v.findViewById(R.id.item_title);
         }
     }
 
-    public CatalogueAdapter() {
-        itemData = new LinkedHashMap<>();
-        title = new ArrayList<>();
-        //url = new ArrayList<>();
+    public ComicAdapter(Context context) {
+        this.context = context;
+        this.itemData = new ArrayList<>();
+    }
+
+    public ComicAdapter(Context context, ArrayList<String> data) {
+        this.context = context;
+        this.itemData = data;
     }
 
     //③ 在Adapter中实现3个方法
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        AppCompatTextView view = new AppCompatTextView(parent.getContext());
-        view.setPadding(25, 20, 10, 20);
-        view.setGravity(Gravity.CENTER_VERTICAL);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_comicreader, parent, false);
         if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
         }
@@ -91,12 +74,14 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.textView.setText(title.get(position));
-        if (position == pos) {
-            holder.textView.setTextColor(Color.BLUE);
-        } else {
-            holder.textView.setTextColor(Color.BLACK);
-        }
+        //String book = itemData.get(position);
+        //holder.title.setText(book.getTitle());
+            GlideApp.with(context)
+                    .asBitmap()
+                    .diskCacheStrategy(DiskCacheStrategy.DATA)
+                    .centerCrop()
+                    .load(itemData.get(position))
+                    .into(holder.imageView);
     }
 
     @Override
@@ -111,7 +96,7 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
 
     @Override
     public int getItemViewType(int type) {
-        return 1;
+        return 2;
     }
 
 

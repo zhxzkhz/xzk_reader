@@ -3,15 +3,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/book_reader"
-    android:clickable="true"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.bookreader.BookReaderFragment">
+    android:clickable="true"
+    tools:context=".ui.bookreader.ComicReaderFragment">
 
-    <com.zhhz.reader.view.ReadTextView
-        android:id="@+id/reader_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/reader_comic"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,16 +22,16 @@
         android:id="@+id/progress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
         app:indicatorColor="@color/black"
         app:indicatorSize="100dp"
-        app:trackThickness="5dp"
-        app:showDelay="100"
-        android:indeterminate="true"
-        app:trackColor="@color/gray"
-        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:showDelay="100"
+        app:trackColor="@color/gray"
+        app:trackThickness="5dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

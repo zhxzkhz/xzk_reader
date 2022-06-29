@@ -38,7 +38,8 @@ public class DiskCache {
     public static String path = "/storage/emulated/0/星☆空";
 
     static {
-        if (!new File(path).isDirectory()){
+        File f = new File(path);
+        if (!f.isDirectory() || (f.isDirectory() && !f.canWrite())){
             if (!new File(path).mkdirs()){
                 path = SQLiteUtil.context.getExternalFilesDir("").getAbsolutePath();
             }

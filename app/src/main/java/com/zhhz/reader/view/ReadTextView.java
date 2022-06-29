@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
@@ -117,7 +118,7 @@ public class ReadTextView extends View {
 
     public void setStatusBar(int statusBar) {
         this.statusBar = statusBar;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
@@ -127,7 +128,7 @@ public class ReadTextView extends View {
 
     public void setWidthAlign(boolean widthAlign) {
         this.widthAlign = widthAlign;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         AnalyseTextLine();
         invalidate();
     }
@@ -138,7 +139,7 @@ public class ReadTextView extends View {
 
     public void setSpaceRatio(float spaceRatio) {
         this.spaceRatio = spaceRatio;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         hd.removeCallbacks(run);
         run.run();
         invalidate();
@@ -150,7 +151,7 @@ public class ReadTextView extends View {
 
     public void setTest(boolean test) {
         Test = test;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
@@ -173,7 +174,7 @@ public class ReadTextView extends View {
 
     public void setFontSpacingRatio(float fontSpacingRatio) {
         this.fontSpacingRatio = fontSpacingRatio;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
         invalidate();
@@ -188,7 +189,7 @@ public class ReadTextView extends View {
             this.fontSpacing = 0;
         } else {
             this.fontSpacing = fontSpacing;
-            if (text.length() == 0 ) return;
+            if (text.length() == 0) return;
             hd.removeCallbacks(run);
             AnalyseTextLine();
             invalidate();
@@ -201,7 +202,7 @@ public class ReadTextView extends View {
 
     public void setLineSpacing(float lineSpacing) {
         this.lineSpacing = lineSpacing;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
@@ -211,7 +212,7 @@ public class ReadTextView extends View {
 
     public void setTitle(String title) {
         this.title = title;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
@@ -223,7 +224,7 @@ public class ReadTextView extends View {
         this.textSize = textSize;
         textPaint.setTextSize(textSize * density);
         ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize * density, 2) / 2f) - textSize / 12f));
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
         invalidate();
@@ -236,7 +237,7 @@ public class ReadTextView extends View {
     //左右边缘间距
     public void setMarginSpacing(float marginSpacing) {
         this.marginSpacing = marginSpacing;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
         invalidate();
@@ -248,7 +249,7 @@ public class ReadTextView extends View {
 
     public void setLineHeight(float lineHeight) {
         this.lineHeight = lineHeight;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
@@ -258,7 +259,7 @@ public class ReadTextView extends View {
 
     public void setLineHeightRatio(float lineHeightRatio) {
         this.lineHeightRatio = lineHeightRatio;
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
@@ -268,12 +269,12 @@ public class ReadTextView extends View {
 
     private final Runnable run = ReadTextView.this::AnalyseTextLine;
 
-    public void setText(String text) {
+    public void setText(@Nullable String text) {
         setText(text, 0);
     }
 
-    public void setText(@NonNull String text, int progress) {
-        if (text.length() == 0) {
+    public void setText(@Nullable String text, int progress) {
+        if (text == null || text.length() == 0) {
             this.text = "";
             textStart = 0;
             invalidate();
@@ -289,7 +290,7 @@ public class ReadTextView extends View {
             if (getWidth() > 0) {
                 AnalyseTextLine();
                 //长度大于文本大小时自动矫正为最后一页
-                if (textStart >= text.length()){
+                if (textStart >= text.length()) {
                     int y = maxLine % pageMaxLine;
                     y = y == 0 ? pageMaxLine : y;
                     textStart = map.get(maxLine - y + 1);
@@ -299,7 +300,7 @@ public class ReadTextView extends View {
             } else {
                 post(() -> {
                     AnalyseTextLine();
-                    if (textStart >= text.length()){
+                    if (textStart >= text.length()) {
                         int y = maxLine % pageMaxLine;
                         y = y == 0 ? pageMaxLine : y;
                         textStart = map.get(maxLine - y + 1);
@@ -321,7 +322,7 @@ public class ReadTextView extends View {
         Typeface tf = Typeface.createFromFile(path);
         textPaint.setTypeface(tf);
         ttPaint.setTypeface(tf);
-        if (text.length() == 0 ) return true;
+        if (text.length() == 0) return true;
         hd.removeCallbacks(run);
         hd.post(run);
         return true;
@@ -334,11 +335,11 @@ public class ReadTextView extends View {
     public void setColor(@ColorInt int color) {
         this.color = color;
         textPaint.setColor(color);
-        if (text.length() == 0 ) return;
+        if (text.length() == 0) return;
         invalidate();
     }
 
-    public void setTitleColor(@ColorInt int color){
+    public void setTitleColor(@ColorInt int color) {
         ttPaint.setColor(color);
     }
 
@@ -395,61 +396,71 @@ public class ReadTextView extends View {
 
     }
 
+    private final GestureDetector gestureDetector = new GestureDetector(getContext(),new GestureDetector.SimpleOnGestureListener(){
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            if (event.getX() > getWidth() / 3f * 2 && downOnClick != null) {
+                if (textEnd >= text.length()) {
+                    if (!downOnClick.onClick()) return true;
+                }
+                textStart = textEnd;
+                updateCallBack.onClick();
+            } else if (event.getX() < getWidth() / 3f && upOnClick != null) {
+                int posIndex = 0;
+                //等于0代表是上一章，
+                if (textStart == 0) {
+                    if (upOnClick.onClick()) {
+
+                        int posIndex1 = maxLine / pageMaxLine;
+                        //获取能显示完整行数的页面数
+                        posIndex = maxLine - posIndex1 * pageMaxLine;
+                        if (posIndex == 0) {
+                            posIndex = maxLine - pageMaxLine + 1;
+                        } else {
+                            posIndex = posIndex1 * pageMaxLine + 1;
+                        }
+                    } else {
+                        return true;
+                    }
+                } else {
+                    //判断统计行数没，如果没有，则先统计
+                    if (maxLine < 1) {
+                        hd.removeCallbacks(run);
+                        AnalyseTextLine();
+                    }
+                    for (Map.Entry<Integer, Integer> value : map.entrySet()) {
+                        if (value.getValue() == textStart) {
+                            posIndex = value.getKey() - pageMaxLine;
+                            break;
+                        }
+                    }
+                }
+
+                if (map.containsKey(posIndex)) {
+                    //noinspection ConstantConditions
+                    textStart = map.get(posIndex);
+                } else {
+                    Toast.makeText(getContext(), "上一页加载失败", Toast.LENGTH_SHORT).show();
+                }
+
+                updateCallBack.onClick();
+            } else {
+                if (menuOnClick != null) menuOnClick.onClick();
+            }
+            invalidate();
+            return true;
+        }
+    });
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if (event.getX() > getWidth() / 3f * 2 && downOnClick!=null){
-            if (textEnd >= text.length()) {
-                if (!downOnClick.onClick())
-                    return super.onTouchEvent(event);
-            }
-            textStart = textEnd;
-            updateCallBack.onClick();
-        } else if (event.getX() < getWidth() / 3f && upOnClick!=null){
-            int posIndex = 0;
-            //等于0代表是上一章，
-            if (textStart == 0) {
-                if (upOnClick.onClick()) {
-
-                    int posIndex1 = maxLine / pageMaxLine;
-                    //获取能显示完整行数的页面数
-                    posIndex = maxLine - posIndex1 * pageMaxLine;
-                    if (posIndex == 0) {
-                        posIndex = maxLine - pageMaxLine + 1;
-                    } else {
-                        posIndex = posIndex1 * pageMaxLine + 1;
-                    }
-                } else {
-                    return super.onTouchEvent(event);
-                }
-            } else {
-                //判断统计行数没，如果没有，则先统计
-                if (maxLine < 1) {
-                    hd.removeCallbacks(run);
-                    AnalyseTextLine();
-                }
-                for (Map.Entry<Integer, Integer> value : map.entrySet()) {
-                    if (value.getValue() == textStart) {
-                        posIndex = value.getKey() - pageMaxLine;
-                        break;
-                    }
-                }
-            }
-
-            if (map.containsKey(posIndex)) {
-                //noinspection ConstantConditions
-                textStart = map.get(posIndex);
-            } else {
-                Toast.makeText(getContext(), "上一页加载失败", Toast.LENGTH_SHORT).show();
-            }
-
-            updateCallBack.onClick();
-        } else {
-            if (menuOnClick!=null)menuOnClick.onClick();
-        }
-        invalidate();
-        return super.onTouchEvent(event);
+        return gestureDetector.onTouchEvent(event);
     }
 
     public void setDownPage(CallBack func) {
@@ -464,7 +475,7 @@ public class ReadTextView extends View {
         menuOnClick = func;
     }
 
-    public void setUpdateCallBack(CallBack func){
+    public void setUpdateCallBack(CallBack func) {
         updateCallBack = func;
     }
 
@@ -548,7 +559,7 @@ public class ReadTextView extends View {
                 font_x[tmp_index + fontIndex - 1] = minWidth;
 
                 font_width = textPaint.measureText(textStr);
-                if (textStr.equals("\n")){
+                if (textStr.equals("\n")) {
                     font_width = 0;
                     //修复首行缩进绘制时的判断问题，当换行的宽度小于首行缩进时出现问题
                     if (minWidth < indentation_width) {
@@ -570,7 +581,7 @@ public class ReadTextView extends View {
                 }
 
                 if (textStr.equals("\n")) {
-                    if (tmp_index + fontIndex + 1 <= text.length() && text.substring(tmp_index + fontIndex, tmp_index + fontIndex + 1).equals("\n")){
+                    if (tmp_index + fontIndex + 1 <= text.length() && text.substring(tmp_index + fontIndex, tmp_index + fontIndex + 1).equals("\n")) {
                         fontIndex++;
                         font_x[tmp_index + fontIndex - 1] = minWidth;
                     } else {
@@ -586,7 +597,7 @@ public class ReadTextView extends View {
                 float x;
                 if (tmp_index + fontIndex < font_x.length) {
                     x = (font_x[tmp_index + fontIndex] - font_width * (fontSpacingRatio - 1) - fontSpacing);
-                    if (x > 0 ) {
+                    if (x > 0) {
                         wordSpace = (widthPixels - x) / (fontIndex - 1);
                     }
                 } else {
@@ -649,8 +660,6 @@ public class ReadTextView extends View {
         //return pageMaxLine;
     }
 
-
-    @SuppressLint("NewApi")
     DecimalFormat format1 = new DecimalFormat("##%");
 
     //一行字体位置数组
@@ -772,12 +781,12 @@ public class ReadTextView extends View {
         }
         textEnd = tts;
 
-        @SuppressLint({"NewApi", "LocalSuppress"}) String jd = format1.format(((float) (textEnd)) / text.length());
+        String jd = format1.format(((float) (textEnd)) / text.length());
         canvas.drawText(jd, getWidth() * 0.97f - marginSpacing - ttPaint.measureText(jd), getHeight() - ttPaint.getTextSize() * 0.85f, ttPaint);
 
     }
 
-    public interface CallBack{
+    public interface CallBack {
         public boolean onClick();
     }
 
