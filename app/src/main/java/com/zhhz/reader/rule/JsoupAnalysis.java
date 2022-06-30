@@ -12,6 +12,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import org.mozilla.javascript.NativeArray;
+import org.mozilla.javascript.NativeJavaObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +31,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.script.ScriptException;
+
 public class JsoupAnalysis extends Analysis {
 
     //特殊表
@@ -39,11 +43,13 @@ public class JsoupAnalysis extends Analysis {
     public JsoupAnalysis(String path) throws IOException {
         super(path);
         replace_init();
+        DiskCache.engine.put("jsoup_analysis",this);
     }
 
     public JsoupAnalysis(JSONObject jsonObject) {
         super(jsonObject);
         replace_init();
+        DiskCache.engine.put("jsoup_analysis",this);
     }
 
     private void replace_init() {
@@ -497,7 +503,16 @@ public class JsoupAnalysis extends Analysis {
 
             //执行lua
             if (chapter.getString("lua") != null) {
-                str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")), element, str, url, callback, label, JsoupAnalysis.this);
+                //str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")), element, str, url, callback, label, JsoupAnalysis.this);
+
+                try {
+                    DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("lua")));
+                    Object result = DiskCache.engine.get("result");
+
+                } catch (ScriptException e) {
+                    e.printStackTrace();
+                    str = null ;
+                }
                 //返回false代表 lua 内部处理
                 if (str != null && str.equals("false")) {
                     return;
@@ -525,5 +540,42 @@ public class JsoupAnalysis extends Analysis {
         });
     }
 
+    /**
+     * 执行JS
+     *
+     * @param js js代码
+     * @param functionParams js方法参数
+     * @return 执行结果
+     */
+    private String runScript(String js, Object[] functionParams) {
 
+        try {
+            DiskCache.engine.put("element",functionParams[0]);
+            DiskCache.engine.put("str",functionParams[0]);
+            DiskCache.engine.put("url",functionParams[0]);
+            DiskCache.engine.put("callback",functionParams[0]);
+            DiskCache.engine.put("label",functionParams[0]);
+
+            DiskCache.engine.eval(js);
+            Object value = DiskCache.engine.get("result");
+            if (value == null){
+                return null;
+            }
+            if (value instanceof NativeArray){
+                NativeArray array = (NativeArray) value;
+                StringBuilder stringBuilder = new StringBuilder();
+                for (Object o : array) {
+                    stringBuilder.append(o).append("\n");
+                }
+                stringBuilder.delete(stringBuilder.length()-1,stringBuilder.length());
+                return stringBuilder.toString();
+            } else if(value.getClass() == NativeJavaObject.class){
+                return ((NativeJavaObject)value).unwrap().toString();
+            }
+            return value.toString();
+        } catch (ScriptException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

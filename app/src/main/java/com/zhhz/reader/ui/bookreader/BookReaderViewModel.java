@@ -96,7 +96,7 @@ public class BookReaderViewModel extends ViewModel {
                     map.put("content", data.toString());
                     //自动缓存下一章
                     if (isHaveNextChapters()){
-                        //cacheBook(progress);
+                        cacheBook(progress);
                     }
                 }
                 data_content.postValue(map);
