@@ -60,7 +60,7 @@ public class ComicReaderFragment extends Fragment {
         binding.readerComic.setLayoutManager(new LinearLayoutManager(getContext()));
         //固定高度
         binding.readerComic.setHasFixedSize(true);
-        binding.readerComic.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
+        //binding.readerComic.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.readerComic.setAdapter(comicAdapter);
 
         ListPreloader.PreloadModelProvider<String> preloadModelProvider = new ListPreloader.PreloadModelProvider<String>(){

@@ -42,17 +42,17 @@ public class JsoupAnalysis extends Analysis {
 
     public JsoupAnalysis(String path) throws IOException {
         super(path);
-        replace_init();
-        DiskCache.engine.put("jsoup_analysis",this);
+        init();
     }
 
     public JsoupAnalysis(JSONObject jsonObject) {
         super(jsonObject);
-        replace_init();
-        DiskCache.engine.put("jsoup_analysis",this);
+        init();
     }
 
-    private void replace_init() {
+    private void init() {
+        DiskCache.engine.put("xlua_rule",this);
+        DiskCache.engine.put("xlua_classloader",ClassLoader.getSystemClassLoader());
         replace_map = new HashMap<>();
         replace_map.put("<p>", "");
         replace_map.put("</p>", "");
@@ -247,9 +247,18 @@ public class JsoupAnalysis extends Analysis {
             }
             if (detail_x.getString("catalog") == null) {
                 book.setCatalogue(url);
-            } else if (detail_x.getString("catalog").startsWith("true@")) {
-                String x_url = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(5)), element, JsoupAnalysis.this);
-                book.setCatalogue(x_url);
+            } else if (detail_x.getString("catalog").startsWith("js@")) {
+                //String x_url = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(5)), element, JsoupAnalysis.this);
+                try {
+                    DiskCache.engine.put("element",element);
+                    DiskCache.engine.put("url",url);
+                    DiskCache.engine.put("callback",callback);
+                    DiskCache.engine.eval(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(3)));
+                } catch (ScriptException e) {
+                    e.printStackTrace();
+                }
+                //DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
+                book.setCatalogue(DiskCache.engine.get("result").toString());
             } else {
                 String[] obj = parse_array(detail_x.getString("catalog"));
                 String str = to_http(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : "attr->href"), url);
@@ -272,8 +281,16 @@ public class JsoupAnalysis extends Analysis {
             JSONObject catalog = json.getJSONObject("catalog");
             Element element = (Element) data;
 
-            if (catalog.getString("lua") != null) {
-                LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(catalog.getString("lua")), url, element, callback, JsoupAnalysis.this);
+            if (catalog.getString("js") != null) {
+                //LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(catalog.getString("lua")), url, element, callback, JsoupAnalysis.this);
+                try {
+                    DiskCache.engine.put("element",element);
+                    DiskCache.engine.put("url",url);
+                    DiskCache.engine.put("callback",callback);
+                    DiskCache.engine.eval(Auto_Base64.decodeToString(catalog.getString("js")));
+                } catch (ScriptException e) {
+                    e.printStackTrace();
+                }
                 return;
             }
 
@@ -502,13 +519,30 @@ public class JsoupAnalysis extends Analysis {
             str = str.replaceAll("^\n*|\n*$", "");
 
             //执行lua
-            if (chapter.getString("lua") != null) {
+            if (chapter.getString("js") != null) {
                 //str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")), element, str, url, callback, label, JsoupAnalysis.this);
-
+                DiskCache.engine.put("element",element);
+                DiskCache.engine.put("data",str);
+                DiskCache.engine.put("url",url);
+                DiskCache.engine.put("callback",callback);
+                DiskCache.engine.put("label",label);
+                DiskCache.engine.put("out",System.out);
                 try {
-                    DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("lua")));
-                    Object result = DiskCache.engine.get("result");
-
+                    DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
+                    Object value = DiskCache.engine.get("result");
+                    if (value instanceof NativeArray){
+                        NativeArray array = (NativeArray) value;
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (Object o : array) {
+                            stringBuilder.append(o).append("\n");
+                        }
+                        stringBuilder.delete(stringBuilder.length()-1,stringBuilder.length());
+                        str = stringBuilder.toString();
+                    } else if(value.getClass() == NativeJavaObject.class){
+                        str = ((NativeJavaObject)value).unwrap().toString();
+                    } else {
+                        str = value.toString();
+                    }
                 } catch (ScriptException e) {
                     e.printStackTrace();
                     str = null ;
@@ -544,17 +578,17 @@ public class JsoupAnalysis extends Analysis {
      * 执行JS
      *
      * @param js js代码
-     * @param functionParams js方法参数
+     * @param args js方法参数
      * @return 执行结果
      */
-    private String runScript(String js, Object[] functionParams) {
+    private String runScript(String js, Object[] args) {
 
         try {
-            DiskCache.engine.put("element",functionParams[0]);
-            DiskCache.engine.put("str",functionParams[0]);
-            DiskCache.engine.put("url",functionParams[0]);
-            DiskCache.engine.put("callback",functionParams[0]);
-            DiskCache.engine.put("label",functionParams[0]);
+            DiskCache.engine.put("element",args[0]);
+            DiskCache.engine.put("data",args[0]);
+            DiskCache.engine.put("url",args[0]);
+            DiskCache.engine.put("callback",args[0]);
+            DiskCache.engine.put("label",args[0]);
 
             DiskCache.engine.eval(js);
             Object value = DiskCache.engine.get("result");

@@ -1,16 +1,24 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.BitmapImageViewTarget;
+import com.bumptech.glide.request.target.Target;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.GlideApp;
@@ -65,12 +73,14 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_comicreader, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comic_reader, parent, false);
         if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
         }
         return new ViewHolder(view);
     }
+
+    private final FrameLayout.LayoutParams layout_params = new FrameLayout.LayoutParams(-1, -2);
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -79,7 +89,20 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
             GlideApp.with(context)
                     .asBitmap()
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
-                    .centerCrop()
+                    .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                    .listener(new RequestListener<Bitmap>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                           ((BitmapImageViewTarget) target).getView().setLayoutParams(layout_params);
+                            ((FrameLayout)((BitmapImageViewTarget) target).getView().getParent()).setMinimumHeight(0);
+                            return false;
+                        }
+                    })
                     .load(itemData.get(position))
                     .into(holder.imageView);
     }

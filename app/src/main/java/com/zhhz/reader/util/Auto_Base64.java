@@ -47,7 +47,6 @@ public class Auto_Base64 {
     public static byte[] decode(String str) {
         try {
             if (isWin) {
-                System.out.println(decoder);
                 return (byte[]) Decoder.getMethod("decode",String.class).invoke(decoder,str);
             } else {
                 return (byte[]) Base64.getDeclaredMethod("decode",String.class,int.class).invoke(null,str, 0);
@@ -79,7 +78,7 @@ public class Auto_Base64 {
     public static byte[] encode(String str) {
         try {
             if (isWin) {
-                return (byte[]) Encoder.getMethod("encode",byte[].class).invoke(encoder, str.getBytes());
+                return (byte[]) Encoder.getMethod("encode",byte[].class).invoke(encoder, (Object) str.getBytes());
             } else {
                 return (byte[]) Base64.getDeclaredMethod("encode",String.class,int.class).invoke(null,str, 0);
             }
