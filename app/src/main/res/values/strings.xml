@@ -7,4 +7,5 @@
     <string name="search_clear">取消</string>
     <string name="detailed_intro">简介：</string>
     <string name="detailed_update_time">目录</string>
+    <string name="progress_text">%1$d/%2$d</string>
 </resources>

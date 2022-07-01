@@ -6,6 +6,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -76,11 +77,13 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
         //url = new ArrayList<>();
     }
 
+    private final FrameLayout.LayoutParams layoutParams= new FrameLayout.LayoutParams(-1,-2);
     //③ 在Adapter中实现3个方法
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         AppCompatTextView view = new AppCompatTextView(parent.getContext());
+        view.setLayoutParams(layoutParams);
         view.setPadding(25, 20, 10, 20);
         view.setGravity(Gravity.CENTER_VERTICAL);
         if (onClickListener != null) {

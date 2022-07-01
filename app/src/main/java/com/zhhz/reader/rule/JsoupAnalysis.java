@@ -574,42 +574,4 @@ public class JsoupAnalysis extends Analysis {
         });
     }
 
-    /**
-     * 执行JS
-     *
-     * @param js js代码
-     * @param args js方法参数
-     * @return 执行结果
-     */
-    private String runScript(String js, Object[] args) {
-
-        try {
-            DiskCache.engine.put("element",args[0]);
-            DiskCache.engine.put("data",args[0]);
-            DiskCache.engine.put("url",args[0]);
-            DiskCache.engine.put("callback",args[0]);
-            DiskCache.engine.put("label",args[0]);
-
-            DiskCache.engine.eval(js);
-            Object value = DiskCache.engine.get("result");
-            if (value == null){
-                return null;
-            }
-            if (value instanceof NativeArray){
-                NativeArray array = (NativeArray) value;
-                StringBuilder stringBuilder = new StringBuilder();
-                for (Object o : array) {
-                    stringBuilder.append(o).append("\n");
-                }
-                stringBuilder.delete(stringBuilder.length()-1,stringBuilder.length());
-                return stringBuilder.toString();
-            } else if(value.getClass() == NativeJavaObject.class){
-                return ((NativeJavaObject)value).unwrap().toString();
-            }
-            return value.toString();
-        } catch (ScriptException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 }

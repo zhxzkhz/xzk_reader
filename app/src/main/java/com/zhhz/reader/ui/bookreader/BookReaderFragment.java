@@ -96,13 +96,13 @@ public class BookReaderFragment extends Fragment {
         mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
             binding.progress.hide();
             if (map.containsKey("error")){
-                binding.readerText.setText(map.get("error"));
+                binding.readerText.setText(String.valueOf(map.get("error")));
                 binding.bookReader.addView(error_btn,binding.progress.getLayoutParams());
             } else {
                 if (Objects.equals(map.get("end"), "true")) {
-                    mViewModel.setStart(Objects.requireNonNull(map.get("content")).length());
+                    mViewModel.setStart(String.valueOf(map.get("content")).length());
                 }
-                binding.readerText.setText(Objects.requireNonNull(map.get("content")),mViewModel.getStart());
+                binding.readerText.setText(String.valueOf(map.get("content")),mViewModel.getStart());
             }
         });
 

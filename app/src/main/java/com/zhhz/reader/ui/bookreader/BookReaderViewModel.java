@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -25,11 +28,11 @@ public class BookReaderViewModel extends ViewModel {
 
     private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
 
-    private final MutableLiveData<HashMap<String, String>> data_content;
+    private final MutableLiveData<HashMap<String, Object>> data_content;
 
     private final MutableLiveData<String> chapters;
 
-    private final ArrayList<String> catalogue;
+    public final ArrayList<String> catalogue;
 
     private RuleAnalysis rule;
     //目录进度
@@ -43,11 +46,30 @@ public class BookReaderViewModel extends ViewModel {
     //缓存错误次数
     private int cache_error = 0;
 
+    private ArrayList<GlideUrl> comic_list;
+
+    private LazyHeaders headers;
+    //章节页数表，用于无限滑动记录章节页数
+    public ArrayList<Integer> comic_page;
+    //用于存储正在加载的章节
+    private ArrayList<Integer> comic_load;
+
+    //用于判断下一章或者上一张是否加载
+    private Boolean loading;
+
+    public Boolean getLoading() {
+        return loading;
+    }
+
+
     public BookReaderViewModel() {
         this.data_catalogue = new MutableLiveData<>();
         this.data_content = new MutableLiveData<>();
         this.chapters = new MutableLiveData<>();
         this.catalogue = new ArrayList<>();
+        this.comic_list = new ArrayList<>();
+        this.comic_page = new ArrayList<>();
+        this.comic_load = new ArrayList<>();
     }
 
     public void setBook(BookBean book) {
@@ -56,6 +78,24 @@ public class BookReaderViewModel extends ViewModel {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        LazyHeaders.Builder header = new LazyHeaders.Builder();
+        if (rule.getAnalysis().getJson().get("img_header") != null) {
+            if (rule.getAnalysis().getJson().getJSONObject("img_header").get("header") != null) {
+                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getJSONObject("img_header").getString("header"));
+                for (Map.Entry<String, Object> entry : header_x.entrySet()) {
+                    header.addHeader(entry.getKey(), (String) entry.getValue());
+                }
+                header_x.clear();
+            }
+            if (rule.getAnalysis().getJson().getJSONObject("img_header").get("reuse") != null) {
+                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getString("header"));
+                for (Map.Entry<String, Object> entry : header_x.entrySet()) {
+                    header.addHeader(entry.getKey(), (String) entry.getValue());
+                }
+                header_x.clear();
+            }
+        }
+        headers = header.build();
         this.book = book;
     }
 
@@ -79,7 +119,8 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     /**
-     *  获取内容
+     * 获取内容
+     *
      * @param bool 是否往上一页翻
      */
     public void getContent(boolean bool) {
@@ -87,17 +128,54 @@ public class BookReaderViewModel extends ViewModel {
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         rule.BookChapters(book, url, (data, msg, label) -> {
-            HashMap<String, String> map = new HashMap<>();
-            map.put("end",String.valueOf(bool));
+            loading = false;
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("end", String.valueOf(bool));
             if (uuid.equals(label)) {
                 if (msg != null) {
                     map.put("error", msg.toString());
                 } else {
                     map.put("content", data.toString());
                     //自动缓存下一章
-                    if (isHaveNextChapters()){
+                    if (isHaveNextChapters()) {
                         cacheBook(progress);
                     }
+                }
+                data_content.postValue(map);
+            }
+        }, uuid);
+    }
+
+    /**
+     * 获取内容
+     *
+     * @param bool 是否往上一页翻
+     */
+    public void getContentComic(boolean bool) {
+        if (comic_load.contains(progress)) {
+            return;
+        }
+        loading = true;
+        comic_list.clear();
+        comic_load.add(progress);
+        uuid = UUID.randomUUID().toString();
+        chapters.setValue(catalogue.get(progress));
+        String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
+        rule.BookChapters(book, url, (data, msg, label) -> {
+            comic_load.remove((Object) progress);
+            loading = false;
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("end", String.valueOf(bool));
+            if (uuid.equals(label)) {
+                if (msg != null) {
+                    map.put("error", msg.toString());
+                } else {
+                    String[] arr = data.toString().split("\n");
+                    for (String s : arr) {
+                        comic_list.add(new GlideUrl(s, headers));
+                    }
+                    comic_page.add(comic_list.size());
+                    map.put("content", comic_list);
                 }
                 data_content.postValue(map);
             }
@@ -108,6 +186,11 @@ public class BookReaderViewModel extends ViewModel {
         saveProgress(progress, 0);
     }
 
+    public void saveProgressComic() {
+        int[] a = current_progress_page(start);
+        saveProgress(a[0],a[1]);
+    }
+
     public void saveProgress(int progress, int start) {
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "progress"))) {
             bufferedWriter.write(progress + "," + start);
@@ -115,8 +198,11 @@ public class BookReaderViewModel extends ViewModel {
         }
     }
 
+
+
     /**
-     *  获取阅读章节和位置
+     * 获取阅读章节和位置
+     *
      * @return 章节和位置
      */
     public int[] readProgress() {
@@ -138,6 +224,10 @@ public class BookReaderViewModel extends ViewModel {
         }
     }
 
+    public ArrayList<GlideUrl> getComic_list() {
+        return comic_list;
+    }
+
     public int getProgress() {
         return progress;
     }
@@ -154,35 +244,36 @@ public class BookReaderViewModel extends ViewModel {
         this.start = start;
     }
 
-    public void cacheBook(int progress){
-        cacheBook(progress,false);
+    public void cacheBook(int progress) {
+        cacheBook(progress, false);
     }
 
     /**
      * 缓存下一章节
+     *
      * @param progress 开始缓存位置
-     * @param bool 是否缓存所有章节
+     * @param bool     是否缓存所有章节
      */
-    public void cacheBook(int progress,boolean bool){
-        progress = progress>-1 ? this.progress : progress;
+    public void cacheBook(int progress, boolean bool) {
+        progress = progress > -1 ? this.progress : progress;
         progress++;
         uuid = UUID.randomUUID().toString();
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         int finalProgress = progress;
         rule.BookChapters(book, url, (data, msg, label) -> {
-                if (msg != null) {
-                    cache_error++;
-                    //失败三次取消缓存
-                    if (cache_error < 3){
-                        cacheBook(finalProgress,bool);
-                    } else {
-                        cache_error = 0;
-                    }
-                } else if (bool){
-                    if (isHaveNextChapters(finalProgress)){
-                        cacheBook(finalProgress+1, true);
-                    }
+            if (msg != null) {
+                cache_error++;
+                //失败三次取消缓存
+                if (cache_error < 3) {
+                    cacheBook(finalProgress, bool);
+                } else {
+                    cache_error = 0;
                 }
+            } else if (bool) {
+                if (isHaveNextChapters(finalProgress)) {
+                    cacheBook(finalProgress + 1, true);
+                }
+            }
         }, uuid);
     }
 
@@ -237,26 +328,78 @@ public class BookReaderViewModel extends ViewModel {
 
     public void loadNextChapters() {
         progress = _haveNextChapters(progress);
-        getContent();
+        if (isComic()) {
+            getContentComic(false);
+        } else {
+            getContent();
+        }
     }
 
-    public void loadPreviousChapters(){
+    public void loadPreviousChapters() {
         progress = _havePreviousChapters(progress);
-        getContent(true);
+        if (isComic()) {
+            getContentComic(false);
+        } else {
+            getContent(true);
+        }
     }
 
-    public void jumpChapters(int pos){
+    public void jumpChapters(int pos) {
         start = 0;
         progress = pos;
-        saveProgress(progress);
-        getContent();
+        comic_list.clear();
+        comic_page.clear();
+        if (isComic()) {
+            saveProgressComic();
+            getContentComic(false);
+        } else {
+            saveProgress(progress);
+            getContent();
+        }
+    }
+
+    /**
+     * 同于获取实际位置
+     *
+     * @param current_page 当前位置
+     * @return 实际位置
+     */
+    public int[] current_progress_page(int current_page) {
+        int[] pages = new int[2];
+        int index = 0;
+        // 当前总页数减去每章页数，得到当前的页数的位置
+        for (; index < comic_page.size(); index++) {
+            if (current_page > comic_page.get(index)) {
+                current_page = current_page - comic_page.get(index);
+            } else {
+                break;
+            }
+        }
+
+        //计算章节中间的卷数量（卷指 1-50 章节的标题）
+        int temp = 0;
+        for (int i = 0; i <= index; i++) {
+            while (isSubtitle(i + temp)) {
+                temp++;
+            }
+        }
+        //卷 + 章节 = 实际位置
+        pages[0] = index + temp;
+
+        pages[1] = current_page;
+        return pages;
     }
 
     public boolean isSubtitle(int progress) {
         return Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress)) == null;
     }
 
-    public boolean isComic(){
+    public boolean isSubtitleTest(int progress) {
+        System.out.println("catalogue.get(progress) = " + catalogue.get(progress));
+        return catalogue.get(progress) == null;
+    }
+
+    public boolean isComic() {
         return rule.getAnalysis().isComic();
     }
 
@@ -264,7 +407,7 @@ public class BookReaderViewModel extends ViewModel {
         return data_catalogue;
     }
 
-    public MutableLiveData<HashMap<String, String>> getDataContent() {
+    public MutableLiveData<HashMap<String, Object>> getDataContent() {
         return data_content;
     }
 

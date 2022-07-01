@@ -11,11 +11,14 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.ListPreloader;
 import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.integration.recyclerview.RecyclerViewPreloader;
+import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.util.ViewPreloadSizeProvider;
+import com.zhhz.reader.R;
 import com.zhhz.reader.adapter.ComicAdapter;
 import com.zhhz.reader.databinding.FragmentComicreaderBinding;
 import com.zhhz.reader.util.GlideApp;
@@ -63,11 +66,11 @@ public class ComicReaderFragment extends Fragment {
         //binding.readerComic.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.readerComic.setAdapter(comicAdapter);
 
-        ListPreloader.PreloadModelProvider<String> preloadModelProvider = new ListPreloader.PreloadModelProvider<String>(){
+        ListPreloader.PreloadModelProvider<GlideUrl> preloadModelProvider = new ListPreloader.PreloadModelProvider<GlideUrl>(){
 
             @NonNull
             @Override
-            public List<String> getPreloadItems(int position) {
+            public List<GlideUrl> getPreloadItems(int position) {
                 //imagesList是你的图片地址列表
                 if(position < comicAdapter.getItemData().size()){
                     //告诉RecyclerViewPreloader每个item项需要加载的图片url集合
@@ -79,15 +82,70 @@ public class ComicReaderFragment extends Fragment {
 
             @NonNull
             @Override
-            public RequestBuilder<?> getPreloadRequestBuilder(@NonNull String url) {
+            public RequestBuilder<?> getPreloadRequestBuilder(@NonNull GlideUrl url) {
                 //返回一个加载图片的RequestBuilder
                 return GlideApp.with(requireActivity()).load(url);
             }
         };
-        ViewPreloadSizeProvider<String> sizeProvider = new ViewPreloadSizeProvider<>();
-        RecyclerViewPreloader<String> preloaded = new RecyclerViewPreloader<>(GlideApp.with(binding.readerComic),
+
+        ViewPreloadSizeProvider<GlideUrl> sizeProvider = new ViewPreloadSizeProvider<>();
+        RecyclerViewPreloader<GlideUrl> preloaded = new RecyclerViewPreloader<>(GlideApp.with(binding.readerComic),
                 preloadModelProvider, sizeProvider, 10);
         binding.readerComic.addOnScrollListener(preloaded);
+
+        binding.readerComic.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                @NonNull LinearLayoutManager layout_manager = (LinearLayoutManager) Objects.requireNonNull(recyclerView.getLayoutManager());
+                //最后一个完全可见的视图位置
+                int last_completely = layout_manager.findLastCompletelyVisibleItemPosition();
+                //第一个完全可见的视图位置
+                int first_completely = layout_manager.findFirstCompletelyVisibleItemPosition();
+                //最后一个可见的视图位置
+                int last = layout_manager.findLastVisibleItemPosition();
+                //第一个可见的视图位置
+                int first = layout_manager.findFirstVisibleItemPosition();
+                int count =  comicAdapter.getItemData().size();
+                int page;
+                //dy 大于0代表往上拉
+                if (dy > 0) {
+                    if (last_completely == count) {
+                        page = count;
+                    } else if (first_completely == -1) {
+                        page = first + 1;
+                    } else {
+                        page = first_completely + 1;
+                    }
+                } else if (dy < 0) {
+                    if (first_completely == 0 ){
+                        page = 1;
+                    } else if (last_completely == -1) {
+                        page = last + 1;
+                    } else {
+                        page = last_completely;
+                    }
+                } else {
+                    page = mViewModel.getStart();
+                }
+                binding.progressText.setText(requireContext().getString(R.string.progress_text,page,count));
+
+                if (mViewModel.getStart() != page) {
+                    mViewModel.setStart(page);
+                    mViewModel.saveProgressComic();
+                    if (page + 7 > count && !mViewModel.getLoading() && mViewModel.isHaveNextChapters(mViewModel.current_progress_page(page)[0])){
+                        mViewModel.loadNextChapters();
+                    }
+                }
+
+            }
+        });
 
         error_btn = new AppCompatButton(requireContext());
         error_btn.setText("重新加载");
@@ -103,10 +161,10 @@ public class ComicReaderFragment extends Fragment {
             if (map.containsKey("error")){
                 binding.bookReader.addView(error_btn,binding.progress.getLayoutParams());
             } else {
-                String[] arr = Objects.requireNonNull(map.get("content")).split("\n");
                 int length = comicAdapter.getItemData().size();
-                comicAdapter.getItemData().addAll(Arrays.asList(arr));
-                comicAdapter.notifyItemRangeInserted(length,arr.length);
+                comicAdapter.getItemData().addAll(mViewModel.getComic_list());
+                comicAdapter.notifyItemRangeInserted(length,mViewModel.getComic_list().size());
+                binding.progressText.setText(requireContext().getString(R.string.progress_text,mViewModel.getStart(),length));
             }
         });
 
@@ -118,7 +176,7 @@ public class ComicReaderFragment extends Fragment {
         int[] r = mViewModel.readProgress();
         mViewModel.setProgress(r[0]);
         mViewModel.setStart(r[1]);
-        mViewModel.getContent();
+        mViewModel.getContentComic(false);
 
     }
 

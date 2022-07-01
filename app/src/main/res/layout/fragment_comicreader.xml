@@ -34,4 +34,11 @@
         app:trackColor="@color/gray"
         app:trackThickness="5dp" />
 
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/progress_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

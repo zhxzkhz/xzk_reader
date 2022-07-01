@@ -80,7 +80,10 @@ public class BookMenuFragment extends Fragment {
             }
         });
 
-        catalogueAdapter.setOnClickListener(v -> mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v)));
+        catalogueAdapter.setOnClickListener(v -> {
+            mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v));
+
+        });
 
         binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
         return root;
