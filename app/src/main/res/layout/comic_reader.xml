@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/book_reader"
-    android:clickable="true"
+    android:clickable="false"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="480dp"
@@ -14,6 +14,7 @@
         android:scaleType="fitXY"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/item_title"
         android:textSize="64sp"

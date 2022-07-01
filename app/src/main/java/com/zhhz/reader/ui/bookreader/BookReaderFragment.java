@@ -1,6 +1,5 @@
 package com.zhhz.reader.ui.bookreader;
 
-import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,10 +13,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.zhhz.reader.R;
-import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookreaderBinding;
-import com.zhhz.reader.view.ReadTextView;
 
 import java.util.Objects;
 
@@ -75,7 +71,6 @@ public class BookReaderFragment extends Fragment {
                 return false;
             }
         });
-
 
         binding.readerText.setMenuClick(() -> {
             if (container != null) {

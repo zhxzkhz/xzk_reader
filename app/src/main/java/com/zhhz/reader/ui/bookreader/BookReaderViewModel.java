@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,15 +52,6 @@ public class BookReaderViewModel extends ViewModel {
     private LazyHeaders headers;
     //章节页数表，用于无限滑动记录章节页数
     public ArrayList<Integer> comic_page;
-    //用于存储正在加载的章节
-    private ArrayList<Integer> comic_load;
-
-    //用于判断下一章或者上一张是否加载
-    private Boolean loading;
-
-    public Boolean getLoading() {
-        return loading;
-    }
 
 
     public BookReaderViewModel() {
@@ -69,7 +61,6 @@ public class BookReaderViewModel extends ViewModel {
         this.catalogue = new ArrayList<>();
         this.comic_list = new ArrayList<>();
         this.comic_page = new ArrayList<>();
-        this.comic_load = new ArrayList<>();
     }
 
     public void setBook(BookBean book) {
@@ -128,7 +119,6 @@ public class BookReaderViewModel extends ViewModel {
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         rule.BookChapters(book, url, (data, msg, label) -> {
-            loading = false;
             HashMap<String, Object> map = new HashMap<>();
             map.put("end", String.valueOf(bool));
             if (uuid.equals(label)) {
@@ -152,18 +142,11 @@ public class BookReaderViewModel extends ViewModel {
      * @param bool 是否往上一页翻
      */
     public void getContentComic(boolean bool) {
-        if (comic_load.contains(progress)) {
-            return;
-        }
-        loading = true;
         comic_list.clear();
-        comic_load.add(progress);
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         rule.BookChapters(book, url, (data, msg, label) -> {
-            comic_load.remove((Object) progress);
-            loading = false;
             HashMap<String, Object> map = new HashMap<>();
             map.put("end", String.valueOf(bool));
             if (uuid.equals(label)) {
@@ -349,11 +332,10 @@ public class BookReaderViewModel extends ViewModel {
         progress = pos;
         comic_list.clear();
         comic_page.clear();
+        saveProgress(progress);
         if (isComic()) {
-            saveProgressComic();
-            getContentComic(false);
+            getContentComic(true);
         } else {
-            saveProgress(progress);
             getContent();
         }
     }
@@ -365,6 +347,7 @@ public class BookReaderViewModel extends ViewModel {
      * @return 实际位置
      */
     public int[] current_progress_page(int current_page) {
+        current_page++;
         int[] pages = new int[2];
         int index = 0;
         // 当前总页数减去每章页数，得到当前的页数的位置
@@ -383,10 +366,10 @@ public class BookReaderViewModel extends ViewModel {
                 temp++;
             }
         }
-        //卷 + 章节 = 实际位置
-        pages[0] = index + temp;
+        //最开始位置 + 卷 + 章节 = 实际位置
+        pages[0] = (progress - comic_page.size() + 1) + index + temp;
 
-        pages[1] = current_page;
+        pages[1] = current_page-1;
         return pages;
     }
 

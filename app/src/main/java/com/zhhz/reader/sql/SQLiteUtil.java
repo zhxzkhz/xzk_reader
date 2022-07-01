@@ -7,7 +7,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.util.DiskCache;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class SQLiteUtil {
@@ -32,6 +34,9 @@ public class SQLiteUtil {
         while (query.moveToNext()) {
             BookBean bookBean = new BookBean();
             bookBean.setBook_id(query.getString(0));
+            if (!new File(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "chapter").isFile()){
+                continue;
+            }
             bookBean.setTitle(query.getString(1));
             bookBean.setAuthor(query.getString(2));
             bookBean.setCover(query.getString(3));

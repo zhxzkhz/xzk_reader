@@ -1,7 +1,6 @@
 package com.zhhz.reader.rule;
 
 import com.alibaba.fastjson.JSONObject;
-import com.zhhz.lua.LuaVirtual;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.Auto_Base64;

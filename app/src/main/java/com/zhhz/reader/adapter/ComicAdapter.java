@@ -77,9 +77,6 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.comic_reader, parent, false);
-        if (onClickListener != null) {
-            view.setOnClickListener(onClickListener);
-        }
         return new ViewHolder(view);
     }
 

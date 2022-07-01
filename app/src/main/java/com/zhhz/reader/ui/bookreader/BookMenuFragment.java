@@ -7,7 +7,9 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Size;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
@@ -48,6 +50,7 @@ public class BookMenuFragment extends Fragment {
         mViewModel = new ViewModelProvider(requireActivity()).get(BookReaderViewModel.class);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -80,10 +83,7 @@ public class BookMenuFragment extends Fragment {
             }
         });
 
-        catalogueAdapter.setOnClickListener(v -> {
-            mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v));
-
-        });
+        catalogueAdapter.setOnClickListener(v -> mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v)));
 
         binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
         return root;

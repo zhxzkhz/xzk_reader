@@ -78,7 +78,11 @@ public class DetailedFragment extends Fragment {
             if (pro[0] + pro[1] > 0) {
                 binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
             }
-            binding.startRead.setClickable(true);
+            if (map.size() > 0 ) {
+                binding.startRead.setClickable(true);
+            } else {
+                binding.startRead.setText("暂无章节");
+            }
         });
         mViewModel.queryDetailed(searchResultBean, 0);
     }
