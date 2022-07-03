@@ -34,8 +34,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        app:layout_constraintTop_toBottomOf="@id/detailed_title"
-        android:background="@color/gray_a"/>
+        android:background="@color/gray_a"
+        app:layout_constraintTop_toBottomOf="@id/detailed_title" />
 
     <include
         android:id="@+id/detailed_layout"
@@ -48,8 +48,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        app:layout_constraintTop_toBottomOf="@id/detailed_layout"
-        android:background="@color/gray_a"/>
+        android:background="@color/gray_a"
+        app:layout_constraintTop_toBottomOf="@id/detailed_layout" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/detailed_intro"
@@ -66,8 +66,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        app:layout_constraintTop_toBottomOf="@id/detailed_intro"
-        android:background="@color/gray_a"/>
+        android:background="@color/gray_a"
+        app:layout_constraintTop_toBottomOf="@id/detailed_intro" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/detailed_update_time"
@@ -85,8 +85,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
-        app:layout_constraintTop_toBottomOf="@id/detailed_update_time"
-        android:background="@color/gray_a"/>
+        android:background="@color/gray_a"
+        app:layout_constraintTop_toBottomOf="@id/detailed_update_time" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/detailed_rv"
@@ -97,9 +97,9 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/start_read"
-        android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        android:gravity="center"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

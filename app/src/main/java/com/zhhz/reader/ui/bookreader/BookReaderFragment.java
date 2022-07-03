@@ -39,19 +39,19 @@ public class BookReaderFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentBookreaderBinding.inflate(inflater,container,false);
+        binding = FragmentBookreaderBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         binding.readerText.setTitle("加载中…");
         binding.readerText.setTitleColor(Color.GRAY);
 
         binding.readerText.setUpdateCallBack(() -> {
-            mViewModel.saveProgress(mViewModel.getProgress(),binding.readerText.getTextStart());
+            mViewModel.saveProgress(mViewModel.getProgress(), binding.readerText.getTextStart());
             return false;
         });
 
         binding.readerText.setDownPage(() -> {
-            if (mViewModel.isHaveNextChapters()){
+            if (mViewModel.isHaveNextChapters()) {
                 mViewModel.setStart(0);
                 mViewModel.loadNextChapters();
                 return true;
@@ -62,7 +62,7 @@ public class BookReaderFragment extends Fragment {
         });
 
         binding.readerText.setUpPage(() -> {
-            if (mViewModel.isHavePreviousChapters()){
+            if (mViewModel.isHavePreviousChapters()) {
                 mViewModel.setStart(0);
                 mViewModel.loadPreviousChapters();
                 return true;
@@ -90,14 +90,14 @@ public class BookReaderFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
             binding.progress.hide();
-            if (map.containsKey("error")){
+            if (map.containsKey("error")) {
                 binding.readerText.setText(String.valueOf(map.get("error")));
-                binding.bookReader.addView(error_btn,binding.progress.getLayoutParams());
+                binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
                 if (Objects.equals(map.get("end"), "true")) {
                     mViewModel.setStart(String.valueOf(map.get("content")).length());
                 }
-                binding.readerText.setText(String.valueOf(map.get("content")),mViewModel.getStart());
+                binding.readerText.setText(String.valueOf(map.get("content")), mViewModel.getStart());
             }
         });
 

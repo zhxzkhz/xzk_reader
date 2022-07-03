@@ -10,7 +10,6 @@ import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.StringUtil;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 
 public class SearchViewModel extends ViewModel {
@@ -21,7 +20,7 @@ public class SearchViewModel extends ViewModel {
         this.data = new MutableLiveData<>();
     }
 
-    public void searchBook(String key){
+    public void searchBook(String key) {
         for (Map.Entry<String, Analysis> entry : RuleAnalysis.analyses_map.entrySet()) {
             String s = entry.getKey();
             Analysis analysis = entry.getValue();

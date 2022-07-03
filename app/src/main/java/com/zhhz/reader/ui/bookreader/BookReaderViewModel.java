@@ -18,7 +18,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,14 +26,12 @@ import java.util.UUID;
 
 public class BookReaderViewModel extends ViewModel {
 
-    private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
-
-    private final MutableLiveData<HashMap<String, Object>> data_content;
-
-    private final MutableLiveData<String> chapters;
-
     public final ArrayList<String> catalogue;
-
+    private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
+    private final MutableLiveData<HashMap<String, Object>> data_content;
+    private final MutableLiveData<String> chapters;
+    //章节页数表，用于无限滑动记录章节页数
+    public ArrayList<Integer> comic_page;
     private RuleAnalysis rule;
     //目录进度
     private int progress = 0;
@@ -42,16 +39,11 @@ public class BookReaderViewModel extends ViewModel {
     private int start = 0;
     //唯一值
     private String uuid;
-
     private BookBean book;
     //缓存错误次数
     private int cache_error = 0;
-
     private ArrayList<GlideUrl> comic_list;
-
     private LazyHeaders headers;
-    //章节页数表，用于无限滑动记录章节页数
-    public ArrayList<Integer> comic_page;
 
 
     public BookReaderViewModel() {
@@ -61,6 +53,10 @@ public class BookReaderViewModel extends ViewModel {
         this.catalogue = new ArrayList<>();
         this.comic_list = new ArrayList<>();
         this.comic_page = new ArrayList<>();
+    }
+
+    public BookBean getBook() {
+        return book;
     }
 
     public void setBook(BookBean book) {
@@ -88,10 +84,6 @@ public class BookReaderViewModel extends ViewModel {
         }
         headers = header.build();
         this.book = book;
-    }
-
-    public BookBean getBook() {
-        return book;
     }
 
     public void queryCatalogue() {
@@ -171,7 +163,7 @@ public class BookReaderViewModel extends ViewModel {
 
     public void saveProgressComic() {
         int[] a = current_progress_page(start);
-        saveProgress(a[0],a[1]);
+        saveProgress(a[0], a[1]);
     }
 
     public void saveProgress(int progress, int start) {
@@ -180,7 +172,6 @@ public class BookReaderViewModel extends ViewModel {
         } catch (IOException ignored) {
         }
     }
-
 
 
     /**
@@ -261,6 +252,9 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public boolean isHaveNextChapters() {
+        if (isComic()) {
+            return isHaveNextChapters(current_progress_page(start)[0]);
+        }
         return isHaveNextChapters(-1);
     }
 
@@ -285,6 +279,9 @@ public class BookReaderViewModel extends ViewModel {
      * @return 是否有上一章节
      */
     public boolean isHavePreviousChapters() {
+        if (isComic()) {
+            return isHavePreviousChapters(current_progress_page(start)[0]);
+        }
         return isHavePreviousChapters(-1);
     }
 
@@ -369,7 +366,7 @@ public class BookReaderViewModel extends ViewModel {
         //最开始位置 + 卷 + 章节 = 实际位置
         pages[0] = (progress - comic_page.size() + 1) + index + temp;
 
-        pages[1] = current_page-1;
+        pages[1] = current_page - 1;
         return pages;
     }
 

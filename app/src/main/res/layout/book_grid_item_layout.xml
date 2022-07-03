@@ -6,23 +6,23 @@
     android:layout_height="191dp">
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:layout_marginTop="4dp"
         android:id="@+id/item_image"
         android:layout_width="100dp"
         android:layout_height="140dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/black"
+        android:src="@drawable/no_cover"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/no_cover"
-        android:background="@color/black"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/item_title"
         android:layout_width="match_parent"
         android:layout_height="46dp"
-        android:textColor="@color/black"
+        android:layout_marginBottom="1dp"
         android:gravity="center"
         android:maxLines="2"
-        android:layout_marginBottom="1dp"
+        android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@+id/item_image" />
 </androidx.constraintlayout.widget.ConstraintLayout>

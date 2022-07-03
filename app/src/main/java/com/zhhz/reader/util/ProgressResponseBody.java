@@ -15,23 +15,20 @@ import okio.Source;
 public class ProgressResponseBody extends ResponseBody {
 
     private static final String TAG = "ProgressResponseBody";
-
-    private BufferedSource bufferedSource;
-
     private final ResponseBody responseBody;
-
-    private ProgressListener listener;
-
-    private long le;
     private final String url;
-    public ProgressResponseBody(String url, ResponseBody responseBody,@NonNull long l) {
+    private BufferedSource bufferedSource;
+    private ProgressListener listener;
+    private long le;
+
+    public ProgressResponseBody(String url, ResponseBody responseBody, @NonNull long l) {
         this.responseBody = responseBody;
         le = l;
-        if (l < 0 ) {
-            le=responseBody.contentLength();
+        if (l < 0) {
+            le = responseBody.contentLength();
         }
         listener = ProgressInterceptor.LISTENER_MAP.get(url);
-        this.url=url;
+        this.url = url;
     }
 
     @Override
@@ -73,11 +70,11 @@ public class ProgressResponseBody extends ResponseBody {
                 totalBytesRead += bytesRead;
             }
             int progress = (int) (100f * totalBytesRead / contentLength());
-            if (progress<0)
-                progress=0;
+            if (progress < 0)
+                progress = 0;
             //Log.d(TAG, "download progress is " + totalBytesRead + "-->" + contentLength());
             if (listener != null && progress != currentProgress) {
-                listener.onProgress(url,progress);
+                listener.onProgress(url, progress);
             }
             if (listener != null && totalBytesRead == fullLength) {
                 listener = null;

@@ -1,6 +1,7 @@
 package com.zhhz.reader.rule;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
@@ -23,19 +24,19 @@ public class JsoupAnalysisTest {
 
     @BeforeClass
     public static void run() throws IOException, ClassNotFoundException {
-        DiskCache.path="D:\\星-阅读";
+        DiskCache.path = "D:\\星-阅读";
         analysis = new JsoupAnalysis("D:\\星-阅读\\rule\\www_biquxs_la.json");
     }
 
     @Test
-    public void bookSearch(){
+    public void bookSearch() {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         analysis.BookSearch("魔王", (data, msg, label) -> {
             countDownLatch.countDown();
             assertTrue(((List<SearchResultBean>) data).size() > 0);
             detail_url = ((List<SearchResultBean>) data).get(0).getUrl();
             System.out.println("\033[0;32mBookSearch -> 通过 : " + detail_url);
-        },"1");
+        }, "1");
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {
@@ -62,7 +63,7 @@ public class JsoupAnalysisTest {
     public void bookDirectory() {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         analysis.BookDirectory("https://www.biquxs.la/27/27075/", (data, msg, label) -> {
-            assertTrue(((Map<String,String>) data).size() > 0);
+            assertTrue(((Map<String, String>) data).size() > 0);
             System.out.println("\033[0;32mbookSearch -> 通过 -> " + data);
             countDownLatch.countDown();
         });
@@ -78,11 +79,11 @@ public class JsoupAnalysisTest {
         CountDownLatch countDownLatch = new CountDownLatch(1);
         BookBean bookBean = new BookBean();
         bookBean.setBook_id(UUID.randomUUID().toString());
-        analysis.BookChapters(bookBean,"https://www.cyewx.com/27/27075/11713970.html", (data, msg, label) -> {
+        analysis.BookChapters(bookBean, "https://www.cyewx.com/27/27075/11713970.html", (data, msg, label) -> {
             assertNotNull(data);
             System.out.println("\033[0;32mbookSearch -> 通过 -> " + data);
             countDownLatch.countDown();
-        },1);
+        }, 1);
         try {
             countDownLatch.await();
         } catch (InterruptedException e) {

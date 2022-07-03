@@ -2,24 +2,24 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/book_reader"
-    android:clickable="false"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clickable="false"
     android:minHeight="480dp"
     tools:context=".ui.bookreader.BookReaderFragment">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/item_image"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/item_title"
-        android:textSize="64sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:textSize="64sp" />
 
 </FrameLayout>

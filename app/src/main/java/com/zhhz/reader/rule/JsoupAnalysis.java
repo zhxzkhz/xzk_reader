@@ -50,8 +50,8 @@ public class JsoupAnalysis extends Analysis {
     }
 
     private void init() {
-        DiskCache.engine.put("xlua_rule",this);
-        DiskCache.engine.put("xlua_classloader",ClassLoader.getSystemClassLoader());
+        DiskCache.engine.put("xlua_rule", this);
+        DiskCache.engine.put("xlua_classloader", ClassLoader.getSystemClassLoader());
         replace_map = new HashMap<>();
         replace_map.put("<p>", "");
         replace_map.put("</p>", "");
@@ -249,9 +249,9 @@ public class JsoupAnalysis extends Analysis {
             } else if (detail_x.getString("catalog").startsWith("js@")) {
                 //String x_url = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(5)), element, JsoupAnalysis.this);
                 try {
-                    DiskCache.engine.put("element",element);
-                    DiskCache.engine.put("url",url);
-                    DiskCache.engine.put("callback",callback);
+                    DiskCache.engine.put("element", element);
+                    DiskCache.engine.put("url", url);
+                    DiskCache.engine.put("callback", callback);
                     DiskCache.engine.eval(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(3)));
                 } catch (ScriptException e) {
                     e.printStackTrace();
@@ -283,9 +283,9 @@ public class JsoupAnalysis extends Analysis {
             if (catalog.getString("js") != null) {
                 //LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(catalog.getString("lua")), url, element, callback, JsoupAnalysis.this);
                 try {
-                    DiskCache.engine.put("element",element);
-                    DiskCache.engine.put("url",url);
-                    DiskCache.engine.put("callback",callback);
+                    DiskCache.engine.put("element", element);
+                    DiskCache.engine.put("url", url);
+                    DiskCache.engine.put("callback", callback);
                     DiskCache.engine.eval(Auto_Base64.decodeToString(catalog.getString("js")));
                 } catch (ScriptException e) {
                     e.printStackTrace();
@@ -415,13 +415,13 @@ public class JsoupAnalysis extends Analysis {
     }
 
     @Override
-    public void BookChapters(BookBean book,String url, CallBack callback, Object random) {
+    public void BookChapters(BookBean book, String url, CallBack callback, Object random) {
 
-        File file = new File(DiskCache.path+ File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
+        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
 
         if (!Objects.requireNonNull(file.getParentFile()).isDirectory()) {
             if (!file.getParentFile().mkdirs()) {
-                callback.run(null,"目录创建失败",random);
+                callback.run(null, "目录创建失败", random);
             }
         }
         if (file.isFile()) {
@@ -429,7 +429,7 @@ public class JsoupAnalysis extends Analysis {
                 int size = fis.available();
                 byte[] bytes = new byte[size];
                 if (fis.read(bytes) == size) {
-                    callback.run(new String(bytes), null , random);
+                    callback.run(new String(bytes), null, random);
                     return;
                 }
             } catch (IOException e) {
@@ -443,7 +443,7 @@ public class JsoupAnalysis extends Analysis {
                 return;
             }
 
-            try (FileOutputStream fos = new FileOutputStream(file)){
+            try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(((String) data).getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -520,31 +520,31 @@ public class JsoupAnalysis extends Analysis {
             //执行lua
             if (chapter.getString("js") != null) {
                 //str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")), element, str, url, callback, label, JsoupAnalysis.this);
-                DiskCache.engine.put("element",element);
-                DiskCache.engine.put("data",str);
-                DiskCache.engine.put("url",url);
-                DiskCache.engine.put("callback",callback);
-                DiskCache.engine.put("label",label);
-                DiskCache.engine.put("out",System.out);
+                DiskCache.engine.put("element", element);
+                DiskCache.engine.put("data", str);
+                DiskCache.engine.put("url", url);
+                DiskCache.engine.put("callback", callback);
+                DiskCache.engine.put("label", label);
+                DiskCache.engine.put("out", System.out);
                 try {
                     DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
                     Object value = DiskCache.engine.get("result");
-                    if (value instanceof NativeArray){
+                    if (value instanceof NativeArray) {
                         NativeArray array = (NativeArray) value;
                         StringBuilder stringBuilder = new StringBuilder();
                         for (Object o : array) {
                             stringBuilder.append(o).append("\n");
                         }
-                        stringBuilder.delete(stringBuilder.length()-1,stringBuilder.length());
+                        stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
                         str = stringBuilder.toString();
-                    } else if(value.getClass() == NativeJavaObject.class){
-                        str = ((NativeJavaObject)value).unwrap().toString();
+                    } else if (value.getClass() == NativeJavaObject.class) {
+                        str = ((NativeJavaObject) value).unwrap().toString();
                     } else {
                         str = value.toString();
                     }
                 } catch (ScriptException e) {
                     e.printStackTrace();
-                    str = null ;
+                    str = null;
                 }
                 //返回false代表 lua 内部处理
                 if (str != null && str.equals("false")) {

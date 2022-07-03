@@ -7,9 +7,9 @@
         android:top="5dp">
         <shape>
             <!-- 设置圆角矩形 -->
-            <corners android:radius="42dp"/>
-            <solid android:color="#e8e8e8"/>
-            <stroke android:color="@color/black"/>
+            <corners android:radius="42dp" />
+            <solid android:color="#e8e8e8" />
+            <stroke android:color="@color/black" />
 
         </shape>
 

@@ -1,10 +1,9 @@
 package com.zhhz.reader.activity;
 
+import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-
-import android.os.Bundle;
-import android.view.View;
 
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.BookBean;
@@ -23,7 +22,7 @@ public class BookReaderActivity extends AppCompatActivity {
         mViewModel.setBook((BookBean) getIntent().getSerializableExtra("book"));
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, mViewModel.isComic()? ComicReaderFragment.newInstance():BookReaderFragment.newInstance())
+                    .replace(R.id.container, mViewModel.isComic() ? ComicReaderFragment.newInstance() : BookReaderFragment.newInstance())
                     .commitNow();
         }
 

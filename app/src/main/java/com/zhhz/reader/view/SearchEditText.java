@@ -25,6 +25,7 @@ public class SearchEditText extends AppCompatEditText implements
     private Drawable mSearchingDrawable;
     private boolean hasFoucs;
     private Context context;
+    private onSearchFocusListener onSearchFocusListener;
 
     public SearchEditText(Context context) {
         this(context, null);
@@ -34,22 +35,22 @@ public class SearchEditText extends AppCompatEditText implements
         this(context, attrs, android.R.attr.editTextStyle);
     }
 
+
     public SearchEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         this.context = context;
         init();
     }
 
-
     @SuppressLint("UseCompatLoadingForDrawables")
     private void init() {
 
         if (mClearDrawable == null) {
-            mClearDrawable = getResources().getDrawable(R.drawable.search_clear,null);
+            mClearDrawable = getResources().getDrawable(R.drawable.search_clear, null);
         }
 
-        mSearchDrawable = getResources().getDrawable(R.drawable.search_icon,null);
-        mSearchingDrawable = getResources().getDrawable(R.drawable.search_icon,null);
+        mSearchDrawable = getResources().getDrawable(R.drawable.search_icon, null);
+        mSearchingDrawable = getResources().getDrawable(R.drawable.search_icon, null);
 
         mClearDrawable.setBounds(-mClearDrawable.getMinimumWidth(), 0, 0, mClearDrawable.getMinimumWidth());
         //默认设置隐藏图标
@@ -98,17 +99,14 @@ public class SearchEditText extends AppCompatEditText implements
         return super.onTouchEvent(event);
     }
 
-
     /**
      * 设置清除图标的显示与隐藏，调用setCompoundDrawables为EditText绘制上去
-     *
      */
     protected void setClearIconVisible(boolean visible) {
         Drawable right = visible ? mClearDrawable : null;
         setCompoundDrawables(getCompoundDrawables()[0],
                 getCompoundDrawables()[1], right, getCompoundDrawables()[3]);
     }
-
 
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -139,10 +137,6 @@ public class SearchEditText extends AppCompatEditText implements
         }
         onSearchFocusListener.onSearchFocusChange(v, hasFocus);
     }
-
-
-    private onSearchFocusListener onSearchFocusListener;
-
 
     public void setOnSearchFocusListener(onSearchFocusListener onSearchFocusListener) {
         this.onSearchFocusListener = onSearchFocusListener;

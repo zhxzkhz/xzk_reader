@@ -15,11 +15,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.zhhz.reader.R;
 import com.zhhz.reader.databinding.ActivitySearchBinding;
 import com.zhhz.reader.rule.RuleAnalysis;
-import com.zhhz.reader.ui.search.SearchFragment;
 import com.zhhz.reader.ui.search.SearchResultFragment;
 import com.zhhz.reader.ui.search.SearchViewModel;
-
-import java.util.Objects;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -41,18 +38,19 @@ public class SearchActivity extends AppCompatActivity {
         binding.searchText.setOnSearchFocusListener((v, hasFocus) -> System.out.println(v));
         binding.searchText.changeSearchLogo(true);
         binding.searchText.setOnEditorActionListener((textView, i, keyEvent) -> {
-            if (RuleAnalysis.analyses_map.size() == 0){
+            if (RuleAnalysis.analyses_map.size() == 0) {
                 Toast.makeText(this, "请设置书源", Toast.LENGTH_SHORT).show();
                 return false;
             }
-            if (i == EditorInfo.IME_ACTION_SEARCH  || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)){
+            if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                 binding.searchText.clearFocus();
                 InputMethodManager imm = (InputMethodManager) getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
-                if (mViewModel.getData().getValue()!=null) mViewModel.getData().getValue().clear();
+                if (mViewModel.getData().getValue() != null)
+                    mViewModel.getData().getValue().clear();
                 mViewModel.searchBook(textView.getText().toString());
                 getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.search_fragment, SearchResultFragment.getInstance(),"SearchResultFragment")
+                        .replace(R.id.search_fragment, SearchResultFragment.getInstance(), "SearchResultFragment")
                         .commitNow();
                 return true;
             }

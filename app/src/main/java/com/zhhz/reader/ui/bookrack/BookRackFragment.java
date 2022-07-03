@@ -47,7 +47,7 @@ public class BookRackFragment extends Fragment {
             Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
             //获取点击事件位置
             int position = binding.rv.getChildAdapterPosition(view);
-            intent.putExtra("book",bookAdapter.getItemData().get(position));
+            intent.putExtra("book", bookAdapter.getItemData().get(position));
             startActivity(intent);
             BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
@@ -76,12 +76,19 @@ public class BookRackFragment extends Fragment {
         binding = null;
     }
 
-    private static class BookRackDiffCallback extends DiffUtil.Callback{
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Objects.requireNonNull(bookrackViewModel.getData().getValue()).clear();
+    }
+
+    private static class BookRackDiffCallback extends DiffUtil.Callback {
         private final ArrayList<BookBean> oldData;
         private final ArrayList<BookBean> newData;
-        public BookRackDiffCallback(ArrayList<BookBean> oldData,ArrayList<BookBean> newData) {
-            this.oldData=oldData;
-            this.newData=newData;
+
+        public BookRackDiffCallback(ArrayList<BookBean> oldData, ArrayList<BookBean> newData) {
+            this.oldData = oldData;
+            this.newData = newData;
         }
 
         @Override
@@ -103,11 +110,5 @@ public class BookRackFragment extends Fragment {
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             return oldData.get(oldItemPosition).getBook_id().equals(newData.get(newItemPosition).getBook_id());
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Objects.requireNonNull(bookrackViewModel.getData().getValue()).clear();
     }
 }

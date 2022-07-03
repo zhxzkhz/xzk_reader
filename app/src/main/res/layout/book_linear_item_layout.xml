@@ -7,10 +7,10 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/item_image"
-        android:src="@drawable/no_cover"
-        android:layout_marginStart="20dp"
         android:layout_width="85dp"
         android:layout_height="119dp"
+        android:layout_marginStart="20dp"
+        android:src="@drawable/no_cover"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -20,12 +20,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="115dp"
-        android:textSize="16.5sp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
         android:text="@string/app_name"
         android:textColor="@color/black"
+        android:textSize="16.5sp"
         app:layout_constraintBottom_toTopOf="@id/item_author"
         app:layout_constraintTop_toTopOf="@id/item_image" />
 

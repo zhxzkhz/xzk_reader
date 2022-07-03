@@ -2,6 +2,9 @@ package com.zhhz.reader.rule;
 
 import static com.zhhz.reader.rule.RuleAnalysis.client;
 
+import android.content.Context;
+import android.net.Uri;
+
 import androidx.annotation.NonNull;
 
 import com.alibaba.fastjson.JSONObject;
@@ -14,6 +17,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
 
@@ -40,6 +44,20 @@ public abstract class Analysis {
     //用于标记 响应协议；
     protected String http;
 
+    public Analysis(String path) throws IOException {
+        this(readText(path));
+    }
+
+    public Analysis(JSONObject jsonObject) {
+        this.json = jsonObject;
+        this.url = jsonObject.getString("url");
+        this.name = jsonObject.getString("name");
+        this.comic = jsonObject.getBooleanValue("comic");
+        this.charset = (String) (jsonObject.getJSONObject("search").getOrDefault("charset", "utf8"));
+        if (this.charset == null) this.charset = "utf8";
+        this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
+    }
+
     public static JSONObject readText(String path) throws IOException {
         File file = new File(path);
         if (!file.isFile()) throw new FileNotFoundException("文件未找到 -> " + file);
@@ -57,20 +75,19 @@ public abstract class Analysis {
         throw new IOException("加载异常");
     }
 
-    public Analysis(String path) throws IOException {
-        this(readText(path));
+    public static JSONObject readText(Context context, Uri rui) throws IOException {
+        InputStream fis = context.getContentResolver().openInputStream(rui);
+        try {
+            int size = fis.available();
+            byte[] bytes = new byte[size];
+            if (fis.read(bytes) != size) throw new IOException("文件读取异常");
+            fis.close();
+            return JSONObject.parseObject(new String(bytes));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        throw new IOException("加载异常");
     }
-
-    public Analysis(JSONObject jsonObject) {
-        this.json = jsonObject;
-        this.url = jsonObject.getString("url");
-        this.name = jsonObject.getString("name");
-        this.comic = jsonObject.getBooleanValue("comic");
-        this.charset = (String) (jsonObject.getJSONObject("search").getOrDefault("charset", "utf8"));
-        if (this.charset == null) this.charset = "utf8";
-        this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
-    }
-
 
     public JSONObject getJson() {
         return json;

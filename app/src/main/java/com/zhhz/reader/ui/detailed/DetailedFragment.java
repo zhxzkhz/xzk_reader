@@ -78,7 +78,7 @@ public class DetailedFragment extends Fragment {
             if (pro[0] + pro[1] > 0) {
                 binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
             }
-            if (map.size() > 0 ) {
+            if (map.size() > 0) {
                 binding.startRead.setClickable(true);
             } else {
                 binding.startRead.setText("暂无章节");
@@ -116,9 +116,9 @@ public class DetailedFragment extends Fragment {
         binding.startRead.setOnClickListener((view) -> {
             SQLiteUtil.saveBook(bookBean);
             mViewModel.saveDirectory(bookBean.getBook_id());
-            mViewModel.saveRule(searchResultBean,bookBean.getBook_id(),0);
+            mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
             Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
-            intent.putExtra("book",bookBean);
+            intent.putExtra("book", bookBean);
             startActivity(intent);
             DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
@@ -131,7 +131,7 @@ public class DetailedFragment extends Fragment {
             //获取点击事件位置
             int position = binding.detailedRv.getChildAdapterPosition(view);
             mViewModel.saveDirectory(bookBean.getBook_id());
-            mViewModel.saveRule(searchResultBean,bookBean.getBook_id(),0);
+            mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
             mViewModel.saveProgress(bookBean.getBook_id(), position);
             intent.putExtra("book", bookBean);
             startActivity(intent);

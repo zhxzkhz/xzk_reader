@@ -1,26 +1,16 @@
 package com.zhhz.reader.ui.bookreader;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
-import android.graphics.Insets;
-import android.graphics.Rect;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Size;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowInsets;
-import android.view.WindowManager;
-import android.view.WindowMetrics;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhhz.reader.adapter.CatalogueAdapter;
@@ -31,16 +21,13 @@ import java.util.Objects;
 
 public class BookMenuFragment extends Fragment {
 
+    private static BookMenuFragment fragment;
     private BookReaderViewModel mViewModel;
-
     private FragmentBookMenuBinding binding;
-
     private CatalogueAdapter catalogueAdapter;
 
-    private static BookMenuFragment fragment;
-
     public static BookMenuFragment getInstance() {
-        if (fragment!=null) return fragment;
+        if (fragment != null) return fragment;
         return fragment = new BookMenuFragment();
     }
 
@@ -54,7 +41,7 @@ public class BookMenuFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        binding = FragmentBookMenuBinding.inflate(inflater,container,false);
+        binding = FragmentBookMenuBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         binding.menuTitle.setText(mViewModel.getBook().getTitle());
@@ -69,7 +56,7 @@ public class BookMenuFragment extends Fragment {
         binding.menuCatalogueList.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.menuCatalogueList.setAdapter(catalogueAdapter);
 
-        binding.menuBack.setOnClickListener((view)->requireActivity().finish());
+        binding.menuBack.setOnClickListener((view) -> requireActivity().finish());
         binding.menuTitle.setClickable(true);
         binding.menuMore.setClickable(true);
         binding.menuNextPage.setClickable(true);
@@ -78,12 +65,34 @@ public class BookMenuFragment extends Fragment {
         binding.menuCatalogue.setOnClickListener(view -> {
             if (binding.menuCatalogueList.getVisibility() == View.GONE) {
                 binding.menuCatalogueList.setVisibility(View.VISIBLE);
-            }else {
+            } else {
                 binding.menuCatalogueList.setVisibility(View.GONE);
             }
         });
 
-        catalogueAdapter.setOnClickListener(v -> mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v)));
+        catalogueAdapter.setOnClickListener(v -> {
+            mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v));
+            binding.menuHide.callOnClick();
+            binding.menuCatalogue.callOnClick();
+        });
+
+        binding.menuNextPage.setOnClickListener(view -> {
+            int progress = mViewModel.current_progress_page(mViewModel.getStart())[0];
+            if (mViewModel.isHaveNextChapters(progress)) {
+                mViewModel.jumpChapters(progress + 1);
+            } else {
+                Toast.makeText(requireContext(), "已经没有下一章了", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        binding.menuPreviousPage.setOnClickListener(view -> {
+            int progress = mViewModel.current_progress_page(mViewModel.getStart())[0];
+            if (mViewModel.isHavePreviousChapters(progress)) {
+                mViewModel.jumpChapters(progress - 1);
+            } else {
+                Toast.makeText(requireContext(), "已经是第一章了", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
         return root;
@@ -105,7 +114,7 @@ public class BookMenuFragment extends Fragment {
             binding.menuSource.setText(Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(s));
             int pos = catalogueAdapter.getPos();
             catalogueAdapter.setPos(mViewModel.getProgress());
-            Objects.requireNonNull((LinearLayoutManager)binding.menuCatalogueList.getLayoutManager()).scrollToPositionWithOffset(mViewModel.getProgress(),(int)(height * 0.4f));
+            Objects.requireNonNull((LinearLayoutManager) binding.menuCatalogueList.getLayoutManager()).scrollToPositionWithOffset(mViewModel.getProgress(), (int) (height * 0.4f));
             catalogueAdapter.notifyItemChanged(pos);
             catalogueAdapter.notifyItemChanged(mViewModel.getProgress());
         });

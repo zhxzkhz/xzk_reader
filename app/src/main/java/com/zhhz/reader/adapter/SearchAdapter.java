@@ -21,35 +21,9 @@ import java.util.ArrayList;
 // ① 创建Adapter
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
 
-    private ArrayList<SearchResultBean> itemData;
-
     private final Context context;
-
+    private ArrayList<SearchResultBean> itemData;
     private View.OnClickListener onClickListener;
-
-    public void setOnClickListener(View.OnClickListener onClickListener) {
-        this.onClickListener = onClickListener;
-    }
-
-    public void setItemData(ArrayList<SearchResultBean> mData) {
-        this.itemData = mData;
-    }
-
-    public ArrayList<SearchResultBean> getItemData() {
-        return itemData;
-    }
-
-    //② 创建ViewHolder
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public AppCompatImageView imageView;
-        public AppCompatTextView textView;
-
-        private ViewHolder(View v) {
-            super(v);
-            this.imageView = v.findViewById(R.id.item_image);
-            this.textView = v.findViewById(R.id.item_title);
-        }
-    }
 
     public SearchAdapter(Context context) {
         this.context = context;
@@ -58,6 +32,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     public SearchAdapter(Context context, ArrayList<SearchResultBean> data) {
         this.context = context;
         this.itemData = data;
+    }
+
+    public void setOnClickListener(View.OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+
+    public ArrayList<SearchResultBean> getItemData() {
+        return itemData;
+    }
+
+    public void setItemData(ArrayList<SearchResultBean> mData) {
+        this.itemData = mData;
     }
 
     //③ 在Adapter中实现3个方法
@@ -103,6 +89,18 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder
     @Override
     public int getItemViewType(int type) {
         return 1;
+    }
+
+    //② 创建ViewHolder
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        public AppCompatImageView imageView;
+        public AppCompatTextView textView;
+
+        private ViewHolder(View v) {
+            super(v);
+            this.imageView = v.findViewById(R.id.item_image);
+            this.textView = v.findViewById(R.id.item_title);
+        }
     }
 
 

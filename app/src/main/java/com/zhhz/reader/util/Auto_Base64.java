@@ -6,7 +6,6 @@ import java.util.Arrays;
 
 /**
  * 自动识别是否是win系统，如果是则调用 java.util.Base64,反之调用 android.util.Base64
- *
  */
 
 public class Auto_Base64 {
@@ -32,7 +31,8 @@ public class Auto_Base64 {
             } else {
                 Base64 = Class.forName("android.util.Base64");
             }
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
+                 IllegalAccessException e) {
             e.printStackTrace();
         }
 
@@ -47,9 +47,9 @@ public class Auto_Base64 {
     public static byte[] decode(String str) {
         try {
             if (isWin) {
-                return (byte[]) Decoder.getMethod("decode",String.class).invoke(decoder,str);
+                return (byte[]) Decoder.getMethod("decode", String.class).invoke(decoder, str);
             } else {
-                return (byte[]) Base64.getDeclaredMethod("decode",String.class,int.class).invoke(null,str, 0);
+                return (byte[]) Base64.getDeclaredMethod("decode", String.class, int.class).invoke(null, str, 0);
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
@@ -78,9 +78,9 @@ public class Auto_Base64 {
     public static byte[] encode(String str) {
         try {
             if (isWin) {
-                return (byte[]) Encoder.getMethod("encode",byte[].class).invoke(encoder, (Object) str.getBytes());
+                return (byte[]) Encoder.getMethod("encode", byte[].class).invoke(encoder, (Object) str.getBytes());
             } else {
-                return (byte[]) Base64.getDeclaredMethod("encode",String.class,int.class).invoke(null,str, 0);
+                return (byte[]) Base64.getDeclaredMethod("encode", String.class, int.class).invoke(null, str, 0);
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();

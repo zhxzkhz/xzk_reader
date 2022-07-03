@@ -15,7 +15,7 @@ import okhttp3.ResponseBody;
 public class ProgressInterceptor implements Interceptor {
     public static final Map<String, ProgressListener> LISTENER_MAP = new HashMap<>();
 
-    public static void addListener(String url,ProgressListener listener) {
+    public static void addListener(String url, ProgressListener listener) {
         LISTENER_MAP.put(url, listener);
     }
 
@@ -30,11 +30,11 @@ public class ProgressInterceptor implements Interceptor {
         Response response = chain.proceed(request);
         String url = request.url().toString();
         ResponseBody body = response.body();
-        long l=-1L;
-        String length=response.header("Content-Length")==null?response.header("content-length"):response.header("Content-Length");
-        if (length!=null)
-            l=Long.parseLong(length);
-        return response.newBuilder().body(new ProgressResponseBody(url, body,l)).build();
+        long l = -1L;
+        String length = response.header("Content-Length") == null ? response.header("content-length") : response.header("Content-Length");
+        if (length != null)
+            l = Long.parseLong(length);
+        return response.newBuilder().body(new ProgressResponseBody(url, body, l)).build();
     }
 
 }

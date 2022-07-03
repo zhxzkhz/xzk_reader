@@ -17,7 +17,6 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.File;
@@ -28,6 +27,27 @@ import java.util.Map;
 
 public class ReadTextView extends View {
 
+    private final Handler hd = new Handler();
+    //每页索引
+    @SuppressLint("UseSparseArrays")
+    private final LinkedHashMap<Integer, Integer> map = new LinkedHashMap<>();
+    //画笔
+    private final TextPaint textPaint;
+    //标题底部画笔
+    private final TextPaint ttPaint;
+    //测量线画笔
+    private final Paint pt;
+    //用于存储 newDraw 下的每行字间距平摊间距
+    private final HashMap<Integer, Float> wordSpaceMap = new HashMap<>();
+    //float density
+    float density;
+    CallBack downOnClick;
+    CallBack upOnClick;
+    CallBack menuOnClick;
+    CallBack updateCallBack;
+    DecimalFormat format1 = new DecimalFormat("##%");
+    //一行字体位置数组
+    float[] line_font = new float[200];
     //顶部标题间距
     private float topSpace = 45f;
     //底部信息间距
@@ -36,59 +56,134 @@ public class ReadTextView extends View {
     private float spaceRatio = 1.8f;
     //设置文本大小
     private int textSize = 18;
-
     //开始绘制文字位置
     private int textStart = 0;
-
     //绘制文字结束位置
     private int textEnd = 0;
-
     //左右边缘间距
     private float marginSpacing = 45f;
-
     //字间距
     private float fontSpacing = 1f;
-
     //字间距倍率
     private float fontSpacingRatio = 1.05f;
-
     //上下边缘间距
     private float lineSpacing = 15f;
-
     //行高
     private float lineHeight = 10f;
-
     //行高，倍率
     private float lineHeightRatio = 1.2f;
-
     //是否首行缩进
     private boolean indentation = true;
-
     //宽度是否自动对齐
     private boolean widthAlign = true;
-
     //是否使用绘制一行，设置后 字间距失效
     private boolean newDraw = false;
     //状态栏高度
     private int statusBar = 0;
-
     //绘制测试线判断
     private boolean Test = false;
-
-    private final Handler hd = new Handler();
-
     private int maxLine = 0;
-
     private String title = "";
-
     private String text = "";
-
-    //每页索引
-    @SuppressLint("UseSparseArrays")
-    private final LinkedHashMap<Integer, Integer> map = new LinkedHashMap<>();
-
     //每页显示最大行数
     private int pageMaxLine = 0;
+    private int color = Color.BLACK;
+    private float[] font_x;
+    private final Runnable run = ReadTextView.this::AnalyseTextLine;
+    private final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+        @Override
+        public boolean onDown(MotionEvent e) {
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent event) {
+            if (event.getX() > getWidth() / 3f * 2 && downOnClick != null) {
+                if (textEnd >= text.length()) {
+                    if (!downOnClick.onClick()) return true;
+                }
+                textStart = textEnd;
+                updateCallBack.onClick();
+            } else if (event.getX() < getWidth() / 3f && upOnClick != null) {
+                int posIndex = 0;
+                //等于0代表是上一章，
+                if (textStart == 0) {
+                    if (upOnClick.onClick()) {
+
+                        int posIndex1 = maxLine / pageMaxLine;
+                        //获取能显示完整行数的页面数
+                        posIndex = maxLine - posIndex1 * pageMaxLine;
+                        if (posIndex == 0) {
+                            posIndex = maxLine - pageMaxLine + 1;
+                        } else {
+                            posIndex = posIndex1 * pageMaxLine + 1;
+                        }
+                    } else {
+                        return true;
+                    }
+                } else {
+                    //判断统计行数没，如果没有，则先统计
+                    if (maxLine < 1) {
+                        hd.removeCallbacks(run);
+                        AnalyseTextLine();
+                    }
+                    for (Map.Entry<Integer, Integer> value : map.entrySet()) {
+                        if (value.getValue() == textStart) {
+                            posIndex = value.getKey() - pageMaxLine;
+                            break;
+                        }
+                    }
+                }
+
+                if (map.containsKey(posIndex)) {
+                    //noinspection ConstantConditions
+                    textStart = map.get(posIndex);
+                } else {
+                    Toast.makeText(getContext(), "上一页加载失败", Toast.LENGTH_SHORT).show();
+                }
+
+                updateCallBack.onClick();
+            } else {
+                if (menuOnClick != null) menuOnClick.onClick();
+            }
+            invalidate();
+            return true;
+        }
+    });
+
+    public ReadTextView(Context context) {
+        this(context, null);
+    }
+
+    public ReadTextView(Context context, @Nullable AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+
+    public ReadTextView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        density = getResources().getDisplayMetrics().density;
+        textSize = (int) (textSize * density);
+        pt = new Paint();
+        pt.setStrokeWidth(1);
+
+        textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        textPaint.setColor(color);
+        textPaint.setStyle(Paint.Style.FILL);
+        textPaint.setStrokeWidth(0);
+        textPaint.setSubpixelText(true);
+        textPaint.setTextSize(textSize);
+        //textPaint.density = density;
+
+        ttPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        ttPaint.setColor(color);
+        ttPaint.setStyle(Paint.Style.FILL);
+        ttPaint.setStrokeWidth(0);
+        ttPaint.setSubpixelText(true);
+        // 字体大小是正文的 x ^ 2 / - x / 12
+        ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize, 2) / 2f) - textSize / 12f));
+        //ttPaint.density = density;
+
+    }
 
     public boolean isNewDraw() {
         return newDraw;
@@ -154,7 +249,6 @@ public class ReadTextView extends View {
         if (text.length() == 0) return;
         invalidate();
     }
-
 
     public int getTextStart() {
         return textStart;
@@ -267,8 +361,6 @@ public class ReadTextView extends View {
         return text;
     }
 
-    private final Runnable run = ReadTextView.this::AnalyseTextLine;
-
     public void setText(@Nullable String text) {
         setText(text, 0);
     }
@@ -343,120 +435,6 @@ public class ReadTextView extends View {
         ttPaint.setColor(color);
     }
 
-    //画笔
-    private final TextPaint textPaint;
-
-    //标题底部画笔
-    private final TextPaint ttPaint;
-
-    //测量线画笔
-    private final Paint pt;
-
-    private int color = Color.BLACK;
-
-    //float density
-    float density;
-
-    CallBack downOnClick;
-    CallBack upOnClick;
-    CallBack menuOnClick;
-    CallBack updateCallBack;
-
-    public ReadTextView(Context context) {
-        this(context, null);
-    }
-
-    public ReadTextView(Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public ReadTextView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        density = getResources().getDisplayMetrics().density;
-        textSize = (int) (textSize * density);
-        pt = new Paint();
-        pt.setStrokeWidth(1);
-
-        textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        textPaint.setColor(color);
-        textPaint.setStyle(Paint.Style.FILL);
-        textPaint.setStrokeWidth(0);
-        textPaint.setSubpixelText(true);
-        textPaint.setTextSize(textSize);
-        //textPaint.density = density;
-
-        ttPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-        ttPaint.setColor(color);
-        ttPaint.setStyle(Paint.Style.FILL);
-        ttPaint.setStrokeWidth(0);
-        ttPaint.setSubpixelText(true);
-        // 字体大小是正文的 x ^ 2 / - x / 12
-        ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize, 2) / 2f) - textSize / 12f));
-        //ttPaint.density = density;
-
-    }
-
-    private final GestureDetector gestureDetector = new GestureDetector(getContext(),new GestureDetector.SimpleOnGestureListener(){
-        @Override
-        public boolean onDown(MotionEvent e) {
-            return true;
-        }
-
-        @Override
-        public boolean onSingleTapUp(MotionEvent event) {
-            if (event.getX() > getWidth() / 3f * 2 && downOnClick != null) {
-                if (textEnd >= text.length()) {
-                    if (!downOnClick.onClick()) return true;
-                }
-                textStart = textEnd;
-                updateCallBack.onClick();
-            } else if (event.getX() < getWidth() / 3f && upOnClick != null) {
-                int posIndex = 0;
-                //等于0代表是上一章，
-                if (textStart == 0) {
-                    if (upOnClick.onClick()) {
-
-                        int posIndex1 = maxLine / pageMaxLine;
-                        //获取能显示完整行数的页面数
-                        posIndex = maxLine - posIndex1 * pageMaxLine;
-                        if (posIndex == 0) {
-                            posIndex = maxLine - pageMaxLine + 1;
-                        } else {
-                            posIndex = posIndex1 * pageMaxLine + 1;
-                        }
-                    } else {
-                        return true;
-                    }
-                } else {
-                    //判断统计行数没，如果没有，则先统计
-                    if (maxLine < 1) {
-                        hd.removeCallbacks(run);
-                        AnalyseTextLine();
-                    }
-                    for (Map.Entry<Integer, Integer> value : map.entrySet()) {
-                        if (value.getValue() == textStart) {
-                            posIndex = value.getKey() - pageMaxLine;
-                            break;
-                        }
-                    }
-                }
-
-                if (map.containsKey(posIndex)) {
-                    //noinspection ConstantConditions
-                    textStart = map.get(posIndex);
-                } else {
-                    Toast.makeText(getContext(), "上一页加载失败", Toast.LENGTH_SHORT).show();
-                }
-
-                updateCallBack.onClick();
-            } else {
-                if (menuOnClick != null) menuOnClick.onClick();
-            }
-            invalidate();
-            return true;
-        }
-    });
-
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -478,12 +456,6 @@ public class ReadTextView extends View {
     public void setUpdateCallBack(CallBack func) {
         updateCallBack = func;
     }
-
-    private float[] font_x;
-
-
-    //用于存储 newDraw 下的每行字间距平摊间距
-    private final HashMap<Integer, Float> wordSpaceMap = new HashMap<>();
 
     //用于测量一章有多少行
     public void AnalyseTextLine() {
@@ -637,11 +609,9 @@ public class ReadTextView extends View {
         //Log.i("最大行数", String.valueOf(maxLine));
     }
 
-
     private int getPageMaxLine() {
         return pageMaxLine;
     }
-
 
     private void CheckPageMaxLine() {
         //获取测量标准线
@@ -659,11 +629,6 @@ public class ReadTextView extends View {
         pageMaxLine = (int) ((heightPixels) / (finalHeight));
         //return pageMaxLine;
     }
-
-    DecimalFormat format1 = new DecimalFormat("##%");
-
-    //一行字体位置数组
-    float[] line_font = new float[200];
 
     //Path path = new Path();
 

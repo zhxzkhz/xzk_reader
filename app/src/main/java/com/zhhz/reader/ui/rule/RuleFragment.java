@@ -4,20 +4,52 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.zhhz.reader.adapter.RuleAdapter;
+import com.zhhz.reader.bean.RuleBean;
 import com.zhhz.reader.databinding.FragmentRuleBinding;
+import com.zhhz.reader.rule.Analysis;
+import com.zhhz.reader.rule.RuleAnalysis;
+import com.zhhz.reader.util.StringUtil;
+import com.zhhz.reader.view.RecycleViewDivider;
+
+import java.util.Objects;
 
 public class RuleFragment extends Fragment {
 
+    ActivityResultLauncher<String> launch;
     private RuleViewModel ruleViewModel;
     private FragmentRuleBinding binding;
+    private RuleAdapter ruleAdapter;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            try {
+                RuleAnalysis rule = new RuleAnalysis(Analysis.readText(requireContext(), result), false);
+                RuleBean ruleBean = new RuleBean();
+                ruleBean.setId(StringUtil.getMD5(rule.getAnalysis().getName()));
+                ruleBean.setName(rule.getAnalysis().getName());
+                ruleBean.setFile(result.getPath().replace(result.getScheme(), ""));
+                ruleBean.setComic(rule.getAnalysis().isComic());
+                ruleBean.setOpen(true);
+                ruleViewModel.saveRule(ruleBean);
+            } catch (Exception e) {
+                Toast.makeText(requireContext(), "导入失败，该文件不是规则文件", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -26,14 +58,38 @@ public class RuleFragment extends Fragment {
         binding = FragmentRuleBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textDashboard;
-        ruleViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
+        ruleAdapter = new RuleAdapter();
+        ruleAdapter.setHasStableIds(true);
+        //设置Item增加、移除动画
+        binding.rv.setItemAnimator(null);
+        binding.rv.setLayoutManager(new LinearLayoutManager(getContext()));
+        //固定高度
+        binding.rv.setHasFixedSize(true);
+        binding.rv.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
+        binding.rv.setAdapter(ruleAdapter);
+
+        ruleAdapter.setOnClickListener(view -> {
+            if (view instanceof SwitchMaterial) {
+                RuleBean ruleBean = Objects.requireNonNull(ruleViewModel.getRuleList().getValue()).get(binding.rv.getChildAdapterPosition(view));
+                ruleBean.setOpen(((SwitchMaterial) view).isChecked());
+                ruleViewModel.saveRule(ruleBean);
             }
         });
+
+        binding.ruleAdd.setOnClickListener(view -> {
+            launch.launch("*/*");
+        });
+
         return root;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ruleViewModel.getRuleList().observe(getViewLifecycleOwner(), ruleBeans -> {
+            ruleAdapter.setItemData(ruleBeans);
+            ruleAdapter.notifyItemRangeChanged(0, ruleBeans.size());
+        });
     }
 
     @Override

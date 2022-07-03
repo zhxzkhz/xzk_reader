@@ -24,70 +24,30 @@ import okhttp3.ResponseBody;
 
 public class DiskCache {
 
+    //测试缓存时间调整到 300 分钟
+    private static final long cache_time = 1000 * 60 * 300;
+    ;
     //用于执行JS
-    public static ScriptEngine engine = new ScriptEngineManager().getEngineByName("rhino");;
-
+    public static ScriptEngine engine = new ScriptEngineManager().getEngineByName("rhino");
+    public static String path = "/storage/emulated/0/星☆空";
     //缓存删除时间标记
     private static boolean cache_delete_tag = true;
-
     private static long currentTimeMillis = System.currentTimeMillis();
-
-    //测试缓存时间调整到 300 分钟
-    private static final long cache_time =  1000 * 60 * 300;
-
-    public static String path = "/storage/emulated/0/星☆空";
-
-    static {
-        File f = new File(path);
-        if (!f.isDirectory() || (f.isDirectory() && !f.canWrite())){
-            if (!new File(path).mkdirs()){
-                path = SQLiteUtil.context.getExternalFilesDir("").getAbsolutePath();
-            }
-        }
-    }
-
-    private static void delete_cache(){
-
-        long time = System.currentTimeMillis();
-
-        //大于5分钟执行删除
-        if ((time - currentTimeMillis) > cache_time) {
-            currentTimeMillis = time;
-            cache_delete_tag = true;
-        }
-
-        if (cache_delete_tag) {
-            cache_delete_tag = false;
-            String pt = path == null ? SQLiteUtil.context.getExternalCacheDir().getAbsolutePath() : path;
-            String file = pt +  File.separator + "Disk_Cache" + File.separator;
-            File[] files = new File(file).listFiles();
-            //删除缓存时间大于五分钟的
-            if (files != null) {
-                for (File file1 : files) {
-                    if ((time - file1.lastModified()) > cache_time) {
-                        if (file1.delete()){
-                            System.out.println("delete_cache -> 缓存已清除");
-                        };
-                    }
-                }
-            }
-        }
-
-    }
-
     public static Interceptor interceptor = chain -> {
         delete_cache();
         byte[] b;
         //post提交取消缓存
-        if (chain.request().method().equalsIgnoreCase("POST")) return chain.proceed(chain.request());
+        if (chain.request().method().equalsIgnoreCase("POST"))
+            return chain.proceed(chain.request());
         File file = DiskCache.urlToFile(chain.request().url(), path);
         if (file != null && file.isFile()) {
-            try (FileInputStream fis = new FileInputStream(file)){
+            try (FileInputStream fis = new FileInputStream(file)) {
                 int size = fis.available();
                 b = new byte[size];
-                if (fis.read(b)!=size) return chain.proceed(chain.request());;
-            } catch (IOException e){
-               e.printStackTrace();
+                if (fis.read(b) != size) return chain.proceed(chain.request());
+                ;
+            } catch (IOException e) {
+                e.printStackTrace();
                 return chain.proceed(chain.request());
             }
 
@@ -100,10 +60,49 @@ public class DiskCache {
                 .protocol(Protocol.HTTP_1_1)
                 .protocol(Protocol.HTTP_2)
                 .message("本地缓存")
-                .body(ResponseBody.create(MediaType.parse("text/html;charset=utf-8"),b))
+                .body(ResponseBody.create(MediaType.parse("text/html;charset=utf-8"), b))
                 .request(chain.request())
                 .build();
     };
+
+    static {
+        File f = new File(path);
+        if (!f.isDirectory() || (f.isDirectory() && !f.canWrite())) {
+            if (!new File(path).mkdirs()) {
+                path = SQLiteUtil.context.getExternalFilesDir("").getAbsolutePath();
+            }
+        }
+    }
+
+    private static void delete_cache() {
+
+        long time = System.currentTimeMillis();
+
+        //大于5分钟执行删除
+        if ((time - currentTimeMillis) > cache_time) {
+            currentTimeMillis = time;
+            cache_delete_tag = true;
+        }
+
+        if (cache_delete_tag) {
+            cache_delete_tag = false;
+            String pt = path == null ? SQLiteUtil.context.getExternalCacheDir().getAbsolutePath() : path;
+            String file = pt + File.separator + "Disk_Cache" + File.separator;
+            File[] files = new File(file).listFiles();
+            //删除缓存时间大于五分钟的
+            if (files != null) {
+                for (File file1 : files) {
+                    if ((time - file1.lastModified()) > cache_time) {
+                        if (file1.delete()) {
+                            System.out.println("delete_cache -> 缓存已清除");
+                        }
+                        ;
+                    }
+                }
+            }
+        }
+
+    }
 
     private static String encrypt(String dataStr) {
         try {
@@ -150,17 +149,17 @@ public class DiskCache {
     private static File urlToFile(HttpUrl call, String pt) {
         String paths = call.encodedPath().substring(1).replace("/", "_");
         pt = pt == null ? SQLiteUtil.context.getExternalCacheDir().getAbsolutePath() : pt;
-        String url = pt +  File.separator + "Disk_Cache" + File.separator;
-        if (paths.equals("")){
-            if (call.encodedQuery() ==null) {
+        String url = pt + File.separator + "Disk_Cache" + File.separator;
+        if (paths.equals("")) {
+            if (call.encodedQuery() == null) {
                 return null;
-            }else {
+            } else {
                 return new File(url + encrypt(call.host() + call.encodedQuery()));
             }
         } else {
-            if (call.encodedQuery() ==null) {
+            if (call.encodedQuery() == null) {
                 return new File(url + encrypt(call.host() + paths));
-            }else {
+            } else {
                 return new File(url + encrypt(call.host() + paths + call.encodedQuery()));
             }
         }

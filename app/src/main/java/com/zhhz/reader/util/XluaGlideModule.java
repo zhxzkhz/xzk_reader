@@ -26,6 +26,9 @@ import okhttp3.Protocol;
 @GlideModule
 public class XluaGlideModule extends AppGlideModule {
 
+    //Dns 用于okhttp3的dns
+    private static String[] Dns = null;
+
     public static String[] getDns() {
         return Dns;
     }
@@ -34,13 +37,10 @@ public class XluaGlideModule extends AppGlideModule {
         Dns = dns;
     }
 
-    //Dns 用于okhttp3的dns
-    private static String[] Dns = null;
-
     @Override
     public boolean isManifestParsingEnabled() {
-            return false;
-        }
+        return false;
+    }
 
     @Override
     public void applyOptions(@NonNull Context context, @NonNull GlideBuilder builder) {
@@ -50,13 +50,13 @@ public class XluaGlideModule extends AppGlideModule {
 
     @Override
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
-        OkHttpClient.Builder builder =new OkHttpClient.Builder();
-        ArrayList<Protocol> al=new ArrayList<>();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        ArrayList<Protocol> al = new ArrayList<>();
         al.add(Protocol.HTTP_1_1);
         al.add(Protocol.HTTP_2);
         builder.protocols(al);
 
-        if  (Dns != null && Dns.length>0) {
+        if (Dns != null && Dns.length > 0) {
             builder.dns(str -> {
                 try {
                     ArrayList<InetAddress> arrayList = new ArrayList<>();

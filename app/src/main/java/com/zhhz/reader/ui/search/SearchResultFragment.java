@@ -24,9 +24,9 @@ import java.util.ArrayList;
 
 public class SearchResultFragment extends Fragment {
 
+    private static SearchResultFragment searchResultFragment;
     private FragmentSearchResultBinding binding;
     private SearchResultAdapter searchResultAdapter;
-    private static SearchResultFragment searchResultFragment;
 
     public static SearchResultFragment getInstance() {
         if (searchResultFragment != null) return searchResultFragment;
@@ -63,7 +63,7 @@ public class SearchResultFragment extends Fragment {
         binding.searchResult.setLayoutManager(new LinearLayoutManager(getContext()));
         //固定高度
         binding.searchResult.setHasFixedSize(true);
-        binding.searchResult.addItemDecoration(new RecycleViewDivider(this.getContext(),1));
+        binding.searchResult.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.searchResult.setAdapter(searchResultAdapter);
 
         searchResultAdapter.setOnClickListener(view -> {

@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,14 +23,10 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.util.ViewPreloadSizeProvider;
 import com.zhhz.reader.R;
 import com.zhhz.reader.adapter.ComicAdapter;
-import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.databinding.FragmentComicreaderBinding;
-import com.zhhz.reader.ui.search.SearchResultFragment;
 import com.zhhz.reader.util.GlideApp;
-import com.zhhz.reader.view.RecycleViewDivider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -62,7 +57,7 @@ public class ComicReaderFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentComicreaderBinding.inflate(inflater,container,false);
+        binding = FragmentComicreaderBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         comicAdapter = new ComicAdapter(requireContext());
@@ -75,16 +70,16 @@ public class ComicReaderFragment extends Fragment {
         //binding.readerComic.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.readerComic.setAdapter(comicAdapter);
 
-        ListPreloader.PreloadModelProvider<GlideUrl> preloadModelProvider = new ListPreloader.PreloadModelProvider<GlideUrl>(){
+        ListPreloader.PreloadModelProvider<GlideUrl> preloadModelProvider = new ListPreloader.PreloadModelProvider<GlideUrl>() {
 
             @NonNull
             @Override
             public List<GlideUrl> getPreloadItems(int position) {
                 //imagesList是你的图片地址列表
-                if(position < comicAdapter.getItemData().size()){
+                if (position < comicAdapter.getItemData().size()) {
                     //告诉RecyclerViewPreloader每个item项需要加载的图片url集合
-                    return comicAdapter.getItemData().subList(position, position+1);
-                }else {
+                    return comicAdapter.getItemData().subList(position, position + 1);
+                } else {
                     return comicAdapter.getItemData().subList(comicAdapter.getItemData().size() - 1, comicAdapter.getItemData().size());
                 }
             }
@@ -121,7 +116,7 @@ public class ComicReaderFragment extends Fragment {
                     int last = layout_manager.findLastVisibleItemPosition();
                     //第一个可见的视图位置
                     int first = layout_manager.findFirstVisibleItemPosition();
-                    int count =  comicAdapter.getItemData().size();
+                    int count = comicAdapter.getItemData().size();
                     int page;
 
                     System.out.println("dy = " + dy);
@@ -141,7 +136,7 @@ public class ComicReaderFragment extends Fragment {
                             page = first_completely + 1;
                         }
                     } else if (dy < 0) {
-                        if (first_completely == 0 ){
+                        if (first_completely == 0) {
                             page = 1;
                         } else if (last_completely == -1) {
                             page = last + 1;
@@ -151,19 +146,19 @@ public class ComicReaderFragment extends Fragment {
                     } else {
                         page = mViewModel.getStart() + 1;
                     }
-                    binding.progressText.setText(requireContext().getString(R.string.progress_text,page,count));
+                    binding.progressText.setText(requireContext().getString(R.string.progress_text, page, count));
 
-                    if (mViewModel.getStart()+1 != page || page == count) {
+                    if (mViewModel.getStart() + 1 != page || page == count) {
                         if (page != count) {
                             mViewModel.setStart(page - 1);
                             mViewModel.saveProgressComic();
                         }
-                        if (page + 7 > count && !loading && mViewModel.isHaveNextChapters(mViewModel.current_progress_page(page-1)[0])){
+                        if (page + 7 > count && !loading && mViewModel.isHaveNextChapters(mViewModel.current_progress_page(page - 1)[0])) {
                             loading = true;
                             mViewModel.loadNextChapters();
                         }
                     }
-                } catch (Exception e){
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
@@ -171,7 +166,7 @@ public class ComicReaderFragment extends Fragment {
             }
         });
 
-        GestureDetector gestureDetector = new GestureDetector(getContext(),new GestureDetector.SimpleOnGestureListener(){
+        GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent e) {
                 return true;
@@ -202,8 +197,8 @@ public class ComicReaderFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
             binding.progress.hide();
-            if (map.containsKey("error")){
-                binding.bookReader.addView(error_btn,binding.progress.getLayoutParams());
+            if (map.containsKey("error")) {
+                binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
                 int length = comicAdapter.getItemData().size();
                 if ("true".equals(String.valueOf(map.get("end")))) {
@@ -213,10 +208,10 @@ public class ComicReaderFragment extends Fragment {
                     layout_manager.scrollToPositionWithOffset(mViewModel.getStart(), 0);
                 } else {
                     comicAdapter.getItemData().addAll(mViewModel.getComic_list());
-                    comicAdapter.notifyItemRangeInserted(length,mViewModel.getComic_list().size());
+                    comicAdapter.notifyItemRangeInserted(length, mViewModel.getComic_list().size());
                 }
                 length = comicAdapter.getItemData().size();
-                binding.progressText.setText(requireContext().getString(R.string.progress_text,mViewModel.getStart()+1,length));
+                binding.progressText.setText(requireContext().getString(R.string.progress_text, mViewModel.getStart() + 1, length));
             }
             loading = false;
         });
@@ -232,7 +227,6 @@ public class ComicReaderFragment extends Fragment {
         mViewModel.getContentComic(true);
 
     }
-
 
 
 }
