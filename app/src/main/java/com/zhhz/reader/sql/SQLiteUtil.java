@@ -96,7 +96,7 @@ public class SQLiteUtil {
         Cursor query = database.rawQuery("select * from bookrule", null);
         ArrayList<RuleBean> list = new ArrayList<>();
         while (query.moveToNext()) {
-            if (!new File(DiskCache.path + File.separator + "rule" + File.separator + query.getString(0) + File.separator + "chapter").isFile()) {
+            if (!new File(query.getString(2)).isFile()) {
                 continue;
             }
             RuleBean ruleBean = new RuleBean();

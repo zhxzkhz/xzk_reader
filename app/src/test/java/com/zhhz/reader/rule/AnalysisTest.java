@@ -21,9 +21,9 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\rule\\www_sixmh7_com.json");
-        analysis.BookSearch("魔王", (data, msg, label) -> {
-
+        RuleAnalysis analysis = new RuleAnalysis("D:\\84dec38d427180c8dda23e7f22f7da9f\\www_diyibanzhu_xyz.json");
+        analysis.BookSearch("神御", (data, msg, label) -> {
+            System.out.println("data.toString() = " + data.toString());
             assertTrue(((List<SearchResultBean>) data).size() > 0);
             System.out.printf("耗时 -> %d%n", System.currentTimeMillis() - time);
             System.out.println("\033[0;32mBookSearch -> 通过 : ");
@@ -42,9 +42,9 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\rule\\www_sixmh7_com.json");
+        RuleAnalysis analysis = new RuleAnalysis("D:\\84dec38d427180c8dda23e7f22f7da9f\\www_diyibanzhu_xyz.json");
 
-        analysis.BookDetail("http://www.sixmh7.com/16041/", (data, msg, label) -> {
+        analysis.BookDetail("http://www.1diyibanzhu.xyz/29/29760/", (data, msg, label) -> {
             System.out.println("data = " + data);
             assertNotNull(data);
             countDownLatch.countDown();
@@ -62,10 +62,11 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\rule\\www_sixmh7_com.json");
+        RuleAnalysis analysis = new RuleAnalysis("D:\\84dec38d427180c8dda23e7f22f7da9f\\xzy.json");
         BookBean bookBean = new BookBean();
         bookBean.setBook_id(UUID.randomUUID().toString());
-        analysis.BookDirectory("http://www.sixmh7.com/bookchapter/@post->id=16041&id2=1", (data, msg, label) -> {
+        analysis.BookDirectory("http://www.1diyibanzhu.xyz/29/29760_1/", (data, msg, label) -> {
+            System.out.println("data.toString() = " + data.toString());
             assertNotNull(data);
             countDownLatch.countDown();
         });

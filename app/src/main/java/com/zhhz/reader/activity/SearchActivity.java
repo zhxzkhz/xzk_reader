@@ -40,7 +40,7 @@ public class SearchActivity extends AppCompatActivity {
         binding.searchText.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (RuleAnalysis.analyses_map.size() == 0) {
                 Toast.makeText(this, "请设置书源", Toast.LENGTH_SHORT).show();
-                return false;
+                return true;
             }
             if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                 binding.searchText.clearFocus();
@@ -60,7 +60,7 @@ public class SearchActivity extends AppCompatActivity {
         binding.searchText.setFocusableInTouchMode(true);
         binding.searchText.requestFocus();
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-        binding.searchText.setImeOptions(EditorInfo.IME_ACTION_SEND);
+        binding.searchText.setImeOptions(EditorInfo.IME_ACTION_SEARCH);
     }
 
     @Override

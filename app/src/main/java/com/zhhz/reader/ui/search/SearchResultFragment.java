@@ -38,6 +38,7 @@ public class SearchResultFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         SearchViewModel mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
         mViewModel.getData().observe(getViewLifecycleOwner(), list -> {
+            binding.progress.setVisibility(View.GONE);
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(), list));
             searchResultAdapter.setItemData(list);
             result.dispatchUpdatesTo(searchResultAdapter);
@@ -82,6 +83,8 @@ public class SearchResultFragment extends Fragment {
         super.onDestroy();
         searchResultFragment = null;
     }
+
+
 
     private static class SearchResultDiffCallback extends DiffUtil.Callback {
         private final ArrayList<SearchResultBean> oldData;

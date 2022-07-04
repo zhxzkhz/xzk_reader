@@ -42,14 +42,14 @@ public class RuleFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            JSONObject content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(),result)));
             try {
-                JSONObject content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(),result)));
                 String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + content.getString("name") + ".json";
                 if (!FileUtil.CopyFile(content.toString(),new File(s))) {
                     Toast.makeText(requireContext(),"文件导入异常",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                RuleAnalysis rule = new RuleAnalysis(content, false);
+                RuleAnalysis rule = new RuleAnalysis(content, true);
                 RuleBean ruleBean = new RuleBean();
                 ruleBean.setId(StringUtil.getMD5(rule.getAnalysis().getName()));
                 ruleBean.setName(rule.getAnalysis().getName());
@@ -58,8 +58,8 @@ public class RuleFragment extends Fragment {
                 ruleBean.setOpen(true);
                 ruleViewModel.saveRule(ruleBean);
                 Toast.makeText(requireContext(),"导入成功",Toast.LENGTH_SHORT).show();
-                content.clear();
             } catch (Exception e) {
+                RuleAnalysis.analyses_map.remove(StringUtil.getMD5(content.getString("name")));
                 Snackbar.make(binding.getRoot(),"导入失败，该文件不是规则文件", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(requireContext())
                 .setTitle("错误提示")
                 .setMessage(e.getMessage())

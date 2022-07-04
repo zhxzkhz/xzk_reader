@@ -23,6 +23,7 @@ public class RuleViewModel extends ViewModel {
 
     public void saveRule(RuleBean bean) {
         SQLiteUtil.saveRule(bean);
+        mRuleList.setValue(SQLiteUtil.readRules());
     }
 
 }
