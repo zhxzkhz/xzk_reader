@@ -4,8 +4,11 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.zhhz.reader.bean.RuleBean;
+import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
+import com.zhhz.reader.util.StringUtil;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class RuleViewModel extends ViewModel {
@@ -23,6 +26,15 @@ public class RuleViewModel extends ViewModel {
 
     public void saveRule(RuleBean bean) {
         SQLiteUtil.saveRule(bean);
+        if (bean.isOpen()) {
+            try {
+                new RuleAnalysis(bean.getFile(), true);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            RuleAnalysis.analyses_map.remove(StringUtil.getMD5(bean.getName()));
+        }
         mRuleList.setValue(SQLiteUtil.readRules());
     }
 

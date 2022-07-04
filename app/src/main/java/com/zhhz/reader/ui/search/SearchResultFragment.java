@@ -85,7 +85,6 @@ public class SearchResultFragment extends Fragment {
     }
 
 
-
     private static class SearchResultDiffCallback extends DiffUtil.Callback {
         private final ArrayList<SearchResultBean> oldData;
         private final ArrayList<SearchResultBean> newData;

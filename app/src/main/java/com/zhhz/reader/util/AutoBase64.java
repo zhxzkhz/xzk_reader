@@ -8,7 +8,7 @@ import java.util.Arrays;
  * 自动识别是否是win系统，如果是则调用 java.util.Base64,反之调用 android.util.Base64
  */
 
-public class Auto_Base64 {
+public class AutoBase64 {
     private static Class<?> Base64;
     private static Object decoder;
     private static Object encoder;

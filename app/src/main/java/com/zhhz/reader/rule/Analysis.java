@@ -2,9 +2,6 @@ package com.zhhz.reader.rule;
 
 import static com.zhhz.reader.rule.RuleAnalysis.client;
 
-import android.content.Context;
-import android.net.Uri;
-
 import androidx.annotation.NonNull;
 
 import com.alibaba.fastjson.JSONObject;
@@ -17,7 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
 

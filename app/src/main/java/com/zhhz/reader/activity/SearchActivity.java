@@ -35,7 +35,8 @@ public class SearchActivity extends AppCompatActivity {
 
         SearchViewModel mViewModel = new ViewModelProvider(this).get(SearchViewModel.class);
         binding.searchClear.setOnClickListener(view -> finish());
-        binding.searchText.setOnSearchFocusListener((v, hasFocus) -> System.out.println(v));
+        binding.searchText.setOnSearchFocusListener((v, hasFocus) -> {
+        });
         binding.searchText.changeSearchLogo(true);
         binding.searchText.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (RuleAnalysis.analyses_map.size() == 0) {

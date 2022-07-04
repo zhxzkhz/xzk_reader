@@ -24,7 +24,7 @@ public class RuleAnalysis {
     }
 
     public RuleAnalysis(String path, Boolean bool) throws IOException {
-        this(Analysis.readText(path),bool);
+        this(Analysis.readText(path), bool);
     }
 
     public RuleAnalysis(JSONObject jsonObject, Boolean bool) {

@@ -49,7 +49,8 @@ public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.textView.setText(itemData.get(position).getName());
+        holder.switchMaterial.setText(itemData.get(position).getName());
+        holder.switchMaterial.setChecked(itemData.get(position).isOpen());
     }
 
     @Override
@@ -70,11 +71,11 @@ public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public SwitchMaterial textView;
+        public SwitchMaterial switchMaterial;
 
         private ViewHolder(SwitchMaterial v) {
             super(v);
-            this.textView = v;
+            this.switchMaterial = v;
         }
     }
 

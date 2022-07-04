@@ -1,6 +1,7 @@
 package com.zhhz.reader.ui.detailed;
 
 import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,6 +10,8 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -52,6 +55,7 @@ public class DetailedFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mViewModel.getData().observe(getViewLifecycleOwner(), bean -> {
             bookBean = bean;
+
             binding.detailedTitle.setText(bean.getTitle());
             binding.detailedLayout.itemTitle.setText(bean.getTitle());
             if (bean.getCover() != null) {
@@ -62,7 +66,7 @@ public class DetailedFragment extends Fragment {
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
             }
-            binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
+            binding.detailedLayout.itemAuthor.setText(bean.getAuthor().equals("") ? bean.getAuthor() : searchResultBean.getAuthor());
             binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
             if (bean.getUpdate_time() != null) {
@@ -122,6 +126,12 @@ public class DetailedFragment extends Fragment {
             startActivity(intent);
             DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
+
+        binding.detailedIntro.setOnClickListener(view -> new AlertDialog.Builder(requireContext())
+                .setTitle("简介")
+                .setMessage(((AppCompatTextView) view).getText())
+                .setOnCancelListener(DialogInterface::dismiss)
+                .show());
 
         binding.detailedBack.setOnClickListener((view) -> requireActivity().finish());
 

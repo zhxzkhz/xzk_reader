@@ -42,11 +42,11 @@ public class RuleFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            JSONObject content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(),result)));
+            JSONObject content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(), result)));
             try {
                 String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + content.getString("name") + ".json";
-                if (!FileUtil.CopyFile(content.toString(),new File(s))) {
-                    Toast.makeText(requireContext(),"文件导入异常",Toast.LENGTH_SHORT).show();
+                if (!FileUtil.CopyFile(content.toString(), new File(s))) {
+                    Toast.makeText(requireContext(), "文件导入异常", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 RuleAnalysis rule = new RuleAnalysis(content, true);
@@ -57,14 +57,14 @@ public class RuleFragment extends Fragment {
                 ruleBean.setComic(rule.getAnalysis().isComic());
                 ruleBean.setOpen(true);
                 ruleViewModel.saveRule(ruleBean);
-                Toast.makeText(requireContext(),"导入成功",Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "导入成功", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 RuleAnalysis.analyses_map.remove(StringUtil.getMD5(content.getString("name")));
-                Snackbar.make(binding.getRoot(),"导入失败，该文件不是规则文件", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(requireContext())
-                .setTitle("错误提示")
-                .setMessage(e.getMessage())
-                .setOnCancelListener(DialogInterface::dismiss)
-                .show()).show();
+                Snackbar.make(binding.getRoot(), "导入失败，该文件不是规则文件", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(requireContext())
+                        .setTitle("错误提示")
+                        .setMessage(e.getMessage())
+                        .setOnCancelListener(DialogInterface::dismiss)
+                        .show()).show();
                 //Toast.makeText(requireContext(), "导入失败，该文件不是规则文件", Toast.LENGTH_SHORT).show();
             }
         });
@@ -105,7 +105,7 @@ public class RuleFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ruleViewModel.getRuleList().observe(getViewLifecycleOwner(), ruleBeans -> {
             ruleAdapter.setItemData(ruleBeans);
-            ruleAdapter.notifyItemRangeChanged(0, ruleBeans.size());
+            ruleAdapter.notifyItemRangeInserted(0, ruleBeans.size());
         });
     }
 

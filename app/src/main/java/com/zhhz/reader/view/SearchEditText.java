@@ -20,11 +20,11 @@ public class SearchEditText extends AppCompatEditText implements
         View.OnFocusChangeListener, TextWatcher {
 
 
+    private final Context context;
     private Drawable mClearDrawable;
     private Drawable mSearchDrawable;
     private Drawable mSearchingDrawable;
     private boolean hasFoucs;
-    private final Context context;
     private onSearchFocusListener onSearchFocusListener;
 
     public SearchEditText(Context context) {

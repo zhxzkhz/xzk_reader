@@ -3,7 +3,7 @@ package com.zhhz.reader.rule;
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
-import com.zhhz.reader.util.Auto_Base64;
+import com.zhhz.reader.util.AutoBase64;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.StringUtil;
 
@@ -11,8 +11,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+import org.mozilla.javascript.Context;
 import org.mozilla.javascript.NativeArray;
 import org.mozilla.javascript.NativeJavaObject;
+import org.mozilla.javascript.ScriptableObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -251,7 +253,7 @@ public class JsoupAnalysis extends Analysis {
                     DiskCache.engine.put("element", element);
                     DiskCache.engine.put("url", url);
                     DiskCache.engine.put("callback", callback);
-                    DiskCache.engine.eval(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(3)));
+                    DiskCache.engine.eval(AutoBase64.decodeToString(detail_x.getString("catalog").substring(3)));
                 } catch (ScriptException e) {
                     e.printStackTrace();
                 }
@@ -285,7 +287,7 @@ public class JsoupAnalysis extends Analysis {
                     DiskCache.engine.put("element", element);
                     DiskCache.engine.put("url", url);
                     DiskCache.engine.put("callback", callback);
-                    DiskCache.engine.eval(Auto_Base64.decodeToString(catalog.getString("js")));
+                    DiskCache.engine.eval(AutoBase64.decodeToString(catalog.getString("js")));
                 } catch (ScriptException e) {
                     e.printStackTrace();
                 }
@@ -516,18 +518,24 @@ public class JsoupAnalysis extends Analysis {
 
             str = str.replaceAll("^\n*|\n*$", "");
 
-            //执行lua
+            //执行js
             if (chapter.getString("js") != null) {
-                //str = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(chapter.getString("lua")), element, str, url, callback, label, JsoupAnalysis.this);
-                DiskCache.engine.put("element", element);
-                DiskCache.engine.put("data", str);
-                DiskCache.engine.put("url", url);
-                DiskCache.engine.put("callback", callback);
-                DiskCache.engine.put("label", label);
-                DiskCache.engine.put("out", System.out);
+                Context rhino = Context.enter();
+                ScriptableObject scope = rhino.initStandardObjects();
+                ScriptableObject.putProperty(scope, "xlua_rule", this);
+                ScriptableObject.putProperty(scope, "xlua_classloader", ClassLoader.getSystemClassLoader());
+                ScriptableObject.putProperty(scope, "element", element);
+                ScriptableObject.putProperty(scope, "data", str);
+                ScriptableObject.putProperty(scope, "url", url);
+                ScriptableObject.putProperty(scope, "callback", callback);
+                ScriptableObject.putProperty(scope, "label", label);
+                ScriptableObject.putProperty(scope, "out", System.out);
+
                 try {
-                    DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
-                    Object value = DiskCache.engine.get("result");
+                    rhino.evaluateString(scope, AutoBase64.decodeToString(chapter.getString("js")), "JsoupAnalysis", 1, null);
+                    //DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
+                    //Object value = DiskCache.engine.get("result");
+                    Object value = scope.get("result");
                     if (value instanceof NativeArray) {
                         NativeArray array = (NativeArray) value;
                         StringBuilder stringBuilder = new StringBuilder();
@@ -541,7 +549,7 @@ public class JsoupAnalysis extends Analysis {
                     } else {
                         str = value.toString();
                     }
-                } catch (ScriptException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     str = null;
                 }

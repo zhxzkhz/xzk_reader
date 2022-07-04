@@ -13,7 +13,6 @@ import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.snackbar.Snackbar;
 import com.scwang.smart.refresh.header.ClassicsHeader;
 import com.scwang.smart.refresh.layout.SmartRefreshLayout;
-
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.RuleBean;
 import com.zhhz.reader.databinding.ActivityMainBinding;
@@ -36,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         //设置刷新头
         SmartRefreshLayout.setDefaultRefreshHeaderCreator((context, layout) -> {
-            layout.setPrimaryColorsId(android.R.color.white,android.R.color.black);
+            layout.setPrimaryColorsId(android.R.color.white, android.R.color.black);
             return new ClassicsHeader(context).setTimeFormat(new SimpleDateFormat("更新于 HH:mm:ss"));
         });
 
@@ -47,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
 
         for (RuleBean rule : SQLiteUtil.readRules()) {
             try {
-                new RuleAnalysis(rule.getFile(),true);
+                new RuleAnalysis(rule.getFile(), true);
             } catch (IOException e) {
-                Snackbar.make(binding.getRoot(),rule.getName() + " -> 导入失败", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(this)
+                Snackbar.make(binding.getRoot(), rule.getName() + " -> 导入失败", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(this)
                         .setTitle("错误提示")
                         .setMessage(e.getMessage())
                         .setOnCancelListener(DialogInterface::dismiss)
