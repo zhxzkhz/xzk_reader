@@ -46,13 +46,13 @@ public class RuleFragment extends Fragment {
         super.onCreate(savedInstanceState);
         launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
             try {
-                JSONObject jsonObject = Analysis.readText(new String(FileUtil.readFile(requireContext(),result)));
-                String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + jsonObject.getString("name") + File.separator + ".json";
-                if (!FileUtil.CopyFile(jsonObject.toString(),new File(s))) {
+                JSONObject content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(),result)));
+                String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + content.getString("name") + File.separator + ".json";
+                if (!FileUtil.CopyFile(content.toString(),new File(s))) {
                     Toast.makeText(requireContext(),"文件导入异常",Toast.LENGTH_SHORT).show();
                     return;
                 }
-                RuleAnalysis rule = new RuleAnalysis(jsonObject, false);
+                RuleAnalysis rule = new RuleAnalysis(content, false);
                 RuleBean ruleBean = new RuleBean();
                 ruleBean.setId(StringUtil.getMD5(rule.getAnalysis().getName()));
                 ruleBean.setName(rule.getAnalysis().getName());
