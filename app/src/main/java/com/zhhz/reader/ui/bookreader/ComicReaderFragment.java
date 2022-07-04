@@ -119,13 +119,6 @@ public class ComicReaderFragment extends Fragment {
                     int count = comicAdapter.getItemData().size();
                     int page;
 
-                    System.out.println("dy = " + dy);
-
-                    System.out.println("last_completely = " + last_completely);
-                    System.out.println("last = " + last);
-                    System.out.println("first_completely = " + first_completely);
-                    System.out.println("first = " + first);
-
                     //dy 大于0代表往上拉
                     if (dy > 0) {
                         if (last_completely == count) {

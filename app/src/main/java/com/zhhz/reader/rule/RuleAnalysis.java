@@ -24,15 +24,7 @@ public class RuleAnalysis {
     }
 
     public RuleAnalysis(String path, Boolean bool) throws IOException {
-        JSONObject jsonObject = Analysis.readText(path);
-        int type = jsonObject.getIntValue("type");
-        // 0 为 jsoup ， 1 为 json
-        if (type == 0) {
-            analysis = new JsoupAnalysis(jsonObject);
-        } else if (type == 1) {
-
-        }
-        if (bool) analyses_map.put(StringUtil.getMD5(jsonObject.toJSONString()), analysis);
+        this(Analysis.readText(path),bool);
     }
 
     public RuleAnalysis(JSONObject jsonObject, Boolean bool) {
@@ -43,7 +35,7 @@ public class RuleAnalysis {
         } else if (type == 1) {
 
         }
-        if (bool) analyses_map.put(StringUtil.getMD5(jsonObject.toJSONString()), analysis);
+        if (bool) analyses_map.put(StringUtil.getMD5(analysis.getName()), analysis);
     }
 
     public void BookSearch(String key_word, Analysis.CallBack callback, String md5) {

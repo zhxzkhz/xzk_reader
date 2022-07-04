@@ -55,14 +55,13 @@ public class JsoupAnalysis extends Analysis {
         replace_map = new HashMap<>();
         replace_map.put("<p>", "");
         replace_map.put("</p>", "");
-        replace_map.put("&nbsp;", " ");
+        replace_map.put("&nbsp;", "");
         replace_map.put("&lt;", "<");
         replace_map.put("&gt;", ">");
         replace_map.put("<br><br>", "\n");
         replace_map.put("<br>\n<br>", "\n");
         replace_map.put("\n\n", "\n");
     }
-
 
     public HashMap<String, String> getReplace_map() {
         return replace_map;

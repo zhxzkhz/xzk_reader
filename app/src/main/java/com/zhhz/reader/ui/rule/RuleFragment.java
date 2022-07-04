@@ -14,15 +14,19 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.zhhz.reader.adapter.RuleAdapter;
 import com.zhhz.reader.bean.RuleBean;
 import com.zhhz.reader.databinding.FragmentRuleBinding;
 import com.zhhz.reader.rule.Analysis;
 import com.zhhz.reader.rule.RuleAnalysis;
+import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.StringUtil;
 import com.zhhz.reader.view.RecycleViewDivider;
 
+import java.io.File;
 import java.util.Objects;
 
 public class RuleFragment extends Fragment {
@@ -37,11 +41,13 @@ public class RuleFragment extends Fragment {
         super.onCreate(savedInstanceState);
         launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
             try {
-                RuleAnalysis rule = new RuleAnalysis(Analysis.readText(requireContext(), result), false);
+                JSONObject jsonObject = Analysis.readText(new String(FileUtil.readFile(result)));
+                String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + jsonObject.getString("name") + File.separator + ".json";
+                RuleAnalysis rule = new RuleAnalysis(jsonObject, false);
                 RuleBean ruleBean = new RuleBean();
                 ruleBean.setId(StringUtil.getMD5(rule.getAnalysis().getName()));
                 ruleBean.setName(rule.getAnalysis().getName());
-                ruleBean.setFile(result.getPath().replace(result.getScheme(), ""));
+                ruleBean.setFile(s);
                 ruleBean.setComic(rule.getAnalysis().isComic());
                 ruleBean.setOpen(true);
                 ruleViewModel.saveRule(ruleBean);

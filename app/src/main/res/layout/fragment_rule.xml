@@ -25,7 +25,7 @@
         android:layout_height="48dp"
         android:background="@color/white"
         android:gravity="center"
-        android:text="+﹢"
+        android:text="+"
         android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"

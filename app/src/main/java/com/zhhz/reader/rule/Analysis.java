@@ -75,20 +75,6 @@ public abstract class Analysis {
         throw new IOException("加载异常");
     }
 
-    public static JSONObject readText(Context context, Uri rui) throws IOException {
-        InputStream fis = context.getContentResolver().openInputStream(rui);
-        try {
-            int size = fis.available();
-            byte[] bytes = new byte[size];
-            if (fis.read(bytes) != size) throw new IOException("文件读取异常");
-            fis.close();
-            return JSONObject.parseObject(new String(bytes));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        throw new IOException("加载异常");
-    }
-
     public JSONObject getJson() {
         return json;
     }
