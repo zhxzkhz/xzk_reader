@@ -24,7 +24,7 @@ public class SearchEditText extends AppCompatEditText implements
     private Drawable mSearchDrawable;
     private Drawable mSearchingDrawable;
     private boolean hasFoucs;
-    private Context context;
+    private final Context context;
     private onSearchFocusListener onSearchFocusListener;
 
     public SearchEditText(Context context) {

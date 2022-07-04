@@ -1,6 +1,9 @@
 package com.zhhz.reader.util;
 
+import android.content.Context;
 import android.net.Uri;
+
+import androidx.annotation.NonNull;
 
 import com.zhhz.reader.sql.SQLiteUtil;
 
@@ -29,9 +32,26 @@ public class FileUtil {
         return true;
     }
 
+    public static boolean CopyFile(@NonNull String content,@NonNull File file){
+        if (!Objects.requireNonNull(file.getParentFile()).isDirectory()) {
+            if (!file.getParentFile().mkdirs()){
+                return false;
+            }
+        }
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            fileOutputStream.write(content.getBytes());
+        } catch (IOException e) {
+            return false;
+        }
+        return true;
+    }
+
     public static byte[] readFile(Uri uri){
+        return readFile(SQLiteUtil.context,uri);
+    }
+    public static byte[] readFile(Context context, Uri uri){
         try {
-            InputStream fis = SQLiteUtil.context.getContentResolver().openInputStream(uri);
+            InputStream fis = context.getContentResolver().openInputStream(uri);
             int size = fis.available();
             byte[] bytes = new byte[size];
             if (fis.read(bytes) != size) throw new IOException("文件读取异常");

@@ -60,6 +60,7 @@ public class SearchActivity extends AppCompatActivity {
         binding.searchText.setFocusableInTouchMode(true);
         binding.searchText.requestFocus();
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        binding.searchText.setImeOptions(EditorInfo.IME_ACTION_SEND);
     }
 
     @Override

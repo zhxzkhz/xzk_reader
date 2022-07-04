@@ -30,9 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         //设置刷新头
         SmartRefreshLayout.setDefaultRefreshHeaderCreator((context, layout) -> {
-            //layout.setPrimaryColorsId(new int[]{R.color.colorPrimary, android.R.color.white});
-            //layout.setPrimaryColorsId(new int[]{R.color.colorPrimary, android.R.color.white});
-            layout.setPrimaryColorsId(android.R.color.black,android.R.color.white);
+            layout.setPrimaryColorsId(android.R.color.white,android.R.color.black);
             return new ClassicsHeader(context).setTimeFormat(new SimpleDateFormat("更新于 HH:mm:ss"));
         });
 
