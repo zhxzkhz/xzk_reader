@@ -42,6 +42,11 @@ public class RuleAnalysis {
         analysis.BookSearch(key_word, callback, md5);
     }
 
+    /**
+     *  获取书本目录
+     * @param url 目录地址
+     * @param callback 回调函数
+     */
     public void BookDirectory(String url, Analysis.CallBack callback) {
         analysis.BookDirectory(url, callback);
     }

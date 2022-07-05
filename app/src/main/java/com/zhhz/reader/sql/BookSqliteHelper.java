@@ -14,7 +14,7 @@ public class BookSqliteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
-        String execSQL = "create table bookrack (book_id varchar(32) primary key,title varchar(60),author varchar(60),cover varchar(60),categories varchar(30),catalogue varchar(50),latestChapter varchar(120),status integer,update_time varchar(20),intro varchar(600))";
+        String execSQL = "create table bookrack (book_id varchar(32) primary key,title varchar(60),author varchar(60),cover varchar(60),chapter_update boolean,catalogue varchar(50),latestChapter varchar(120),status boolean,update_time varchar(20),intro varchar(600))";
         sqLiteDatabase.execSQL(execSQL);
     }
 

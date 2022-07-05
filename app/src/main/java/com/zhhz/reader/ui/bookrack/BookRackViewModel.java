@@ -4,17 +4,36 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.rule.Analysis;
+import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
+import com.zhhz.reader.util.DiskCache;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Objects;
 
 public class BookRackViewModel extends ViewModel {
 
     private final MutableLiveData<ArrayList<BookBean>> data;
 
+    private final MutableLiveData<BookBean> catalogue;
+
     public BookRackViewModel() {
         data = new MutableLiveData<>();
+        catalogue = new MutableLiveData<>();
         //data.postValue(SQLiteUtil.readBooks());
 /*
         ArrayList<BookBean> list = new ArrayList<>();
@@ -32,7 +51,66 @@ public class BookRackViewModel extends ViewModel {
         data.setValue(SQLiteUtil.readBooks());
     }
 
+    /**
+     * 更新目录
+     */
+    public void updateCatalogue() {
+        for (BookBean bookBean : Objects.requireNonNull(data.getValue())) {
+            RuleAnalysis rule;
+            try {
+                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "rule");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            rule.BookDirectory(bookBean.getCatalogue(), (data, msg, url) -> {
+                if (data == null) {
+                    catalogue.setValue(null);
+                } else {
+                    HashMap<String, String> mv = (LinkedHashMap<String, String>) data;
+                    if (mv.size() == 0) {
+                        catalogue.setValue(null);
+                        return;
+                    }
+
+                    //读取书本目录章节
+                    File file = new File(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "chapter");
+                    LinkedHashMap<String, String> old_map;
+                    try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
+                        old_map = JSONObject.parseObject(bufferedWriter.readLine(), new TypeReference<LinkedHashMap<String, String>>() {
+                        }.getType());
+                    } catch (IOException ignored) {
+                        catalogue.setValue(null);
+                        return;
+                    }
+
+                    //获取章节最后一章的名字来和以前存储的章节比较，如果最后一章不存在，就代表更新了
+                    Iterator<String> iterator = mv.keySet().iterator();
+                    String key = null;
+                    while (iterator.hasNext()) {
+                        key = iterator.next();
+                    }
+
+                    if (!old_map.containsKey(key)) {
+                        old_map.putAll(mv);
+                        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
+                            bufferedWriter.write(JSON.toJSONString(old_map));
+                        } catch (IOException ignored) {
+                        }
+                        bookBean.setCatalogue(String.valueOf(url));
+                        SQLiteUtil.saveBook(bookBean);
+                        catalogue.setValue(bookBean);
+                    }
+                }
+            });
+        }
+    }
+
     public LiveData<ArrayList<BookBean>> getData() {
         return data;
+    }
+
+    public MutableLiveData<BookBean> getCatalogue() {
+        return catalogue;
     }
 }

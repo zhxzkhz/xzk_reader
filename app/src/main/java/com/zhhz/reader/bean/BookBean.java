@@ -10,9 +10,9 @@ public class BookBean implements Serializable {
     private String title;
     private String author;
     private String cover;
-    private String categories;
     private String catalogue;
     private String latestChapter;
+    private boolean update;
     private String update_time;
     private String intro;
     //是否完结
@@ -50,12 +50,12 @@ public class BookBean implements Serializable {
         this.cover = cover;
     }
 
-    public String getCategories() {
-        return categories;
+    public boolean isUpdate() {
+        return update;
     }
 
-    public void setCategories(String categories) {
-        this.categories = categories;
+    public void setUpdate(boolean update) {
+        this.update = update;
     }
 
     public String getCatalogue() {
@@ -106,7 +106,7 @@ public class BookBean implements Serializable {
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", cover='" + cover + '\'' +
-                ", categories='" + categories + '\'' +
+                ", categories='" + isUpdate() + '\'' +
                 ", catalogue='" + catalogue + '\'' +
                 ", latestChapter='" + latestChapter + '\'' +
                 ", update_time='" + update_time + '\'' +

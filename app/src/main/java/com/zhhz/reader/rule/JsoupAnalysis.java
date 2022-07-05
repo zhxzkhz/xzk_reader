@@ -485,7 +485,6 @@ public class JsoupAnalysis extends Analysis {
                 for (Element ele : content1) {
                     ele.remove();
                 }
-
                 if (content.size() == 1) {
                     content.html(content.html());
                 }
@@ -530,7 +529,7 @@ public class JsoupAnalysis extends Analysis {
                 ScriptableObject.putProperty(scope, "callback", callback);
                 ScriptableObject.putProperty(scope, "label", label);
                 ScriptableObject.putProperty(scope, "out", System.out);
-
+                
                 try {
                     rhino.evaluateString(scope, AutoBase64.decodeToString(chapter.getString("js")), "JsoupAnalysis", 1, null);
                     //DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));

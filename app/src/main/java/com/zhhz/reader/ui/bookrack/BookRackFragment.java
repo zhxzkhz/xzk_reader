@@ -8,17 +8,25 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.scwang.smart.refresh.layout.api.RefreshLayout;
+import com.scwang.smart.refresh.layout.listener.OnRefreshListener;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
 import com.zhhz.reader.adapter.BookAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookrackBinding;
+import com.zhhz.reader.rule.Analysis;
+import com.zhhz.reader.rule.RuleAnalysis;
+import com.zhhz.reader.util.DiskCache;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -63,9 +71,19 @@ public class BookRackFragment extends Fragment {
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(new BookRackDiffCallback(bookAdapter.getItemData(), list));
             bookAdapter.setItemData(list);
             result.dispatchUpdatesTo(bookAdapter);
+            //bookrackViewModel.updateCatalogue();
         });
 
-        //new Handler().postDelayed(() -> binding.searchView.callOnClick(),100);
+        binding.refreshLayout.setOnRefreshListener(refreshLayout -> bookrackViewModel.updateCatalogue());
+
+        bookrackViewModel.getCatalogue().observe(getViewLifecycleOwner(), bookBean -> {
+            if (bookBean!=null){
+                int pos = bookAdapter.getItemData().indexOf(bookBean);
+                if (pos > -1){
+                    bookAdapter.notifyItemChanged(pos);
+                }
+            }
+        });
 
         return root;
     }
