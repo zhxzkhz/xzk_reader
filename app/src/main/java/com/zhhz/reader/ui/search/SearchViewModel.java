@@ -22,9 +22,7 @@ public class SearchViewModel extends ViewModel {
     public void searchBook(String key) {
         for (Map.Entry<String, Analysis> entry : RuleAnalysis.analyses_map.entrySet()) {
             Analysis analysis = entry.getValue();
-            analysis.BookSearch(key, (data, msg, label) -> {
-                SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data);
-            }, entry.getKey());
+            analysis.BookSearch(key, (data, msg, label) -> SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data), entry.getKey());
         }
     }
 

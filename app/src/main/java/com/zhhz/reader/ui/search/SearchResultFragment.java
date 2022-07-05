@@ -1,5 +1,6 @@
 package com.zhhz.reader.ui.search;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -33,15 +34,21 @@ public class SearchResultFragment extends Fragment {
         return searchResultFragment = new SearchResultFragment();
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         SearchViewModel mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
         mViewModel.getData().observe(getViewLifecycleOwner(), list -> {
             binding.progress.setVisibility(View.GONE);
-            DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(), list));
-            searchResultAdapter.setItemData(list);
-            result.dispatchUpdatesTo(searchResultAdapter);
+            if (list==null) {
+                searchResultAdapter.getItemData().clear();
+                searchResultAdapter.notifyDataSetChanged();
+            } else {
+                DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(), list));
+                searchResultAdapter.setItemData(list);
+                result.dispatchUpdatesTo(searchResultAdapter);
+            }
         });
     }
 
