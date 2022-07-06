@@ -66,7 +66,7 @@ public class DetailedFragment extends Fragment {
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
             }
-            if (bean.getAuthor() == null && bean.getAuthor().length() == 0) {
+            if (bean.getAuthor() == null || bean.getAuthor().length() == 0) {
                 binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
             } else {
                 binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
