@@ -12,6 +12,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.zhhz.reader.XluaApplication;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -119,7 +121,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
         //收集设备参数信息
         collectDeviceInfo(mContext);
         //保存日志文件
-        Toast.makeText(mContext, saveCrashInfo2File(ex), Toast.LENGTH_SHORT).show();
+        Toast.makeText(XluaApplication.context, saveCrashInfo2File(ex), Toast.LENGTH_SHORT).show();
         return true;
     }
 

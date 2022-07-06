@@ -66,7 +66,11 @@ public class DetailedFragment extends Fragment {
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
             }
-            binding.detailedLayout.itemAuthor.setText(bean.getAuthor().equals("") ? bean.getAuthor() : searchResultBean.getAuthor());
+            if (bean.getAuthor() == null && bean.getAuthor().length() == 0) {
+                binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
+            } else {
+                binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
+            }
             binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
             if (bean.getUpdate_time() != null) {
