@@ -13,7 +13,7 @@ public class MyApplication extends Application {
     public static Context context;
 
     //调试模式
-    public static boolean DeBug = true;
+    public static boolean DeBug = false;
 
     @Override
     public void onCreate() {
