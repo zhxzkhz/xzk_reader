@@ -1,6 +1,9 @@
 package com.zhhz.reader.activity;
 
+import static com.zhhz.reader.XluaApplication.DeBug;
+
 import android.os.Bundle;
+import android.os.StrictMode;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -16,6 +19,12 @@ public class BookReaderActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        if (DeBug) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().penaltyDialog().build();
+            StrictMode.setThreadPolicy(policy);
+        }
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bookreader);
         BookReaderViewModel mViewModel = new ViewModelProvider(this).get(BookReaderViewModel.class);

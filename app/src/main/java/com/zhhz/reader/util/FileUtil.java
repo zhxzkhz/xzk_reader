@@ -5,7 +5,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import com.zhhz.reader.sql.SQLiteUtil;
+import com.zhhz.reader.XluaApplication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +46,7 @@ public class FileUtil {
     }
 
     public static byte[] readFile(Uri uri) {
-        return readFile(SQLiteUtil.context, uri);
+        return readFile(XluaApplication.context, uri);
     }
 
     public static byte[] readFile(Context context, Uri uri) {

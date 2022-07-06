@@ -1,11 +1,10 @@
 package com.zhhz.reader.sql;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+import com.zhhz.reader.XluaApplication;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.RuleBean;
 import com.zhhz.reader.util.DiskCache;
@@ -15,19 +14,17 @@ import java.util.ArrayList;
 
 public class SQLiteUtil {
 
-    @SuppressLint("StaticFieldLeak")
-    public static Context context;
     private static SQLiteOpenHelper helper;
 
     public static void saveBook(BookBean book) {
-        helper = new BookSqliteHelper(context, "bookrack.db", null, 1);
+        helper = new BookSqliteHelper(XluaApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
         database.execSQL("replace into bookrack (book_id,title,author,cover,categories,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.isUpdate(), book.getCatalogue(), book.getLatestChapter(), book.isStatus() ? 1 : 0, book.getUpdate_time(), book.getIntro()});
         database.close();
     }
 
     public static ArrayList<BookBean> readBooks() {
-        helper = new BookSqliteHelper(context, "bookrack.db", null, 1);
+        helper = new BookSqliteHelper(XluaApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
         Cursor query = database.rawQuery("select * from bookrack", null);
         ArrayList<BookBean> list = new ArrayList<>();
@@ -54,7 +51,7 @@ public class SQLiteUtil {
     }
 
     public static BookBean readBook(BookBean book) {
-        helper = new BookSqliteHelper(context, "bookrack.db", null, 1);
+        helper = new BookSqliteHelper(XluaApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
         Cursor query = database.rawQuery("select * from bookrack where book_id=?", new String[]{book.getBook_id()});
         query.move(1);
@@ -75,7 +72,7 @@ public class SQLiteUtil {
     }
 
     public static RuleBean readRule(String id) {
-        helper = new RuleSqliteHelper(context, "bookrule.db", null, 1);
+        helper = new RuleSqliteHelper(XluaApplication.context, "bookrule.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
         Cursor query = database.rawQuery("select * from bookrule where id=?", new String[]{id});
         query.move(1);
@@ -91,7 +88,7 @@ public class SQLiteUtil {
     }
 
     public static ArrayList<RuleBean> readRules() {
-        helper = new RuleSqliteHelper(context, "bookrule.db", null, 1);
+        helper = new RuleSqliteHelper(XluaApplication.context, "bookrule.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
         Cursor query = database.rawQuery("select * from bookrule", null);
         ArrayList<RuleBean> list = new ArrayList<>();
@@ -113,7 +110,7 @@ public class SQLiteUtil {
     }
 
     public static void saveRule(RuleBean ruleBean) {
-        helper = new RuleSqliteHelper(context, "bookrule.db", null, 1);
+        helper = new RuleSqliteHelper(XluaApplication.context, "bookrule.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
         database.execSQL("replace into bookrule (id,name,file,comic,open) values(?,?,?,?,?)", new Object[]{ruleBean.getId(), ruleBean.getName(), ruleBean.getFile(), ruleBean.isComic(), ruleBean.isOpen()});
         database.close();
