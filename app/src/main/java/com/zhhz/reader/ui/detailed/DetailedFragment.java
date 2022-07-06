@@ -56,20 +56,25 @@ public class DetailedFragment extends Fragment {
         mViewModel.getData().observe(getViewLifecycleOwner(), bean -> {
             bookBean = bean;
 
-            binding.detailedTitle.setText(bean.getTitle());
-            binding.detailedLayout.itemTitle.setText(bean.getTitle());
-            if (bean.getCover() != null) {
+            if (bean.getTitle() != null && !bean.getTitle().isEmpty()) {
+                binding.detailedTitle.setText(bean.getTitle());
+                binding.detailedLayout.itemTitle.setText(bean.getTitle());
+            } else {
+                bookBean.setTitle(searchResultBean.getTitle());
+            }
+            if (bean.getAuthor() != null && !bean.getAuthor().isEmpty()) {
+                binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
+            } else {
+                bookBean.setAuthor(searchResultBean.getAuthor());
+            }
+
+            if (bean.getCover() != null && !bean.getCover().isEmpty()) {
                 GlideApp.with(this)
                         .asBitmap()
                         .load(bean.getCover())
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
-            }
-            if (bean.getAuthor() == null || bean.getAuthor().length() == 0) {
-                binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
-            } else {
-                binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
             }
             binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
@@ -79,17 +84,30 @@ public class DetailedFragment extends Fragment {
             mViewModel.queryCatalogue(bean.getCatalogue(), searchResultBean, 0);
         });
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
-            catalogueAdapter.setItemData(map);
-            catalogueAdapter.notifyDataSetChanged();
-
-            int[] pro = mViewModel.readProgress(bookBean.getBook_id());
-            if (pro[0] + pro[1] > 0) {
-                binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
-            }
-            if (map.size() > 0) {
-                binding.startRead.setClickable(true);
+            if (map == null){
+                binding.startRead.setText("目录获取失败");
+                binding.startRead.setOnClickListener(v -> mViewModel.queryCatalogue(bookBean.getCatalogue(), searchResultBean, 0));
             } else {
-                binding.startRead.setText("暂无章节");
+                catalogueAdapter.setItemData(map);
+                catalogueAdapter.notifyDataSetChanged();
+                int[] pro = mViewModel.readProgress(bookBean.getBook_id());
+                if (pro[0] + pro[1] > 0) {
+                    binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
+                }
+                if (map.size() > 0) {
+                    binding.startRead.setClickable(true);
+                    binding.startRead.setOnClickListener(view1 -> {
+                        SQLiteUtil.saveBook(bookBean);
+                        mViewModel.saveDirectory(bookBean.getBook_id());
+                        mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
+                        Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
+                        intent.putExtra("book", bookBean);
+                        DetailedFragment.this.startActivity(intent);
+                        DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    });
+                } else {
+                    binding.startRead.setText("暂无章节");
+                }
             }
         });
         mViewModel.queryDetailed(searchResultBean, 0);
@@ -120,16 +138,6 @@ public class DetailedFragment extends Fragment {
 
         binding.startRead.setText("开始阅读");
         binding.startRead.setClickable(false);
-
-        binding.startRead.setOnClickListener((view) -> {
-            SQLiteUtil.saveBook(bookBean);
-            mViewModel.saveDirectory(bookBean.getBook_id());
-            mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
-            Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
-            intent.putExtra("book", bookBean);
-            startActivity(intent);
-            DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-        });
 
         binding.detailedIntro.setOnClickListener(view -> new AlertDialog.Builder(requireContext())
                 .setTitle("简介")

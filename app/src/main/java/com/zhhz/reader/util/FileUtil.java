@@ -5,7 +5,7 @@ import android.net.Uri;
 
 import androidx.annotation.NonNull;
 
-import com.zhhz.reader.XluaApplication;
+import com.zhhz.reader.MyApplication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +46,7 @@ public class FileUtil {
     }
 
     public static byte[] readFile(Uri uri) {
-        return readFile(XluaApplication.context, uri);
+        return readFile(MyApplication.context, uri);
     }
 
     public static byte[] readFile(Context context, Uri uri) {

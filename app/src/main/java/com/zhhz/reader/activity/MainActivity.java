@@ -14,7 +14,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.scwang.smart.refresh.header.ClassicsHeader;
 import com.scwang.smart.refresh.layout.SmartRefreshLayout;
 import com.zhhz.reader.R;
-import com.zhhz.reader.XluaApplication;
 import com.zhhz.reader.bean.RuleBean;
 import com.zhhz.reader.databinding.ActivityMainBinding;
 import com.zhhz.reader.rule.RuleAnalysis;

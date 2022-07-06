@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.zhhz.reader.XluaApplication;
+import com.zhhz.reader.MyApplication;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -46,7 +46,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
     //程序的Context对象
     private Context mContext;
     //用来存储设备信息和异常信息
-    private final Map<String, String> infos = new LinkedHashMap<String, String>();
+    private final Map<String, String> info = new LinkedHashMap<String, String>();
 
     //用于格式化日期,作为日志文件名的一部分
     @SuppressLint("SimpleDateFormat")
@@ -121,7 +121,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
         //收集设备参数信息
         collectDeviceInfo(mContext);
         //保存日志文件
-        Toast.makeText(XluaApplication.context, saveCrashInfo2File(ex), Toast.LENGTH_SHORT).show();
+        Toast.makeText(MyApplication.context, saveCrashInfo2File(ex), Toast.LENGTH_SHORT).show();
         return true;
     }
 
@@ -136,8 +136,8 @@ public class CrashHandler implements UncaughtExceptionHandler {
             if (pi != null) {
                 String versionName = pi.versionName == null ? "null" : pi.versionName;
                 String versionCode = pi.versionCode + "";
-                infos.put("versionName", versionName);
-                infos.put("versionCode", versionCode);
+                info.put("versionName", versionName);
+                info.put("versionCode", versionCode);
             }
         } catch (NameNotFoundException e) {
             Log.e(TAG, "an error occured when collect package info", e);
@@ -148,9 +148,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
                 field.setAccessible(true);
                 Object obj = field.get(null);
                 if (obj instanceof String[])
-                    infos.put(field.getName(), Arrays.toString((String[]) obj));
+                    info.put(field.getName(), Arrays.toString((String[]) obj));
                 else
-                    infos.put(field.getName(), Objects.requireNonNull(obj).toString());
+                    info.put(field.getName(), Objects.requireNonNull(obj).toString());
                 Log.d(TAG, field.getName() + " : " + field.get(null));
             } catch (Exception e) {
                 Log.e(TAG, "an error occured when collect crash info", e);
@@ -162,9 +162,9 @@ public class CrashHandler implements UncaughtExceptionHandler {
                 field.setAccessible(true);
                 Object obj = field.get(null);
                 if (obj instanceof String[])
-                    infos.put(field.getName(), Arrays.toString((String[]) obj));
+                    info.put(field.getName(), Arrays.toString((String[]) obj));
                 else
-                    infos.put(field.getName(), Objects.requireNonNull(obj).toString());
+                    info.put(field.getName(), Objects.requireNonNull(obj).toString());
                 Log.d(TAG, field.getName() + " : " + field.get(null));
             } catch (Exception e) {
                 Log.e(TAG, "an error occured when collect crash info", e);
@@ -180,7 +180,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
     private String saveCrashInfo2File(Throwable ex) {
 
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, String> entry : infos.entrySet()) {
+        for (Map.Entry<String, String> entry : info.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
             sb.append(key).append("=").append(value).append("\n");
@@ -201,11 +201,11 @@ public class CrashHandler implements UncaughtExceptionHandler {
             long timestamp = System.currentTimeMillis();
             String time = formatter.format(new Date());
             String fileName = "crash-" + time + "-" + timestamp + ".log";
+            String path = DiskCache.path + File.separator +  "crash" + File.separator;
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                String path = DiskCache.path + File.separator +  "crash" + File.separator;
                 File dir = new File(path);
                 if (!dir.exists())
-                    dir.mkdirs();
+                    if (!dir.mkdirs()) return "错误日志保存失败";
 
                 FileOutputStream fos = new FileOutputStream(path + fileName);
 //				FileOutputStream fos = mContext.openFileOutput(fileName, Context.MODE_PRIVATE);
@@ -214,7 +214,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
                 fos.close();
             }
-            return fileName;
+            return "日志保存位置：" + path + fileName;
         } catch (Exception e) {
             Log.e(TAG, "an error occured while writing file...", e);
         }

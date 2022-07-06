@@ -2,7 +2,7 @@ package com.zhhz.reader.util;
 
 import androidx.annotation.NonNull;
 
-import com.zhhz.reader.XluaApplication;
+import com.zhhz.reader.MyApplication;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -69,7 +69,7 @@ public class DiskCache {
         File f = new File(path);
         if (!f.isDirectory() || (f.isDirectory() && !f.canWrite())) {
             if (!new File(path).mkdirs()) {
-                path = XluaApplication.context.getExternalFilesDir("").getAbsolutePath();
+                path = MyApplication.context.getExternalFilesDir("").getAbsolutePath();
             }
         }
     }
@@ -86,7 +86,7 @@ public class DiskCache {
 
         if (cache_delete_tag) {
             cache_delete_tag = false;
-            String pt = path == null ? XluaApplication.context.getExternalCacheDir().getAbsolutePath() : path;
+            String pt = path == null ? MyApplication.context.getExternalCacheDir().getAbsolutePath() : path;
             String file = pt + File.separator + "Disk_Cache" + File.separator;
             File[] files = new File(file).listFiles();
             //删除缓存时间大于五分钟的
@@ -148,7 +148,7 @@ public class DiskCache {
 
     private static File urlToFile(HttpUrl call, String pt) {
         String paths = call.encodedPath().substring(1).replace("/", "_");
-        pt = pt == null ? XluaApplication.context.getExternalCacheDir().getAbsolutePath() : pt;
+        pt = pt == null ? MyApplication.context.getExternalCacheDir().getAbsolutePath() : pt;
         String url = pt + File.separator + "Disk_Cache" + File.separator;
         if (paths.equals("")) {
             if (call.encodedQuery() == null) {
