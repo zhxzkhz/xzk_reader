@@ -265,7 +265,8 @@ public class JsoupAnalysis extends Analysis {
                 book.setCatalogue(str);
             }
 
-            book.setBook_id(StringUtil.getMD5(book.getTitle() + "▶☀◀" + book.getAuthor()));
+            //加入 isComic 用于出来相同名字的小说和漫画
+            book.setBook_id(StringUtil.getMD5(book.getTitle() + "▶☀" + isComic() + "☀◀" + book.getAuthor()));
             callback.run(book, null, null);
         });
     }
@@ -464,59 +465,61 @@ public class JsoupAnalysis extends Analysis {
             }
             ((Document) data).outputSettings().prettyPrint(false);
             JSONObject chapter = json.getJSONObject("chapter");
-            String[] content_x = JsoupAnalysis.this.parse_array(chapter.getString("content"));
             Element element = (Element) data;
-            Elements content = element.select(content_x[0]);
-            StringBuilder filter_str = new StringBuilder();
-            StringBuilder sb = new StringBuilder();
-            if (chapter.get("filter") != null) {
-                for (Object filter : chapter.getJSONArray("filter")) {
-                    if (((String) filter).startsWith("@")) {
-                        filter_str.append(',').append(((String) filter).substring(1));
+            String str = null;
+            if (chapter.getString("content") != null) {
+                String[] content_x = JsoupAnalysis.this.parse_array(chapter.getString("content"));
+                Elements content = element.select(content_x[0]);
+                StringBuilder filter_str = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
+                if (chapter.get("filter") != null) {
+                    for (Object filter : chapter.getJSONArray("filter")) {
+                        if (((String) filter).startsWith("@")) {
+                            filter_str.append(',').append(((String) filter).substring(1));
+                        }
+                    }
+                    Elements content1;
+                    if (filter_str.length() == 0) {
+                        content1 = content.select(content_x[0]);
+                    } else {
+                        content1 = content.select(content_x[0] + ">" + filter_str.substring(1));
+                    }
+
+                    for (Element ele : content1) {
+                        ele.remove();
+                    }
+                    if (content.size() == 1) {
+                        content.html(content.html());
                     }
                 }
-                Elements content1;
-                if (filter_str.length() == 0) {
-                    content1 = content.select(content_x[0]);
+
+                if (comic) {
+                    sb.append(content.html());
                 } else {
-                    content1 = content.select(content_x[0] + ">" + filter_str.substring(1));
+                    for (TextNode textNode : content.textNodes()) {
+                        sb.append("\n");
+                        sb.append(textNode.text().trim());
+                    }
+
                 }
 
-                for (Element ele : content1) {
-                    ele.remove();
+                str = sb.toString();
+
+                if (!JsoupAnalysis.this.isComic()) {
+                    for (Map.Entry<String, String> entry : replace_map.entrySet()) {
+                        str = str.replace(entry.getKey(), entry.getValue());
+                    }
                 }
-                if (content.size() == 1) {
-                    content.html(content.html());
+
+                //屏蔽规则
+                if (chapter.get("purify") != null) {
+                    for (Object purify : chapter.getJSONArray("purify")) {
+                        str = str.replace((CharSequence) purify, "");
+                    }
                 }
+
+                str = str.replaceAll("^\n*|\n*$", "");
             }
-
-            if (comic) {
-                sb.append(content.html());
-            } else {
-                for (TextNode textNode : content.textNodes()) {
-                    sb.append("\n");
-                    sb.append(textNode.text().trim());
-                }
-
-            }
-
-            String str = sb.toString();
-
-            if (!JsoupAnalysis.this.isComic()) {
-                for (Map.Entry<String, String> entry : replace_map.entrySet()) {
-                    str = str.replace(entry.getKey(), entry.getValue());
-                }
-            }
-
-            //屏蔽规则
-            if (chapter.get("purify") != null) {
-                for (Object purify : chapter.getJSONArray("purify")) {
-                    str = str.replace((CharSequence) purify, "");
-                }
-            }
-
-            str = str.replaceAll("^\n*|\n*$", "");
-
             //执行js
             if (chapter.getString("js") != null) {
                 Context rhino = Context.enter();

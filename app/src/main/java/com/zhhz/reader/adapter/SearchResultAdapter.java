@@ -69,8 +69,12 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SearchResultBean book = itemData.get(position);
         holder.title.setText(book.getTitle());
-        if (holder.author != null && book.getAuthor() != null) {
-            holder.author.setText(book.getAuthor());
+        if (holder.author != null) {
+            if (book.getAuthor() != null) {
+                holder.author.setText(book.getAuthor());
+            } else {
+                holder.author.setText(null);
+            }
         }
         if (book.getCover() != null) {
             GlideApp.with(context)

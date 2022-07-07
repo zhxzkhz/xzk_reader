@@ -3,6 +3,7 @@ package com.zhhz.reader.ui.detailed;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -75,6 +76,8 @@ public class DetailedFragment extends Fragment {
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
+            } else {
+                bookBean.setCover(searchResultBean.getCover());
             }
             binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
@@ -93,8 +96,11 @@ public class DetailedFragment extends Fragment {
                 int[] pro = mViewModel.readProgress(bookBean.getBook_id());
                 if (pro[0] + pro[1] > 0) {
                     binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
+                } else {
+                    binding.startRead.setText("开始阅读");
                 }
                 if (map.size() > 0) {
+                    binding.startRead.setTextColor(Color.BLACK);
                     binding.startRead.setClickable(true);
                     binding.startRead.setOnClickListener(view1 -> {
                         SQLiteUtil.saveBook(bookBean);
@@ -125,7 +131,14 @@ public class DetailedFragment extends Fragment {
         binding.detailedLayout.itemTitle.setText(searchResultBean.getTitle());
         binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
         binding.detailedLayout.itemLatest.setText(null);
-
+        if (searchResultBean.getCover()!=null&&!searchResultBean.getCover().isEmpty()) {
+            GlideApp.with(this)
+                    .asBitmap()
+                    .load(searchResultBean.getCover())
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.DATA)
+                    .into(binding.detailedLayout.itemImage);
+        }
         catalogueAdapter = new CatalogueAdapter();
         catalogueAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
@@ -136,7 +149,8 @@ public class DetailedFragment extends Fragment {
         binding.detailedRv.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.detailedRv.setAdapter(catalogueAdapter);
 
-        binding.startRead.setText("开始阅读");
+        binding.startRead.setText("目录获取中");
+        binding.startRead.setTextColor(Color.GRAY);
         binding.startRead.setClickable(false);
 
         binding.detailedIntro.setOnClickListener(view -> new AlertDialog.Builder(requireContext())

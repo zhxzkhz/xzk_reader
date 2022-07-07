@@ -45,9 +45,11 @@ public class SearchResultFragment extends Fragment {
                 searchResultAdapter.getItemData().clear();
                 searchResultAdapter.notifyDataSetChanged();
             } else {
-                DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(), list));
-                searchResultAdapter.setItemData(list);
-                result.dispatchUpdatesTo(searchResultAdapter);
+                int size = searchResultAdapter.getItemData().size();
+                searchResultAdapter.getItemData().addAll(list);
+                searchResultAdapter.notifyItemRangeInserted(size,list.size());
+                //DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(),list));
+                //result.dispatchUpdatesTo(searchResultAdapter);
             }
         });
     }
