@@ -22,4 +22,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "小说阅读器"
 include ':app'
-//include ':luaj'

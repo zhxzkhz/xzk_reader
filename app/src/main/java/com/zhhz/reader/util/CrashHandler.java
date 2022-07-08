@@ -37,20 +37,18 @@ import java.util.Objects;
 public class CrashHandler implements UncaughtExceptionHandler {
 
     public static final String TAG = "CrashHandler";
-
-    //系统默认的UncaughtException处理类
-    private UncaughtExceptionHandler mDefaultHandler;
     //CrashHandler实例
     @SuppressLint("StaticFieldLeak")
     private static final CrashHandler INSTANCE = new CrashHandler();
-    //程序的Context对象
-    private Context mContext;
     //用来存储设备信息和异常信息
     private final Map<String, String> info = new LinkedHashMap<String, String>();
-
     //用于格式化日期,作为日志文件名的一部分
     @SuppressLint("SimpleDateFormat")
     private final DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+    //系统默认的UncaughtException处理类
+    private UncaughtExceptionHandler mDefaultHandler;
+    //程序的Context对象
+    private Context mContext;
 
     /**
      * 保证只有一个CrashHandler实例
@@ -127,7 +125,6 @@ public class CrashHandler implements UncaughtExceptionHandler {
 
     /**
      * 收集设备参数信息
-     *
      */
     public void collectDeviceInfo(Context ctx) {
         try {
@@ -201,7 +198,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
             long timestamp = System.currentTimeMillis();
             String time = formatter.format(new Date());
             String fileName = "crash-" + time + "-" + timestamp + ".log";
-            String path = DiskCache.path + File.separator +  "crash" + File.separator;
+            String path = DiskCache.path + File.separator + "crash" + File.separator;
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
                 File dir = new File(path);
                 if (!dir.exists())

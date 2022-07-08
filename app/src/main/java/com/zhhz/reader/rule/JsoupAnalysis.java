@@ -12,8 +12,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeArray;
-import org.mozilla.javascript.NativeJavaObject;
 import org.mozilla.javascript.ScriptableObject;
 
 import java.io.File;
@@ -38,8 +36,6 @@ public class JsoupAnalysis extends Analysis {
 
     //特殊表
     private HashMap<String, String> replace_map;
-    //书本信息
-    private JSONObject detail;
 
     public JsoupAnalysis(String path) throws IOException {
         super(path);
@@ -73,18 +69,6 @@ public class JsoupAnalysis extends Analysis {
         this.replace_map = replace_map;
     }
 
-    public JSONObject getDetail() {
-        return detail;
-    }
-
-    public void setDetail(JSONObject detail) {
-        this.detail = detail;
-    }
-
-    public void setDetail(String detail) {
-        this.detail = JSONObject.parseObject(detail);
-    }
-
     private String[] parse_array(String s) {
         String[] arr = new String[2];
         int index = s.indexOf('@');
@@ -98,15 +82,15 @@ public class JsoupAnalysis extends Analysis {
     }
 
     private String parse_jsoup(Object s, String reg) {
-        if (reg == null) {
+        if (reg == null || reg.length() < 8) {
             if (s instanceof String) {
                 return s.toString();
             }
             return ((Elements) s).text();
         }
 
-        if (detail != null && reg.contains("$")) {
-            reg = reg.replace("${title}", (CharSequence) Objects.requireNonNull(detail.getOrDefault("title", ""))).replace("${author}", (CharSequence) Objects.requireNonNull(detail.getOrDefault("author", "")));
+        if (getDetail() != null && reg.contains("$")) {
+            reg = reg.replace("${title}", getDetail().getTitle()).replace("${author}", getDetail().getAuthor());
         }
 
         String x_reg = "([^-]*)->(.*)";
@@ -217,15 +201,15 @@ public class JsoupAnalysis extends Analysis {
             JSONObject detail_x = json.getJSONObject("detail");
             if (detail_x.get("name") != null) {
                 String[] obj = parse_array(detail_x.getString("name"));
-                book.setTitle(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+                book.setTitle(parse_jsoup(element.select(obj[0]), obj[1]));
             }
             if (detail_x.get("author") != null) {
                 String[] obj = parse_array(detail_x.getString("author"));
-                book.setAuthor(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+                book.setAuthor(parse_jsoup(element.select(obj[0]), obj[1]));
             }
             if (detail_x.get("summary") != null) {
                 String[] obj = parse_array(detail_x.getString("summary"));
-                book.setIntro(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+                book.setIntro(parse_jsoup(element.select(obj[0]), obj[1]));
             }
             if (detail_x.get("cover") != null) {
                 String[] obj = parse_array(detail_x.getString("cover"));
@@ -233,22 +217,22 @@ public class JsoupAnalysis extends Analysis {
             }
             if (detail_x.get("update") != null) {
                 String[] obj = parse_array(detail_x.getString("update"));
-                book.setUpdateTime(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+                book.setUpdateTime(parse_jsoup(element.select(obj[0]), obj[1]));
             }
 
             if (detail_x.get("status") != null) {
                 String[] obj = parse_array(detail_x.getString("status"));
-                book.setStatus(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null).contains("完结"));
+                book.setStatus(parse_jsoup(element.select(obj[0]), obj[1]).contains("完结"));
             }
 
             if (detail_x.get("lastChapter") != null) {
                 String[] obj = parse_array(detail_x.getString("lastChapter"));
-                book.setLatestChapter(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null));
+                book.setLatestChapter(parse_jsoup(element.select(obj[0]), obj[1]));
             }
             if (detail_x.getString("catalog") == null) {
                 book.setCatalogue(url);
             } else if (detail_x.getString("catalog").startsWith("js@")) {
-                //String x_url = (String) LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(detail_x.getString("catalog").substring(5)), element, JsoupAnalysis.this);
+
                 try {
                     DiskCache.engine.put("element", element);
                     DiskCache.engine.put("url", url);
@@ -283,7 +267,6 @@ public class JsoupAnalysis extends Analysis {
             Element element = (Element) data;
 
             if (catalog.getString("js") != null) {
-                //LuaVirtual.newInstance().doString(Auto_Base64.decodeToString(catalog.getString("lua")), url, element, callback, JsoupAnalysis.this);
                 try {
                     DiskCache.engine.put("element", element);
                     DiskCache.engine.put("url", url);
@@ -393,7 +376,7 @@ public class JsoupAnalysis extends Analysis {
                 String a_url = parse_jsoup(element.select(chapter[0]), chapter[1] != null ? chapter[1] : "attr->href");
                 if (a_url.length() > 0) {
                     String[] obj = parse_array(catalog.getString("name"));
-                    lhm.put(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : null), to_http(a_url, url));
+                    lhm.put(parse_jsoup(element.select(obj[0]), obj[1]), to_http(a_url, url));
                 }
             }
         }
@@ -517,7 +500,7 @@ public class JsoupAnalysis extends Analysis {
                         str = str.replace((CharSequence) purify, "");
                     }
                 }
-
+                str = parse_jsoup(str, content_x[1]);
                 str = str.replaceAll("^\n*|\n*$", "");
             }
             //执行js
@@ -532,30 +515,15 @@ public class JsoupAnalysis extends Analysis {
                 ScriptableObject.putProperty(scope, "callback", callback);
                 ScriptableObject.putProperty(scope, "label", label);
                 ScriptableObject.putProperty(scope, "out", System.out);
-                
+
                 try {
                     rhino.evaluateString(scope, AutoBase64.decodeToString(chapter.getString("js")), "JsoupAnalysis", 1, null);
-                    //DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
-                    //Object value = DiskCache.engine.get("result");
-                    Object value = scope.get("result");
-                    if (value instanceof NativeArray) {
-                        NativeArray array = (NativeArray) value;
-                        StringBuilder stringBuilder = new StringBuilder();
-                        for (Object o : array) {
-                            stringBuilder.append(o).append("\n");
-                        }
-                        stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
-                        str = stringBuilder.toString();
-                    } else if (value.getClass() == NativeJavaObject.class) {
-                        str = ((NativeJavaObject) value).unwrap().toString();
-                    } else {
-                        str = value.toString();
-                    }
+                    str = JsToJava(scope.get("result"));
                 } catch (Exception e) {
                     e.printStackTrace();
                     str = null;
                 }
-                //返回false代表 lua 内部处理
+                //返回false代表 js 内部处理
                 if (str != null && str.equals("false")) {
                     return;
                 }
@@ -581,5 +549,4 @@ public class JsoupAnalysis extends Analysis {
             }
         });
     }
-
 }

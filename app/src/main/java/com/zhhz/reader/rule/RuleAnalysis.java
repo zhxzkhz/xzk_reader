@@ -43,8 +43,9 @@ public class RuleAnalysis {
     }
 
     /**
-     *  获取书本目录
-     * @param url 目录地址
+     * 获取书本目录
+     *
+     * @param url      目录地址
      * @param callback 回调函数
      */
     public void BookDirectory(String url, Analysis.CallBack callback) {

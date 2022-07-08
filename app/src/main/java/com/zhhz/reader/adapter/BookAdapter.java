@@ -90,6 +90,13 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
                     .load(book.getCover())
                     .into(holder.imageView);
         }
+        if (holder.update != null){
+            if (book.isUpdate()) {
+                holder.update.setVisibility(View.VISIBLE);
+            } else {
+                holder.update.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -113,13 +120,14 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         public AppCompatTextView title;
         public AppCompatTextView author;
         public AppCompatTextView last;
-
+        public View update;
         private ViewHolder(View v) {
             super(v);
             this.imageView = v.findViewById(R.id.item_image);
             this.title = v.findViewById(R.id.item_title);
             this.author = v.findViewById(R.id.item_author);
             this.last = v.findViewById(R.id.item_latest);
+            this.update = v.findViewById(R.id.item_update);
         }
     }
 

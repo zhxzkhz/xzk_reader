@@ -16,6 +16,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/item_update"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:background="@drawable/update_circle_icon"
+        app:layout_constraintRight_toRightOf="@id/item_image"
+        app:layout_constraintTop_toTopOf="@id/item_image" />
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/item_title"
         android:layout_width="match_parent"

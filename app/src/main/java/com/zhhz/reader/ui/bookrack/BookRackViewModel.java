@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.zhhz.reader.bean.BookBean;
-import com.zhhz.reader.rule.Analysis;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.DiskCache;
@@ -20,7 +19,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -34,21 +32,11 @@ public class BookRackViewModel extends ViewModel {
     public BookRackViewModel() {
         data = new MutableLiveData<>();
         catalogue = new MutableLiveData<>();
-        //data.postValue(SQLiteUtil.readBooks());
-/*
-        ArrayList<BookBean> list = new ArrayList<>();
-        BookBean bookBean = new BookBean();
-        bookBean.setBook_id("1");
-        bookBean.setTitle("测试数据\n测试数据");
-        bookBean.setAuthor("作者");
-        bookBean.setCover("https://bookcover.yuewen.com/qdbimg/349573/1033830145/180");
-        list.add(bookBean);
-        list.add(bookBean);
-        list.add(bookBean);
-        list.add(bookBean);
-*/
-
         data.setValue(SQLiteUtil.readBooks());
+    }
+
+    public void updateBook(BookBean bookBean){
+        SQLiteUtil.saveBook(bookBean);
     }
 
     /**
@@ -59,15 +47,17 @@ public class BookRackViewModel extends ViewModel {
             RuleAnalysis rule;
             try {
                 rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "rule");
+                rule.getAnalysis().setDetail(bookBean);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                e.printStackTrace();
+                continue;
             }
 
             rule.BookDirectory(bookBean.getCatalogue(), (data, msg, url) -> {
                 if (data == null) {
                     catalogue.setValue(null);
                 } else {
-                    HashMap<String, String> mv = (LinkedHashMap<String, String>) data;
+                    LinkedHashMap<String, String> mv = (LinkedHashMap<String, String>) data;
                     if (mv.size() == 0) {
                         catalogue.setValue(null);
                         return;
@@ -98,6 +88,7 @@ public class BookRackViewModel extends ViewModel {
                         } catch (IOException ignored) {
                         }
                         bookBean.setCatalogue(String.valueOf(url));
+                        bookBean.setUpdate(true);
                         SQLiteUtil.saveBook(bookBean);
                         catalogue.setValue(bookBean);
                     }

@@ -9,6 +9,8 @@ import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.util.DiskCache;
 
 import org.jsoup.Jsoup;
+import org.mozilla.javascript.NativeArray;
+import org.mozilla.javascript.NativeJavaObject;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +18,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+
+import javax.script.ScriptException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -39,6 +43,8 @@ public abstract class Analysis {
     protected String charset;
     //用于标记 响应协议；
     protected String http;
+    //书本信息
+    protected BookBean detail;
 
     public Analysis(String path) throws IOException {
         this(readText(path));
@@ -158,6 +164,14 @@ public abstract class Analysis {
         return relative_path;
     }
 
+    public BookBean getDetail() {
+        return detail;
+    }
+
+    public void setDetail(BookBean detail) {
+        this.detail = detail;
+    }
+
     public abstract void BookSearch(String key_word, CallBack callback, String md5);
 
     public abstract void BookDirectory(String url, CallBack callback);
@@ -226,7 +240,15 @@ public abstract class Analysis {
 
     private void init_header(Request.Builder builder) {
         if (json.get("header") != null) {
-            JSONObject header = JSONObject.parseObject(this.json.getString("header"));
+            String h = this.json.getString("header");
+            if (h.indexOf("js@") == 0) {
+                try {
+                    h = JsToJava(DiskCache.engine.eval(h.substring(3)));
+                } catch (ScriptException e) {
+                    h = "{}";
+                }
+            }
+            JSONObject header = JSONObject.parseObject(h);
             for (Map.Entry<String, Object> entry : header.entrySet()) {
                 builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
             }
@@ -262,6 +284,24 @@ public abstract class Analysis {
         });
     }
 
+    public String JsToJava(Object value) {
+        if (value == null) return "";
+        String str;
+        if (value instanceof NativeArray) {
+            NativeArray array = (NativeArray) value;
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Object o : array) {
+                stringBuilder.append(o).append("\n");
+            }
+            stringBuilder.delete(stringBuilder.length() - 1, stringBuilder.length());
+            str = stringBuilder.toString();
+        } else if (value.getClass() == NativeJavaObject.class) {
+            str = ((NativeJavaObject) value).unwrap().toString();
+        } else {
+            str = value.toString();
+        }
+        return str;
+    }
 
     @FunctionalInterface
     public interface CallBack {

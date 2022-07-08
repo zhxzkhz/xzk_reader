@@ -87,7 +87,7 @@ public class DetailedFragment extends Fragment {
             mViewModel.queryCatalogue(bean.getCatalogue(), searchResultBean, 0);
         });
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
-            if (map == null){
+            if (map == null) {
                 binding.startRead.setText("目录获取失败");
                 binding.startRead.setOnClickListener(v -> mViewModel.queryCatalogue(bookBean.getCatalogue(), searchResultBean, 0));
             } else {
@@ -131,7 +131,7 @@ public class DetailedFragment extends Fragment {
         binding.detailedLayout.itemTitle.setText(searchResultBean.getTitle());
         binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
         binding.detailedLayout.itemLatest.setText(null);
-        if (searchResultBean.getCover()!=null&&!searchResultBean.getCover().isEmpty()) {
+        if (searchResultBean.getCover() != null && !searchResultBean.getCover().isEmpty()) {
             GlideApp.with(this)
                     .asBitmap()
                     .load(searchResultBean.getCover())

@@ -8,7 +8,6 @@ import com.alibaba.fastjson.TypeReference;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.zhhz.reader.bean.BookBean;
-import com.zhhz.reader.rule.Analysis;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
 

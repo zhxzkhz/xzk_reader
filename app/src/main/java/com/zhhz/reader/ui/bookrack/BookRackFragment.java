@@ -8,25 +8,17 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 
-import com.scwang.smart.refresh.layout.api.RefreshLayout;
-import com.scwang.smart.refresh.layout.listener.OnRefreshListener;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
 import com.zhhz.reader.adapter.BookAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookrackBinding;
-import com.zhhz.reader.rule.Analysis;
-import com.zhhz.reader.rule.RuleAnalysis;
-import com.zhhz.reader.util.DiskCache;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -55,6 +47,9 @@ public class BookRackFragment extends Fragment {
             Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
             //获取点击事件位置
             int position = binding.rv.getChildAdapterPosition(view);
+            bookAdapter.getItemData().get(position).setUpdate(false);
+            bookrackViewModel.updateBook(bookAdapter.getItemData().get(position));
+            bookAdapter.notifyItemChanged(position);
             intent.putExtra("book", bookAdapter.getItemData().get(position));
             startActivity(intent);
             BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
@@ -67,6 +62,7 @@ public class BookRackFragment extends Fragment {
             BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
+
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
             DiffUtil.DiffResult result = DiffUtil.calculateDiff(new BookRackDiffCallback(bookAdapter.getItemData(), list));
             bookAdapter.setItemData(list);
@@ -77,9 +73,9 @@ public class BookRackFragment extends Fragment {
         binding.refreshLayout.setOnRefreshListener(refreshLayout -> bookrackViewModel.updateCatalogue());
 
         bookrackViewModel.getCatalogue().observe(getViewLifecycleOwner(), bookBean -> {
-            if (bookBean!=null){
+            if (bookBean != null) {
                 int pos = bookAdapter.getItemData().indexOf(bookBean);
-                if (pos > -1){
+                if (pos > -1) {
                     bookAdapter.notifyItemChanged(pos);
                 }
             }
@@ -129,4 +125,5 @@ public class BookRackFragment extends Fragment {
             return oldData.get(oldItemPosition).getBook_id().equals(newData.get(newItemPosition).getBook_id());
         }
     }
+
 }

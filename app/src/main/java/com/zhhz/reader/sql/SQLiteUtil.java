@@ -37,7 +37,7 @@ public class SQLiteUtil {
             bookBean.setTitle(query.getString(1));
             bookBean.setAuthor(query.getString(2));
             bookBean.setCover(query.getString(3));
-            bookBean.setUpdate(query.getInt(4)==1);
+            bookBean.setUpdate(query.getInt(4) == 1);
             bookBean.setCatalogue(query.getString(5));
             bookBean.setLatestChapter(query.getString(6));
             bookBean.setStatus(query.getInt(7) == 1);
@@ -60,7 +60,7 @@ public class SQLiteUtil {
         bookBean.setTitle(query.getString(1));
         bookBean.setAuthor(query.getString(2));
         bookBean.setCover(query.getString(3));
-        bookBean.setUpdate(query.getInt(4)==1);
+        bookBean.setUpdate(query.getInt(4) == 1);
         bookBean.setCatalogue(query.getString(5));
         bookBean.setLatestChapter(query.getString(6));
         bookBean.setStatus(query.getInt(7) == 0);

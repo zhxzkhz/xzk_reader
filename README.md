@@ -1,9 +1,9 @@
 ## 介绍
-一个小说阅读软件
+一个小说/漫画阅读软件
 
 ## 功能
 #### 基础功能
-- [ ] 自定义书源
+- [x] 自定义书源
 - [ ] 自定义主题
 - [ ] 本地TXT阅读
 - [ ] 书架自定义切换列表、网格风格
@@ -12,3 +12,12 @@
 - [ ] 日夜模式切换
 #### 高级功能
 - [ ] 一键导出书本
+- [ ] 书本分组
+- [ ] 订阅消息
+
+## 特别鸣谢
+> * <a herf="https://github.com/jhy/jsoup/">jsoup</a>
+> * <a herf="https://github.com/bumptech/glide">glide</a>
+> * <a herf="https://github.com/alibaba/fastjson">fastjson</a>
+> * <a herf="https://github.com/scwang90/SmartRefreshLayout/">SmartRefreshLayout</a>
+> * <a herf="https://github.com/gedoor/rhino-android/">rhino-android</a>

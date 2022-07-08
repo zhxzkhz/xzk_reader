@@ -61,7 +61,7 @@ public class ComicReaderFragment extends Fragment {
         View root = binding.getRoot();
 
         comicAdapter = new ComicAdapter(requireContext());
-        comicAdapter.setHasStableIds(true);
+        //comicAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
         binding.readerComic.setItemAnimator(null);
         binding.readerComic.setLayoutManager(new LinearLayoutManager(getContext()));
