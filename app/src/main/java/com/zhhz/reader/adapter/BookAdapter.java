@@ -1,13 +1,20 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.recyclerview.selection.ItemDetailsLookup;
+import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -24,11 +31,12 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     private final Context context;
     private ArrayList<BookBean> itemData;
     private View.OnClickListener onClickListener;
-
-    private View.OnLongClickListener onLongClickListener;
+    private SelectionTracker<String> mSelectionTracker;
+    private BitmapDrawable drawable;
 
     public BookAdapter(Context context) {
         this.context = context;
+        drawable = (BitmapDrawable) AppCompatResources.getDrawable(context,R.drawable.no_cover);
         this.itemData = new ArrayList<>();
     }
 
@@ -39,10 +47,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
-    }
-
-    public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
-        this.onLongClickListener = onLongClickListener;
     }
 
     public ArrayList<BookBean> getItemData() {
@@ -66,15 +70,22 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
         }
-        if (onLongClickListener != null) {
-            view.setOnLongClickListener(onLongClickListener);
-        }
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BookBean book = itemData.get(position);
+        if (mSelectionTracker !=null) {
+            boolean bool = mSelectionTracker.isSelected(book.getBook_id());
+            if (bool){
+                holder.checkBox.setVisibility(View.VISIBLE);
+            } else {
+                holder.checkBox.setVisibility(View.GONE);
+            }
+            holder.checkBox.setChecked(bool);
+        }
+
         holder.title.setText(book.getTitle());
         if (holder.author != null && book.getAuthor() != null) {
             holder.author.setText(book.getAuthor());
@@ -89,6 +100,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
                     .centerCrop()
                     .load(book.getCover())
                     .into(holder.imageView);
+        } else {
+            holder.imageView.setImageDrawable(drawable);
         }
         if (holder.update != null){
             if (book.isUpdate()) {
@@ -114,12 +127,17 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         return 1;
     }
 
+    public void setSelectionTracker(SelectionTracker<String> mSelectionTracker) {
+        this.mSelectionTracker = mSelectionTracker;
+    }
+
     //② 创建ViewHolder
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
         public AppCompatImageView imageView;
         public AppCompatTextView title;
         public AppCompatTextView author;
         public AppCompatTextView last;
+        public AppCompatCheckBox checkBox;
         public View update;
         private ViewHolder(View v) {
             super(v);
@@ -127,10 +145,36 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             this.title = v.findViewById(R.id.item_title);
             this.author = v.findViewById(R.id.item_author);
             this.last = v.findViewById(R.id.item_latest);
+            this.checkBox = v.findViewById(R.id.item_check);
             this.update = v.findViewById(R.id.item_update);
+        }
+
+        public ItemDetailsLookup.ItemDetails<String> getItemDetails() {
+            return new StringItemDetails(getBindingAdapterPosition(), itemData.get(getBindingAdapterPosition()).getBook_id());
         }
     }
 
+    static class StringItemDetails extends ItemDetailsLookup.ItemDetails<String> {
+
+        private final int position;
+        private final String item;
+
+        public StringItemDetails(int position, String item) {
+            this.position = position;
+            this.item = item;
+        }
+
+        @Override
+        public int getPosition() {
+            return position;
+        }
+
+        @Nullable
+        @Override
+        public String getSelectionKey() {
+            return item;
+        }
+    }
 
 }
 

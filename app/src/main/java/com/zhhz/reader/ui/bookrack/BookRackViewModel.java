@@ -55,11 +55,11 @@ public class BookRackViewModel extends ViewModel {
 
             rule.BookDirectory(bookBean.getCatalogue(), (data, msg, url) -> {
                 if (data == null) {
-                    catalogue.setValue(null);
+                    catalogue.postValue(null);
                 } else {
                     LinkedHashMap<String, String> mv = (LinkedHashMap<String, String>) data;
                     if (mv.size() == 0) {
-                        catalogue.setValue(null);
+                        catalogue.postValue(null);
                         return;
                     }
 
@@ -70,7 +70,7 @@ public class BookRackViewModel extends ViewModel {
                         old_map = JSONObject.parseObject(bufferedWriter.readLine(), new TypeReference<LinkedHashMap<String, String>>() {
                         }.getType());
                     } catch (IOException ignored) {
-                        catalogue.setValue(null);
+                        catalogue.postValue(null);
                         return;
                     }
 
@@ -90,7 +90,7 @@ public class BookRackViewModel extends ViewModel {
                         bookBean.setCatalogue(String.valueOf(url));
                         bookBean.setUpdate(true);
                         SQLiteUtil.saveBook(bookBean);
-                        catalogue.setValue(bookBean);
+                        catalogue.postValue(bookBean);
                     }
                 }
             });
