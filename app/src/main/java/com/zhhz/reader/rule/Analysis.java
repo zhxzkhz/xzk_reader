@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.util.AutoBase64;
 import com.zhhz.reader.util.DiskCache;
 
 import org.jsoup.Jsoup;
@@ -243,7 +244,7 @@ public abstract class Analysis {
             String h = this.json.getString("header");
             if (h.indexOf("js@") == 0) {
                 try {
-                    h = JsToJava(DiskCache.engine.eval(h.substring(3)));
+                    h = JsToJava(DiskCache.engine.eval(AutoBase64.decodeToString(h.substring(3))));
                 } catch (ScriptException e) {
                     h = "{}";
                 }

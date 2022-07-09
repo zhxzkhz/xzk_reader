@@ -13,8 +13,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.OnContextClickListener;
-import androidx.recyclerview.selection.OnItemActivatedListener;
 import androidx.recyclerview.selection.SelectionPredicates;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
@@ -201,7 +199,7 @@ public class BookRackFragment extends Fragment {
             if (view != null) {
                 RecyclerView.ViewHolder holder = mRecyclerView.getChildViewHolder(view);
                 if (holder instanceof BookAdapter.ViewHolder)
-                return ((BookAdapter.ViewHolder) holder).getItemDetails();
+                    return ((BookAdapter.ViewHolder) holder).getItemDetails();
             }
             return null;
         }

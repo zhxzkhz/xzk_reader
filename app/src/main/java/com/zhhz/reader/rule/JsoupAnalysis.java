@@ -251,7 +251,7 @@ public class JsoupAnalysis extends Analysis {
 
             //加入 isComic 用于出来相同名字的小说和漫画
             book.setBook_id(StringUtil.getMD5(book.getTitle() + "▶☀" + isComic() + "☀◀" + book.getAuthor()));
-            callback.run(book, null, null);
+            callback.run(book, null, isComic());
         });
     }
 

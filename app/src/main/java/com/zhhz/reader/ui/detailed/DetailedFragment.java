@@ -60,13 +60,9 @@ public class DetailedFragment extends Fragment {
             if (bean.getTitle() != null && !bean.getTitle().isEmpty()) {
                 binding.detailedTitle.setText(bean.getTitle());
                 binding.detailedLayout.itemTitle.setText(bean.getTitle());
-            } else {
-                bookBean.setTitle(searchResultBean.getTitle());
             }
             if (bean.getAuthor() != null && !bean.getAuthor().isEmpty()) {
                 binding.detailedLayout.itemAuthor.setText(bean.getAuthor());
-            } else {
-                bookBean.setAuthor(searchResultBean.getAuthor());
             }
 
             if (bean.getCover() != null && !bean.getCover().isEmpty()) {
@@ -76,8 +72,6 @@ public class DetailedFragment extends Fragment {
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
-            } else {
-                bookBean.setCover(searchResultBean.getCover());
             }
             binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
