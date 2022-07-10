@@ -11,6 +11,7 @@ import com.zhhz.reader.util.DiskCache;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class SQLiteUtil {
 
@@ -47,13 +48,14 @@ public class SQLiteUtil {
         }
         query.close();
         database.close();
+        Collections.reverse(list);
         return list;
     }
 
-    public static BookBean readBook(BookBean book) {
+    public static BookBean readBook(String id) {
         helper = new BookSqliteHelper(MyApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
-        Cursor query = database.rawQuery("select * from bookrack where book_id=?", new String[]{book.getBook_id()});
+        Cursor query = database.rawQuery("select * from bookrack where book_id=?", new String[]{id});
         query.move(1);
         BookBean bookBean = new BookBean();
         bookBean.setBook_id(query.getString(0));
@@ -69,6 +71,12 @@ public class SQLiteUtil {
         query.close();
         database.close();
         return bookBean;
+    }
+
+    public static void removeBooks(String[] ids) {
+        helper = new BookSqliteHelper(MyApplication.context, "bookrack.db", null, 1);
+        SQLiteDatabase database = helper.getWritableDatabase();
+        int query = database.delete("bookrack", "book_id=?", ids);
     }
 
     public static RuleBean readRule(String id) {

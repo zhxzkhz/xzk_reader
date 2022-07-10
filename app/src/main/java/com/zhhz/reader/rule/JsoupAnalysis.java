@@ -260,21 +260,27 @@ public class JsoupAnalysis extends Analysis {
 
         Http(url, (data, msg, label) -> {
             if (data == null) {
-                callback.run(null, msg, label);
+                callback.run(null, msg, url);
                 return;
             }
             JSONObject catalog = json.getJSONObject("catalog");
             Element element = (Element) data;
 
             if (catalog.getString("js") != null) {
-                try {
-                    DiskCache.engine.put("element", element);
-                    DiskCache.engine.put("url", url);
-                    DiskCache.engine.put("callback", callback);
-                    DiskCache.engine.eval(AutoBase64.decodeToString(catalog.getString("js")));
-                } catch (ScriptException e) {
-                    e.printStackTrace();
-                }
+                //DiskCache.engine.put("element", element);
+                //DiskCache.engine.put("url", url);
+                //DiskCache.engine.put("callback", callback);
+                //DiskCache.engine.eval(AutoBase64.decodeToString(catalog.getString("js")));
+                Context rhino = Context.enter();
+                ScriptableObject scope = rhino.initStandardObjects();
+                ScriptableObject.putProperty(scope, "xlua_rule", this);
+                ScriptableObject.putProperty(scope, "xlua_classloader", ClassLoader.getSystemClassLoader());
+                ScriptableObject.putProperty(scope, "element", element);
+                ScriptableObject.putProperty(scope, "url", url);
+                ScriptableObject.putProperty(scope, "callback", callback);
+                ScriptableObject.putProperty(scope, "label", label);
+                ScriptableObject.putProperty(scope, "out", System.out);
+                rhino.evaluateString(scope, AutoBase64.decodeToString(catalog.getString("js")), "JsoupAnalysis", 1, null);
                 return;
             }
 
@@ -287,16 +293,16 @@ public class JsoupAnalysis extends Analysis {
                     BookDirectory(page, (data_a, msg_a, label_a) -> {
                         if (data_a != null) {
                             lhm.putAll((LinkedHashMap<String, String>) data_a);
-                            callback.run(lhm, msg_a, label_a);
+                            callback.run(lhm, msg_a, page);
                         } else {
-                            callback.run(null, msg_a, label_a);
+                            callback.run(null, msg_a, page);
                         }
                     });
                 } else {
-                    callback.run(lhm, url, label);
+                    callback.run(lhm, msg ,url);
                 }
             } else {
-                callback.run(lhm, url, label);
+                callback.run(lhm, msg , url);
             }
         });
     }

@@ -142,7 +142,7 @@ public class ComicReaderFragment extends Fragment {
                     binding.progressText.setText(requireContext().getString(R.string.progress_text, page, count));
 
                     if (mViewModel.getStart() + 1 != page || page == count) {
-                        if (page != count) {
+                        if (page != count || mViewModel.getStart() + 2 == page ) {
                             mViewModel.setStart(page - 1);
                             mViewModel.saveProgressComic();
                         }

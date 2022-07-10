@@ -37,6 +37,8 @@ public class XluaGlideModule extends AppGlideModule {
         Dns = dns;
     }
 
+    public static GlideBuilder glide;
+
     @Override
     public boolean isManifestParsingEnabled() {
         return false;
@@ -46,6 +48,7 @@ public class XluaGlideModule extends AppGlideModule {
     public void applyOptions(@NonNull Context context, @NonNull GlideBuilder builder) {
         //储存上限10G图片
         builder.setDiskCache(new DiskLruCacheFactory(DiskCache.path + File.separator + "Disc_ImageCache", 10L * 1024 * 1024 * 1024));
+        glide = builder;
     }
 
     @Override

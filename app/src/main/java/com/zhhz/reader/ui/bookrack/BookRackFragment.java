@@ -1,46 +1,85 @@
 package com.zhhz.reader.ui.bookrack;
 
+import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.ItemKeyProvider;
+import androidx.recyclerview.selection.OnDragInitiatedListener;
+import androidx.recyclerview.selection.OperationMonitor;
 import androidx.recyclerview.selection.SelectionPredicates;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.selection.StorageStrategy;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
 import com.zhhz.reader.adapter.BookAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookrackBinding;
+import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.FileSizeUtil;
+import com.zhhz.reader.util.GlideGetPath;
+import com.zhhz.reader.util.StringUtil;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class BookRackFragment extends Fragment {
 
     private BookRackViewModel bookrackViewModel;
     private FragmentBookrackBinding binding;
     private BookAdapter bookAdapter;
+    private ActivityResultLauncher<Intent> launcher;
+    private final ArrayList<String> lists = new ArrayList<>();
     SelectionTracker<String> tracker;
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (bookrackViewModel != null) {
+                    bookrackViewModel.updateBooks();
+                }
+            }
+        });
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        bookrackViewModel = new ViewModelProvider(this).get(BookRackViewModel.class);
+        bookrackViewModel = new ViewModelProvider(requireActivity()).get(BookRackViewModel.class);
 
         binding = FragmentBookrackBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
@@ -58,7 +97,8 @@ public class BookRackFragment extends Fragment {
         //设置点击事件
         binding.searchView.setOnClickListener(view -> {
             Intent intent = new Intent(BookRackFragment.this.getContext(), SearchActivity.class);
-            startActivity(intent);
+            //startActivity(intent);
+            launcher.launch(intent);
             BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
@@ -68,36 +108,62 @@ public class BookRackFragment extends Fragment {
 
         });
 
+        tracker = new SelectionTracker.Builder<>(
+                "my-selection-id",
+                binding.rv,
+                new StringItemKeyProvider(1, lists),
+                new MyDetailsLookup(binding.rv),
+                StorageStrategy.createStringStorage())
+                .withSelectionPredicate(SelectionPredicates.createSelectAnything())
+                .withOperationMonitor(new OperationMonitor())
+                .withOnDragInitiatedListener(new OnDragInitiatedListener() {
+                    @Override
+                    public boolean onDragInitiated(@NonNull MotionEvent e) {
+                        return false;
+                    }
+                })
+                .withOnItemActivatedListener((item, e) -> {
+                    Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
+                    //获取点击事件位置
+                    int position = item.getPosition();
+                    bookAdapter.getItemData().get(position).setUpdate(false);
+                    bookrackViewModel.updateBook(bookAdapter.getItemData().get(position));
+                    bookAdapter.notifyItemChanged(position);
+                    intent.putExtra("book", bookAdapter.getItemData().get(position));
+                    //startActivity(intent);
+                    launcher.launch(intent);
+                    tracker.clearSelection();
+                    BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    return true;
+                })
+                .build();
+
+
+        tracker.addObserver(new SelectionTracker.SelectionObserver<String>() {
+            @Override
+            public void onItemStateChanged(@NonNull String key, boolean selected) {
+                super.onItemStateChanged(key, selected);
+                LinearLayoutCompat item_menu = requireActivity().findViewById(R.id.item_menu);
+                if (tracker.getSelection().size() > 0 && item_menu.getVisibility() == View.GONE) {
+                    item_menu.setVisibility(View.VISIBLE);
+                } else if (tracker.getSelection().size() == 0 && item_menu.getVisibility() == View.VISIBLE) {
+                    item_menu.setVisibility(View.GONE);
+                }
+                item_menu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
+                item_menu.getChildAt(1).setEnabled(tracker.getSelection().size() == 1);
+            }
+        });
+
+        bookAdapter.setSelectionTracker(tracker);
+
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
-            ArrayList<String> lists = new ArrayList<>();
+            lists.clear();
             for (BookBean bookBean : list) {
                 lists.add(bookBean.getBook_id());
             }
 
-            tracker = new SelectionTracker.Builder<>(
-                    "my-selection-id",
-                    binding.rv,
-                    new StringItemKeyProvider(1, lists),
-                    new MyDetailsLookup(binding.rv),
-                    StorageStrategy.createStringStorage())
-                    .withSelectionPredicate(SelectionPredicates.createSelectAnything())
-                    .withOnItemActivatedListener((item, e) -> {
-                        Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
-                        //获取点击事件位置
-                        int position = item.getPosition();
-                        bookAdapter.getItemData().get(position).setUpdate(false);
-                        bookrackViewModel.updateBook(bookAdapter.getItemData().get(position));
-                        bookAdapter.notifyItemChanged(position);
-                        intent.putExtra("book", bookAdapter.getItemData().get(position));
-                        startActivity(intent);
-                        BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-                        return true;
-                    })
-                    .build();
-            bookAdapter.setSelectionTracker(tracker);
-            DiffUtil.DiffResult result = DiffUtil.calculateDiff(new BookRackDiffCallback(bookAdapter.getItemData(), list));
             bookAdapter.setItemData(list);
-            result.dispatchUpdatesTo(bookAdapter);
+            bookAdapter.notifyDataSetChanged();
             //bookrackViewModel.updateCatalogue();
         });
 
@@ -110,6 +176,88 @@ public class BookRackFragment extends Fragment {
                 }
             }
             binding.refreshLayout.finishRefresh();
+        });
+
+        final TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
+                com.google.android.material.R.attr.alertDialogStyle, 0);
+        ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)"));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0),arr_list);
+        a.recycle();
+
+        //长按多选事件
+        bookrackViewModel.getOperation().observe(getViewLifecycleOwner(), integer -> {
+            if (integer == 2) {
+                String[] ss = new String[tracker.getSelection().size()];
+                int index = 0;
+                for (String s : tracker.getSelection()) {
+                    ss[index++] = s;
+                }
+
+                arr_list.set(1,"删除书架记录并删除本地缓存文件(大小:计算中)");
+                AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                        .setTitle("删除提示")
+                        //.setMessage("确定删除书本？")
+                        .setSingleChoiceItems(adapter, 0, null)
+                        .setPositiveButton("确定", (dialogInterface, i) -> {
+                            //System.out.println("((AlertDialog) dialogInterface).getListView().getCheckedItemPosition() = " + ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition());
+                            //bookrackViewModel.removeBooks(ss);
+                            //bookrackViewModel.updateBooks();
+                        })
+                        .setOnCancelListener(DialogInterface::dismiss)
+                        .setNeutralButton("取消", null)
+                        .create();
+                dialog.show();
+
+                //效率极低，待优化（）
+                new Thread(() -> {
+                    try {
+                        GlideGetPath.init();
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+
+                    final long[] count_size = {0};
+                    for (String s : ss) {
+                        BookBean bean = null;
+                        for (BookBean itemDatum : bookAdapter.getItemData()) {
+                            if (s.equals(itemDatum.getBook_id())){
+                                bean = itemDatum;
+                                break;
+                            }
+                        }
+                        String path = DiskCache.path + File.separator + "book"  + File.separator + s;
+                        count_size[0] += FileSizeUtil.getFileOrFilesSize(path,FileSizeUtil.SIZE_TYPE_B);
+                        if (bean!=null && bean.getBook_id().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))){
+                            File file = new File(path + File.separator + "book_chapter");
+                            if (file.isDirectory()){
+                                for (File listFile : Objects.requireNonNull(file.listFiles())) {
+                                    try {
+                                        FileReader fileReader=new FileReader(listFile);
+                                        BufferedReader bufferedReader =new BufferedReader(fileReader);
+                                        bufferedReader.lines().forEach(s1 -> {
+                                            File f = GlideGetPath.getCacheFile(s1);
+                                            if (f!=null) {
+                                                count_size[0] += FileSizeUtil.getFileOrFilesSize(f.getPath(),1);
+                                            }
+                                        });
+                                        bufferedReader.close();
+                                        fileReader.close();
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    requireActivity().runOnUiThread(() -> {
+                        arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(count_size[0]) + ")");
+                        adapter.notifyDataSetChanged();
+                    });
+                }).start();
+                System.out.println("dialog.getListView().getAdapter().getItem(1) = " + dialog.getListView().getAdapter().getClass());
+
+            }
         });
 
         return root;
@@ -133,36 +281,6 @@ public class BookRackFragment extends Fragment {
         tracker.onSaveInstanceState(outState);
     }
 
-    private static class BookRackDiffCallback extends DiffUtil.Callback {
-        private final ArrayList<BookBean> oldData;
-        private final ArrayList<BookBean> newData;
-
-        public BookRackDiffCallback(ArrayList<BookBean> oldData, ArrayList<BookBean> newData) {
-            this.oldData = oldData;
-            this.newData = newData;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldData.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newData.size();
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldData.get(oldItemPosition).getBook_id().equals(newData.get(newItemPosition).getBook_id());
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldData.get(oldItemPosition).getBook_id().equals(newData.get(newItemPosition).getBook_id());
-        }
-    }
-
     public static class StringItemKeyProvider extends ItemKeyProvider<String> {
 
         private final List<String> items;
@@ -184,7 +302,7 @@ public class BookRackFragment extends Fragment {
         }
     }
 
-    private static class MyDetailsLookup extends ItemDetailsLookup<String>  {
+    private static class MyDetailsLookup extends ItemDetailsLookup<String> {
 
         private final RecyclerView mRecyclerView;
 

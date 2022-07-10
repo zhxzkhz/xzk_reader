@@ -3,11 +3,14 @@ package com.zhhz.reader.activity;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -18,6 +21,8 @@ import com.zhhz.reader.bean.RuleBean;
 import com.zhhz.reader.databinding.ActivityMainBinding;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
+import com.zhhz.reader.ui.bookrack.BookRackViewModel;
+import com.zhhz.reader.util.GlideGetPath;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -25,6 +30,7 @@ import java.text.SimpleDateFormat;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
+    private BookRackViewModel bookrackViewModel;
 
     @SuppressLint("SimpleDateFormat")
     @Override
@@ -61,6 +67,23 @@ public class MainActivity extends AppCompatActivity {
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        bookrackViewModel = new ViewModelProvider(this).get(BookRackViewModel.class);
+
+        //缓存，只支持单本缓存(等待更新)
+        binding.itemMenu.getChildAt(0).setEnabled(false);
+        //binding.itemMenu.getChildAt(0).setOnClickListener(view -> bookrackViewModel.operationBooks(0));
+
+        //导出书本,只支持单本导出(等待更新)
+        binding.itemMenu.getChildAt(1).setEnabled(false);
+        //binding.itemMenu.getChildAt(1).setOnClickListener(view -> bookrackViewModel.operationBooks(1));
+
+        //删除
+        binding.itemMenu.getChildAt(2).setOnClickListener(view -> bookrackViewModel.operationBooks(2));
+
+        binding.itemMenu.getChildAt(3).setEnabled(false);
+        binding.itemMenu.getChildAt(4).setEnabled(false);
+
     }
 
     @Override
@@ -68,4 +91,7 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         binding = null;
     }
+
+
+
 }

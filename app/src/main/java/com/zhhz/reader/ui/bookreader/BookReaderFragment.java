@@ -2,7 +2,9 @@ package com.zhhz.reader.ui.bookreader;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -17,7 +19,7 @@ import com.zhhz.reader.databinding.FragmentBookreaderBinding;
 
 import java.util.Objects;
 
-public class BookReaderFragment extends Fragment {
+public class BookReaderFragment extends Fragment{
 
     private BookReaderViewModel mViewModel;
 
@@ -81,7 +83,6 @@ public class BookReaderFragment extends Fragment {
 
         error_btn = new AppCompatButton(requireContext());
         error_btn.setText("重新加载");
-
         return root;
     }
 
@@ -113,6 +114,17 @@ public class BookReaderFragment extends Fragment {
         mViewModel.setStart(r[1]);
         mViewModel.getContent();
 
+    }
+
+    public boolean onKeyDown(int keyCode, KeyEvent ignoredEvent) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP ){
+            binding.readerText.up_page();
+            return true;
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN){
+            binding.readerText.down_page();
+            return true;
+        }
+        return false;
     }
 
 }

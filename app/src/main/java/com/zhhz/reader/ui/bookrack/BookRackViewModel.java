@@ -29,14 +29,29 @@ public class BookRackViewModel extends ViewModel {
 
     private final MutableLiveData<BookBean> catalogue;
 
+    private final MutableLiveData<Integer> operation;
+
     public BookRackViewModel() {
         data = new MutableLiveData<>();
         catalogue = new MutableLiveData<>();
+        operation = new MutableLiveData<>();
         data.setValue(SQLiteUtil.readBooks());
+    }
+
+    public void updateBooks(){
+        data.postValue(SQLiteUtil.readBooks());
     }
 
     public void updateBook(BookBean bookBean){
         SQLiteUtil.saveBook(bookBean);
+    }
+
+    public void operationBooks(Integer integer){
+        operation.setValue(integer);
+    }
+
+    public void removeBooks(String[] s){
+        SQLiteUtil.removeBooks(s);
     }
 
     /**
@@ -91,6 +106,8 @@ public class BookRackViewModel extends ViewModel {
                         bookBean.setUpdate(true);
                         SQLiteUtil.saveBook(bookBean);
                         catalogue.postValue(bookBean);
+                    } else {
+                        catalogue.postValue(null);
                     }
                 }
             });
@@ -103,5 +120,9 @@ public class BookRackViewModel extends ViewModel {
 
     public MutableLiveData<BookBean> getCatalogue() {
         return catalogue;
+    }
+
+    public MutableLiveData<Integer> getOperation() {
+        return operation;
     }
 }
