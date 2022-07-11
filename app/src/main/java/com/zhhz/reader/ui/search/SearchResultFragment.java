@@ -41,11 +41,16 @@ public class SearchResultFragment extends Fragment {
         SearchViewModel mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
         mViewModel.getData().observe(getViewLifecycleOwner(), list -> {
             binding.progress.setVisibility(View.GONE);
+            int size = searchResultAdapter.getItemData().size();
             if (list == null) {
                 searchResultAdapter.getItemData().clear();
                 searchResultAdapter.notifyDataSetChanged();
+                //失败也会显示，等后续优化
+                binding.progress.setVisibility(View.VISIBLE);
+            } else if (size == 0) {
+                searchResultAdapter.setItemData(list);
+                searchResultAdapter.notifyDataSetChanged();
             } else {
-                int size = searchResultAdapter.getItemData().size();
                 searchResultAdapter.getItemData().addAll(list);
                 searchResultAdapter.notifyItemRangeInserted(size, list.size());
                 //DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(),list));

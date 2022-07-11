@@ -18,6 +18,8 @@ import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.ui.search.SearchResultFragment;
 import com.zhhz.reader.ui.search.SearchViewModel;
 
+import java.util.Objects;
+
 public class SearchActivity extends AppCompatActivity {
 
     private ActivitySearchBinding binding;
@@ -44,11 +46,13 @@ public class SearchActivity extends AppCompatActivity {
                 return true;
             }
             if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+
                 binding.searchText.clearFocus();
                 InputMethodManager imm = (InputMethodManager) getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
                 if (mViewModel.getData().getValue() != null)
-                    mViewModel.getData().getValue().clear();
+                    //搜索前清除上次搜索记录
+                    mViewModel.getData().setValue(null);
                 mViewModel.searchBook(textView.getText().toString());
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.search_fragment, SearchResultFragment.getInstance(), "SearchResultFragment")

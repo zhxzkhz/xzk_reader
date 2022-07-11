@@ -26,7 +26,7 @@ public class SearchViewModel extends ViewModel {
         }
     }
 
-    public LiveData<ArrayList<SearchResultBean>> getData() {
+    public MutableLiveData<ArrayList<SearchResultBean>> getData() {
         return data;
     }
 }
