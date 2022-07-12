@@ -29,7 +29,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public abstract class Analysis {
+public abstract class Analysis{
 
     public static String save_path = "D:\\星-阅读\\book";
 

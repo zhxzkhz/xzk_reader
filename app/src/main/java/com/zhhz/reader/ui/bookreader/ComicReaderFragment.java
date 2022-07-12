@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -191,6 +192,9 @@ public class ComicReaderFragment extends Fragment {
         mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
             binding.progress.hide();
             if (map.containsKey("error")) {
+                new AlertDialog.Builder(requireContext()).setTitle("错误提示")
+                                .setMessage((CharSequence) map.get("error"))
+                                .show();
                 binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
                 int length = comicAdapter.getItemData().size();

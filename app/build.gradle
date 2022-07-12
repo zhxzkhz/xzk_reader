@@ -59,10 +59,16 @@ dependencies {
         transitive = false
     }
 
+    //json解析库
     implementation 'com.alibaba:fastjson:1.2.75'
 
+    //html解析库
     implementation 'org.jsoup:jsoup:1.15.2'
 
+    //js运行库
     implementation 'com.github.gedoor:rhino-android:1.8'
+
+    //加解密类库
+    implementation('cn.hutool:hutool-crypto:5.8.1')
 
 }
