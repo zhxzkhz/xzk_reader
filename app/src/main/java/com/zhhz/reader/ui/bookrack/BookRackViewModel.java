@@ -102,7 +102,10 @@ public class BookRackViewModel extends ViewModel {
                             bufferedWriter.write(JSON.toJSONString(old_map));
                         } catch (IOException ignored) {
                         }
-                        bookBean.setCatalogue(String.valueOf(url));
+                        if (url != null) {
+                            String s = String.valueOf(url);
+                            if (!s.isEmpty()) bookBean.setCatalogue(s);
+                        }
                         bookBean.setUpdate(true);
                         SQLiteUtil.saveBook(bookBean);
                         catalogue.postValue(bookBean);
