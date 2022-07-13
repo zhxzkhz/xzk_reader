@@ -29,7 +29,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-public abstract class Analysis{
+public abstract class Analysis {
 
     public static String save_path = "D:\\星-阅读\\book";
 
@@ -184,18 +184,18 @@ public abstract class Analysis{
     public abstract void BookContent(String url, CallBack callback, Object random);
 
     public void Http(String data, CallBack callBack) {
-        Http(data, callBack,false);
+        Http(data, callBack, false);
     }
 
-    public void Http(String data, CallBack callBack,boolean bool) {
+    public void Http(String data, CallBack callBack, boolean bool) {
         if (data.contains("@post->")) {
-            Http_Post(data, callBack);
+            Http_Post(data, callBack ,bool);
         } else {
-            Http_Get(data, callBack);
+            Http_Get(data, callBack ,bool);
         }
     }
 
-    public void Http_Post(String url, CallBack callback) {
+    public void Http_Post(String url, CallBack callback, boolean bool) {
         String header = null, data;
         MediaType mt;
         String[] arr = url.split("@post->", 2);
@@ -222,10 +222,10 @@ public abstract class Analysis{
             }
         }
         init_header(builder);
-        newCall(builder.build(), callback);
+        newCall(builder.build(), callback,bool);
     }
 
-    public void Http_Get(String url, CallBack callback) {
+    public void Http_Get(String url, CallBack callback, boolean bool) {
         String header = null;
         if (url.contains("$header")) {
             String[] ar = url.split("\\$header", 2);
@@ -240,7 +240,7 @@ public abstract class Analysis{
                 builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
             }
         }
-        newCall(builder.build(), callback);
+        newCall(builder.build(), callback,bool);
     }
 
     private void init_header(Request.Builder builder) {
@@ -253,15 +253,18 @@ public abstract class Analysis{
                     h = "{}";
                 }
             }
-            JSONObject header = JSONObject.parseObject(h);
-            for (Map.Entry<String, Object> entry : header.entrySet()) {
-                builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
+            if (!h.isEmpty()) {
+                JSONObject header = JSONObject.parseObject(h);
+                for (Map.Entry<String, Object> entry : header.entrySet()) {
+                    builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
+                }
+                header.clear();
             }
-            header.clear();
+
         }
     }
 
-    private void newCall(Request request, CallBack callback) {
+    private void newCall(Request request, CallBack callback, boolean bool) {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -281,7 +284,11 @@ public abstract class Analysis{
                     }
                     String s = new String(Objects.requireNonNull(response.body()).bytes(), charset);
                     DiskCache.FileSave(DiskCache.path, call, s);
-                    callback.run(Jsoup.parse(s), null, null);
+                    if (bool){
+                        callback.run(s, null, null);
+                    } else {
+                        callback.run(Jsoup.parse(s), null, null);
+                    }
                 } else {
                     callback.run(null, response.message(), null);
                 }

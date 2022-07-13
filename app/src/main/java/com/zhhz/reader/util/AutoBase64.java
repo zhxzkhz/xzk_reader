@@ -1,6 +1,7 @@
 package com.zhhz.reader.util;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 
@@ -59,7 +60,7 @@ public class AutoBase64 {
 
     //解密
     public static String decodeToString(String str) {
-        return new String(decode(str));
+        return new String(decode(str), StandardCharsets.UTF_8);
     }
 
     public static String encodeToString(byte[] str) {

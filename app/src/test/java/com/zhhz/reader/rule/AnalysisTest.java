@@ -28,7 +28,7 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\jmcomic_asia.json");
+        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\api_255zw_com.json");
         analysis.BookSearch("魔王", (data, msg, label) -> {
             System.out.println("data.toString() = " + data.toString());
             assertTrue(((List<SearchResultBean>) data).size() > 0);

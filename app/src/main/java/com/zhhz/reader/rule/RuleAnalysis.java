@@ -33,7 +33,7 @@ public class RuleAnalysis {
         if (type == 0) {
             analysis = new JsoupAnalysis(jsonObject);
         } else if (type == 1) {
-
+            analysis = new JsonAnalysis(jsonObject);
         }
         if (bool) analyses_map.put(StringUtil.getMD5(analysis.getName()), analysis);
     }
