@@ -2,6 +2,7 @@ package com.zhhz.reader.util;
 
 import androidx.annotation.NonNull;
 
+import com.sun.script.javascript.RhinoScriptEngine;
 import com.zhhz.reader.MyApplication;
 
 import java.io.File;
@@ -28,7 +29,8 @@ public class DiskCache {
     private static final long cache_time = 1000 * 60 * 300;
     ;
     //用于执行JS
-    public static ScriptEngine engine = new ScriptEngineManager().getEngineByName("rhino");
+    public static ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
+    //public static ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("rhino");
     public static String path = "/storage/emulated/0/星☆空";
     //缓存删除时间标记
     private static boolean cache_delete_tag = true;

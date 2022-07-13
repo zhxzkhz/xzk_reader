@@ -184,6 +184,10 @@ public abstract class Analysis{
     public abstract void BookContent(String url, CallBack callback, Object random);
 
     public void Http(String data, CallBack callBack) {
+        Http(data, callBack,false);
+    }
+
+    public void Http(String data, CallBack callBack,boolean bool) {
         if (data.contains("@post->")) {
             Http_Post(data, callBack);
         } else {
@@ -244,7 +248,7 @@ public abstract class Analysis{
             String h = this.json.getString("header");
             if (h.indexOf("js@") == 0) {
                 try {
-                    h = JsToJava(DiskCache.engine.eval(AutoBase64.decodeToString(h.substring(3))));
+                    h = JsToJava(DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(h.substring(3))));
                 } catch (ScriptException e) {
                     h = "{}";
                 }

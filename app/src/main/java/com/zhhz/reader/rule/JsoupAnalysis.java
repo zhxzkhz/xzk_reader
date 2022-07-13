@@ -48,8 +48,8 @@ public class JsoupAnalysis extends Analysis {
     }
 
     private void init() {
-        DiskCache.engine.put("xlua_rule", this);
-        DiskCache.engine.put("xlua_classloader", ClassLoader.getSystemClassLoader());
+        DiskCache.SCRIPT_ENGINE.put("xlua_rule", this);
+        DiskCache.SCRIPT_ENGINE.put("xlua_classloader", ClassLoader.getSystemClassLoader());
         replace_map = new HashMap<>();
         replace_map.put("<p>", "");
         replace_map.put("</p>", "");
@@ -102,6 +102,7 @@ public class JsoupAnalysis extends Analysis {
             Matcher matcher = mailPattern.matcher(reg_x);
             if (!matcher.find()) {
                 s = ((Elements) s).text();
+                break;
             }
             String k = matcher.group(1);
             String v = matcher.group(2);
@@ -234,15 +235,15 @@ public class JsoupAnalysis extends Analysis {
             } else if (detail_x.getString("catalog").startsWith("js@")) {
 
                 try {
-                    DiskCache.engine.put("element", element);
-                    DiskCache.engine.put("url", url);
-                    DiskCache.engine.put("callback", callback);
-                    DiskCache.engine.eval(AutoBase64.decodeToString(detail_x.getString("catalog").substring(3)));
+                    DiskCache.SCRIPT_ENGINE.put("element", element);
+                    DiskCache.SCRIPT_ENGINE.put("url", url);
+                    DiskCache.SCRIPT_ENGINE.put("callback", callback);
+                    DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(detail_x.getString("catalog").substring(3)));
                 } catch (ScriptException e) {
                     e.printStackTrace();
                 }
                 //DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
-                book.setCatalogue(DiskCache.engine.get("result").toString());
+                book.setCatalogue(DiskCache.SCRIPT_ENGINE.get("result").toString());
             } else {
                 String[] obj = parse_array(detail_x.getString("catalog"));
                 String str = to_http(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : "attr->href"), url);
@@ -447,11 +448,12 @@ public class JsoupAnalysis extends Analysis {
 
     @Override
     public void BookContent(String url, CallBack callback, Object label) {
-        Http_Get(url, (data, msg, __) -> {
+        Http(url, (data, msg, __) -> {
             if (data == null) {
                 callback.run(null, msg, label);
                 return;
             }
+
             ((Document) data).outputSettings().prettyPrint(false);
             JSONObject chapter = json.getJSONObject("chapter");
             Element element = (Element) data;
