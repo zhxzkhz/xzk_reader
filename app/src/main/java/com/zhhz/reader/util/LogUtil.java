@@ -26,7 +26,7 @@ public class LogUtil {
                     throw new FileNotFoundException();
                 }
             }
-            path = path + File.separator + System.currentTimeMillis() + File.separator + ".log";
+            path = path + File.separator + System.currentTimeMillis() + ".log";
             bufferedWriter = new BufferedWriter(new FileWriter(path));
         } catch (IOException e) {
             e.printStackTrace();

@@ -18,6 +18,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.card.MaterialCardView;
+import com.zhhz.reader.R;
 import com.zhhz.reader.ui.bookrack.BookRackViewModel;
 import com.zhhz.reader.util.LogUtil;
 
@@ -48,6 +49,7 @@ public class LogMonitorService extends Service {
 
     @Override
     public void onCreate() {
+        setTheme(R.style.Theme_小说阅读器);
         super.onCreate();
         model = new LogMonitorServiceViewModel();
         crateFloatWindow(this);
@@ -63,7 +65,7 @@ public class LogMonitorService extends Service {
         };
         model.getData().observeForever(observer);
 
-        tailer.start();
+        tailer.start(true);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -72,11 +74,15 @@ public class LogMonitorService extends Service {
         // 添加一个悬浮窗，
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         card = new MaterialCardView(context);
+        card.setBackgroundColor(0xffaaeecc);
+        card.setCardBackgroundColor(0xffaaeecc);
+        card.setRadius(24);
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-        params.width = 48;
-        params.height = 48;
+        params.width = -1;
+        params.height = -1;
         params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         params.gravity = Gravity.CENTER | Gravity.END;
+
         windowManager.addView(card, params);
         int width;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -113,8 +119,9 @@ public class LogMonitorService extends Service {
                     handler.removeCallbacks(runnable);
                 }
                 handler.postDelayed(runnable, 3000);
-                card.setX(card.getX() + distanceX);
-                card.setY(card.getY() + distanceY);
+                System.out.println("distanceX = " + distanceX);
+                card.setX(card.getX() - distanceX);
+                card.setY(card.getY() - distanceY);
                 return super.onScroll(e1, e2, distanceX, distanceY);
             }
 

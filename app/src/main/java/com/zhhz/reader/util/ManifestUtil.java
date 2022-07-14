@@ -30,7 +30,7 @@ public class ManifestUtil {
      */
     public static void openAppDetails(Context context, ActivityResultLauncher<Intent> launcher) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("软件需要用到网络和储存权限，请到 “应用信息 -> 权限” 中授予！");
+        builder.setMessage("日志调试模式需要用到悬浮窗，请到 “应用信息 -> 权限” 中授予！");
         builder.setCancelable(false);
         builder.setPositiveButton("去手动授权", (dialog, which) -> {
             Intent intent = new Intent();
@@ -42,9 +42,7 @@ public class ManifestUtil {
             intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             launcher.launch(intent);
         });
-        builder.setNegativeButton("退出",(dialog, which) -> {
-            System.exit(0);
-        });
+        builder.setNegativeButton("取消",(dialog, which) -> {});
         builder.show();
     }
 

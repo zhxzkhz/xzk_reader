@@ -9,27 +9,27 @@ import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
 import com.zhhz.reader.util.JsExtensionClass
 import java.net.URLEncoder
+import java.util.*
 import java.util.regex.Pattern
 import javax.script.SimpleBindings
+import kotlin.collections.ArrayList
 
 
-class JsonAnalysis : Analysis,JsExtensionClass {
+class JsonAnalysis : Analysis, JsExtensionClass {
     constructor(path: String?) : super(path) {}
 
     constructor(jsonObject: JSONObject?) : super(jsonObject) {}
 
     private fun parseArray(s: String): Array<String> {
         val v1: String
-        var v2 = ""
+        val v2: String
         val index = s.indexOf('@')
         if (index == -1) {
-            v1 = ""
-            v2 = s
-        } else if (index > -1) {
+            v1 = s
+            v2 = ""
+        } else {
             v1 = s.substring(0, index)
             v2 = s.substring(index + 1)
-        } else {
-            v1 = s
         }
         return arrayOf(v1, v2)
     }
@@ -52,6 +52,10 @@ class JsonAnalysis : Analysis,JsExtensionClass {
             val found = pattern.findAll(regs[0])
             found.forEach { f ->
                 jsonTemp = parse(jsonTemp, f.value.substring(1))
+            }
+            val i = regs[0].indexOf("$")
+            if (i>0){
+                jsonTemp = regs[0].substring(0,i) + jsonTemp
             }
         }
 
@@ -78,8 +82,7 @@ class JsonAnalysis : Analysis,JsExtensionClass {
                 "js" -> {
                     bindings["data"] = s
                     bindings["out"] = System.out
-                    s = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(v), bindings).toString()
-                    println(s)
+                    s = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(v), bindings)
                 }
                 "match" -> {
                     val p = Pattern.compile(v)
@@ -132,10 +135,14 @@ class JsonAnalysis : Analysis,JsExtensionClass {
                         result.name = name
                         result.title =
                             parseJson(book, search.getString("name"), bindings).toString()
-                        result.author =
-                            parseJson(book, search.getString("author"), bindings).toString()
-                        result.cover =
-                            parseJson(book, search.getString("cover"), bindings).toString()
+                        if (search["author"] != null)
+                            result.author =
+                                parseJson(book, search.getString("author"), bindings).toString()
+                        if (search["cover"] != null)
+                            result.cover =
+                                to_http(parseJson(book, search.getString("cover"), bindings).toString(),url)
+                        result.url =
+                            to_http(parseJson(book, search.getString("detail"), bindings).toString(),url)
                         al.add(result)
                     }
                 }

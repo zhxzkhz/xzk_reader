@@ -3,6 +3,7 @@ package com.zhhz.reader.ui.setting;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,11 +32,7 @@ public class SettingFragment extends Fragment {
         super.onCreate(savedInstanceState);
         launcher = this.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             //第 1 步: 检查是否有相应的权限，根据自己需求，进行添加相应的权限
-            boolean isAllGranted = ManifestUtil.checkPermissionAllGranted(requireContext(),
-                    new String[]{
-                            Manifest.permission.SYSTEM_ALERT_WINDOW
-                    }
-            );
+            boolean isAllGranted = Settings.canDrawOverlays(getContext());
             //如果没有赋予权限，着弹窗对话框
             if (isAllGranted) {
                 requireActivity().startService(new Intent(requireActivity(), LogMonitorService.class));
@@ -53,6 +50,16 @@ public class SettingFragment extends Fragment {
 
         binding = FragmentSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        //第 1 步: 检查是否有相应的权限，根据自己需求，进行添加相应的权限
+        boolean isAllGranted = Settings.canDrawOverlays(getContext());
+        //如果没有赋予权限，着弹窗对话框
+        if (isAllGranted) {
+            requireActivity().startService(new Intent(requireActivity(), LogMonitorService.class));
+        } else {
+            // 弹出对话框告诉用户需要权限的原因, 并引导用户去应用权限管理中手动打开权限按钮
+            ManifestUtil.openAppDetails(requireContext(),launcher);
+        }
 
         final TextView textView = binding.textNotifications;
         settingViewModelViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
