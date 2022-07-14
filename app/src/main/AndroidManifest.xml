@@ -8,6 +8,7 @@
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:name=".MyApplication"
@@ -18,6 +19,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.小说阅读器"
         android:usesCleartextTraffic="true">
+        <service
+            android:name=".service.LogMonitorService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="SYSTEM_ALERT_WINDOW" />
+
         <activity
             android:name=".activity.BookReaderActivity"
             android:exported="false"

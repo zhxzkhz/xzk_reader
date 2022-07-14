@@ -123,8 +123,6 @@ class JsonAnalysis : Analysis,JsExtensionClass {
             val json: JSON = JSON.parse(data as String) as JSON
             val list = parseJson(json, search.getString("list"), bindings)
 
-
-
             if (list is List<*>) {
                 list.forEach { book ->
                     if (book != null) {
