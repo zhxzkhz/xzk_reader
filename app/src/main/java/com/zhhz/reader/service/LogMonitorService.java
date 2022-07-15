@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -34,7 +35,7 @@ import cn.hutool.core.io.file.Tailer;
 public class LogMonitorService extends Service {
 
     private ServiceFloatWindowBinding binding;
-    private ArrayList<String> list;
+    private final ArrayList<String> list = new ArrayList<>();
     private LogCatAdapter logCatAdapter;
     private Tailer tailer;
     private MaterialCardView card;
@@ -71,11 +72,14 @@ public class LogMonitorService extends Service {
         card.setBackgroundColor(0xffaaeecc);
         card.setCardBackgroundColor(0xffaaeecc);
         card.setRadius(36);
+        ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(72,72);
+        card.setLayoutParams(params);
 
         //悬浮按钮 LayoutParams
         WindowManager.LayoutParams params1 = new WindowManager.LayoutParams();
-        params1.width = 72;
-        params1.height = 72;
+        params1.width = -1;
+        params1.height = -1;
+        params1.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         params1.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         params1.gravity = Gravity.CENTER | Gravity.END;
 
@@ -83,6 +87,7 @@ public class LogMonitorService extends Service {
         WindowManager.LayoutParams params2 = new WindowManager.LayoutParams();
         params2.width = -1;
         params2.height = -2;
+        params2.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         params2.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         params2.gravity = Gravity.END;
 
@@ -123,9 +128,9 @@ public class LogMonitorService extends Service {
                     handler.removeCallbacks(runnable);
                 }
                 handler.postDelayed(runnable, 3000);
-                params1.x = (int) (params1.x - distanceX);
-                params1.y = (int) (params1.y - distanceY);
-                windowManager.updateViewLayout(card,params1);
+                card.setX(card.getX() - distanceX);
+                card.setY(card.getY() - distanceY);
+                //windowManager.updateViewLayout(card,params1);
                 return super.onScroll(e1, e2, distanceX, distanceY);
             }
 
