@@ -25,7 +25,7 @@ public class BookReaderActivity extends AppCompatActivity {
         mViewModel.setBook((BookBean) getIntent().getSerializableExtra("book"));
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, mViewModel.isComic() ? ComicReaderFragment.newInstance() : BookReaderFragment.newInstance(),mViewModel.isComic()?"ComicReaderFragment":"BookReaderFragment")
+                    .replace(R.id.container, mViewModel.isComic() ? ComicReaderFragment.newInstance() : BookReaderFragment.newInstance(), mViewModel.isComic() ? "ComicReaderFragment" : "BookReaderFragment")
                     .commitNow();
         }
 
@@ -48,8 +48,8 @@ public class BookReaderActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag("BookReaderFragment");
-        if (fragment!=null){
-            boolean bool = ((BookReaderFragment)fragment).onKeyDown(keyCode, event);
+        if (fragment != null) {
+            boolean bool = ((BookReaderFragment) fragment).onKeyDown(keyCode, event);
             if (bool) return true;
             return super.onKeyDown(keyCode, event);
         }

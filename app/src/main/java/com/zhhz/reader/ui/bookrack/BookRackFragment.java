@@ -45,23 +45,21 @@ import com.zhhz.reader.util.StringUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 public class BookRackFragment extends Fragment {
 
+    private final ArrayList<String> lists = new ArrayList<>();
+    SelectionTracker<String> tracker;
     private BookRackViewModel bookrackViewModel;
     private FragmentBookrackBinding binding;
     private BookAdapter bookAdapter;
     private ActivityResultLauncher<Intent> launcher;
-    private final ArrayList<String> lists = new ArrayList<>();
-    SelectionTracker<String> tracker;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -181,7 +179,7 @@ public class BookRackFragment extends Fragment {
         final TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
                 com.google.android.material.R.attr.alertDialogStyle, 0);
         ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)"));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0),arr_list);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), arr_list);
         a.recycle();
 
         //长按多选事件
@@ -193,7 +191,7 @@ public class BookRackFragment extends Fragment {
                     ss[index++] = s;
                 }
 
-                arr_list.set(1,"删除书架记录并删除本地缓存文件(大小:计算中)");
+                arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:计算中)");
                 AlertDialog dialog = new AlertDialog.Builder(requireContext())
                         .setTitle("删除提示")
                         //.setMessage("确定删除书本？")
@@ -220,24 +218,24 @@ public class BookRackFragment extends Fragment {
                     for (String s : ss) {
                         BookBean bean = null;
                         for (BookBean itemDatum : bookAdapter.getItemData()) {
-                            if (s.equals(itemDatum.getBook_id())){
+                            if (s.equals(itemDatum.getBook_id())) {
                                 bean = itemDatum;
                                 break;
                             }
                         }
-                        String path = DiskCache.path + File.separator + "book"  + File.separator + s;
-                        count_size[0] += FileSizeUtil.getFileOrFilesSize(path,FileSizeUtil.SIZE_TYPE_B);
-                        if (bean!=null && bean.getBook_id().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))){
+                        String path = DiskCache.path + File.separator + "book" + File.separator + s;
+                        count_size[0] += FileSizeUtil.getFileOrFilesSize(path, FileSizeUtil.SIZE_TYPE_B);
+                        if (bean != null && bean.getBook_id().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))) {
                             File file = new File(path + File.separator + "book_chapter");
-                            if (file.isDirectory()){
+                            if (file.isDirectory()) {
                                 for (File listFile : Objects.requireNonNull(file.listFiles())) {
                                     try {
-                                        FileReader fileReader=new FileReader(listFile);
-                                        BufferedReader bufferedReader =new BufferedReader(fileReader);
+                                        FileReader fileReader = new FileReader(listFile);
+                                        BufferedReader bufferedReader = new BufferedReader(fileReader);
                                         bufferedReader.lines().forEach(s1 -> {
                                             File f = GlideGetPath.getCacheFile(s1);
-                                            if (f!=null) {
-                                                count_size[0] += FileSizeUtil.getFileOrFilesSize(f.getPath(),1);
+                                            if (f != null) {
+                                                count_size[0] += FileSizeUtil.getFileOrFilesSize(f.getPath(), 1);
                                             }
                                         });
                                         bufferedReader.close();

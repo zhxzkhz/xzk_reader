@@ -18,8 +18,6 @@ import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.ui.search.SearchResultFragment;
 import com.zhhz.reader.ui.search.SearchViewModel;
 
-import java.util.Objects;
-
 public class SearchActivity extends AppCompatActivity {
 
     private ActivitySearchBinding binding;

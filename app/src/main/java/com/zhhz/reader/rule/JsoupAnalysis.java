@@ -300,10 +300,10 @@ public class JsoupAnalysis extends Analysis {
                         }
                     });
                 } else {
-                    callback.run(lhm, msg ,url);
+                    callback.run(lhm, msg, url);
                 }
             } else {
-                callback.run(lhm, msg , url);
+                callback.run(lhm, msg, url);
             }
         });
     }

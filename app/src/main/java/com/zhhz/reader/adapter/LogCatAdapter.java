@@ -11,15 +11,13 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.ArrayList;
-import java.util.Map;
 
 
 // ① 创建Adapter
 public class LogCatAdapter extends RecyclerView.Adapter<LogCatAdapter.ViewHolder> {
 
     private final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -2);
-    
+
     private final ArrayList<String> itemData;
     private View.OnClickListener onClickListener;
 
@@ -51,7 +49,7 @@ public class LogCatAdapter extends RecyclerView.Adapter<LogCatAdapter.ViewHolder
         holder.textView.setText(s);
         if (s.startsWith("error :")) {
             holder.textView.setTextColor(Color.RED);
-        } else if (s.startsWith("warning :")){
+        } else if (s.startsWith("warning :")) {
             holder.textView.setTextColor(Color.YELLOW);
         } else {
             holder.textView.setTextColor(Color.BLACK);

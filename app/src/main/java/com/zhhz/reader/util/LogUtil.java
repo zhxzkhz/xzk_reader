@@ -21,7 +21,7 @@ public class LogUtil {
     static {
         try {
             path = MyApplication.context.getExternalCacheDir().getAbsolutePath() + File.separator + "log";
-            if (!new File(path).isDirectory()){
+            if (!new File(path).isDirectory()) {
                 if (!new File(path).mkdirs()) {
                     throw new FileNotFoundException();
                 }
@@ -33,48 +33,48 @@ public class LogUtil {
         }
     }
 
-    private boolean check(Object o,String s){
-        if (bufferedWriter == null){
-            Log.i(s,String.valueOf(o));
+    private static boolean check(Object o, String s) {
+        if (bufferedWriter == null) {
+            Log.i(s, String.valueOf(o));
             return true;
         }
         return false;
     }
 
-    public void error(Object object){
-        if (check(object,"error")) return;
+    public static void error(Object object) {
+        if (check(object, "error")) return;
         try {
-            if (object instanceof Throwable){
+            if (object instanceof Throwable) {
                 bufferedWriter.append("error : ").write(((Throwable) object).getMessage());
-            }else {
+            } else {
                 bufferedWriter.append("error : ").write(String.valueOf(object));
             }
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
-            Log.i("error",String.valueOf(object));
+            Log.i("error", String.valueOf(object));
         }
     }
 
-    public void info(Object object){
-        if (check(object,"info")) return;
+    public static void info(Object object) {
+        if (check(object, "info")) return;
         try {
             bufferedWriter.append("info : ").write(String.valueOf(object));
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
-            Log.i("info",String.valueOf(object));
+            Log.i("info", String.valueOf(object));
         }
     }
 
-    public void warning(Object object){
-        if (check(object,"warning")) return;
+    public static void warning(Object object) {
+        if (check(object, "warning")) return;
         try {
             bufferedWriter.append("warning : ").write(String.valueOf(object));
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
-            Log.i("warning",String.valueOf(object));
+            Log.i("warning", String.valueOf(object));
         }
     }
 

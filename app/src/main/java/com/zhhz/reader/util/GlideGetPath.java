@@ -16,7 +16,7 @@ public class GlideGetPath {
     private static File f;
 
     public static void init() throws NoSuchFieldException, IllegalAccessException {
-        if (f !=null) return;
+        if (f != null) return;
         Field field = GlideBuilder.class.getDeclaredField("diskCacheFactory");
         field.setAccessible(true);
         DiskLruCacheFactory df = (DiskLruCacheFactory) field.get(XluaGlideModule.glide);

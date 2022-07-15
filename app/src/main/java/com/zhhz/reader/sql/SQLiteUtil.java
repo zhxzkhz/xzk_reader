@@ -12,7 +12,6 @@ import com.zhhz.reader.util.DiskCache;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 public class SQLiteUtil {
 
@@ -118,7 +117,7 @@ public class SQLiteUtil {
 
         //新增规则排序
         list.sort((o1, o2) -> {
-            if (o1.isOpen() == o2.isOpen()){
+            if (o1.isOpen() == o2.isOpen()) {
                 return o1.getName().compareToIgnoreCase(o2.getName());
             } else if (o1.isOpen()) {
                 return 1;

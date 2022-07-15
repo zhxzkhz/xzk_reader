@@ -9,10 +9,8 @@ import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
 import com.zhhz.reader.util.JsExtensionClass
 import java.net.URLEncoder
-import java.util.*
 import java.util.regex.Pattern
 import javax.script.SimpleBindings
-import kotlin.collections.ArrayList
 
 
 class JsonAnalysis : Analysis, JsExtensionClass {
@@ -54,8 +52,8 @@ class JsonAnalysis : Analysis, JsExtensionClass {
                 jsonTemp = parse(jsonTemp, f.value.substring(1))
             }
             val i = regs[0].indexOf("$")
-            if (i>0){
-                jsonTemp = regs[0].substring(0,i) + jsonTemp
+            if (i > 0) {
+                jsonTemp = regs[0].substring(0, i) + jsonTemp
             }
         }
 
@@ -140,9 +138,21 @@ class JsonAnalysis : Analysis, JsExtensionClass {
                                 parseJson(book, search.getString("author"), bindings).toString()
                         if (search["cover"] != null)
                             result.cover =
-                                to_http(parseJson(book, search.getString("cover"), bindings).toString(),url)
+                                to_http(
+                                    parseJson(
+                                        book,
+                                        search.getString("cover"),
+                                        bindings
+                                    ).toString(), url
+                                )
                         result.url =
-                            to_http(parseJson(book, search.getString("detail"), bindings).toString(),url)
+                            to_http(
+                                parseJson(
+                                    book,
+                                    search.getString("detail"),
+                                    bindings
+                                ).toString(), url
+                            )
                         al.add(result)
                     }
                 }

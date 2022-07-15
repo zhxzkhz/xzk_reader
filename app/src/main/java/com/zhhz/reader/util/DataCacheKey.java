@@ -6,7 +6,7 @@ import com.bumptech.glide.load.Key;
 
 import java.security.MessageDigest;
 
-public class DataCacheKey implements Key  {
+public class DataCacheKey implements Key {
 
     private final Key sourceKey;
     private final Key signature;
@@ -50,7 +50,6 @@ public class DataCacheKey implements Key  {
         sourceKey.updateDiskCacheKey(messageDigest);
         signature.updateDiskCacheKey(messageDigest);
     }
-
 
 
 }

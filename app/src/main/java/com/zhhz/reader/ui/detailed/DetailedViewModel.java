@@ -34,13 +34,13 @@ public class DetailedViewModel extends ViewModel {
     public void queryDetailed(SearchResultBean bean, int index) {
         Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).BookDetail(bean.getUrl(), (data, msg, isComic) -> {
             BookBean book = (BookBean) data;
-            if (book.getTitle() == null || book.getTitle().isEmpty()){
+            if (book.getTitle() == null || book.getTitle().isEmpty()) {
                 book.setTitle(bean.getTitle());
             }
-            if (book.getAuthor() == null || book.getAuthor().isEmpty()){
+            if (book.getAuthor() == null || book.getAuthor().isEmpty()) {
                 book.setAuthor(bean.getAuthor());
             }
-            if (book.getCover() == null || book.getCover().isEmpty()){
+            if (book.getCover() == null || book.getCover().isEmpty()) {
                 book.setCover(bean.getCover());
             }
             book.setBook_id(StringUtil.getMD5(book.getTitle() + "▶☀" + isComic + "☀◀" + book.getAuthor()));

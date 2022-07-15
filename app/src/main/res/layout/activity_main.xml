@@ -12,10 +12,10 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:defaultNavHost="true"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/nav_view"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:navGraph="@navigation/mobile_navigation"
         tools:ignore="FragmentTagUsage" />
 
@@ -29,12 +29,12 @@
         app:menu="@menu/bottom_nav_menu" />
 
     <androidx.appcompat.widget.LinearLayoutCompat
-        android:clickable="true"
-        android:background="?android:attr/windowBackground"
-        android:translationZ="10dp"
         android:id="@+id/item_menu"
         android:layout_width="match_parent"
         android:layout_height="60dp"
+        android:background="?android:attr/windowBackground"
+        android:clickable="true"
+        android:translationZ="10dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -43,45 +43,45 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            app:drawableTopCompat="@drawable/cache"
+            android:text="@string/cache"
             android:textColor="@color/menu_item_text_color"
-            android:text="@string/cache" />
+            app:drawableTopCompat="@drawable/cache" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            app:drawableTopCompat="@drawable/pack"
+            android:text="@string/pack"
             android:textColor="@color/menu_item_text_color"
-            android:text="@string/pack" />
+            app:drawableTopCompat="@drawable/pack" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            app:drawableTopCompat="@drawable/delete"
+            android:text="@string/remove"
             android:textColor="@color/menu_item_text_color"
-            android:text="@string/remove" />
+            app:drawableTopCompat="@drawable/delete" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            app:drawableTopCompat="@drawable/other"
+            android:text="@string/other"
             android:textColor="@color/menu_item_text_color"
-            android:text="@string/other" />
+            app:drawableTopCompat="@drawable/other" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            app:drawableTopCompat="@drawable/other"
+            android:text="@string/other"
             android:textColor="@color/menu_item_text_color"
-            android:text="@string/other" />
+            app:drawableTopCompat="@drawable/other" />
     </androidx.appcompat.widget.LinearLayoutCompat>
 
 

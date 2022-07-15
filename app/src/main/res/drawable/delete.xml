@@ -10,7 +10,7 @@
             </item>
         </layer-list>
     </item>
-    
+
     <item android:state_pressed="true">
         <layer-list>
             <item android:width="24dp" android:height="24dp" android:top="12dp">

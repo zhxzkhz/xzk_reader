@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/linearLayout3"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -10,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:background="@color/gray"
-        app:layout_constraintBottom_toTopOf="@id/view"/>
+        app:layout_constraintBottom_toTopOf="@id/view" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/view"
@@ -36,9 +35,9 @@
         android:id="@+id/clear"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:background="@color/transparent"
         android:padding="5dp"
         android:src="@drawable/clear_logcat_24"
-        android:background="@color/transparent"
         app:layout_constraintBottom_toTopOf="@id/recyclerView"
         app:layout_constraintEnd_toStartOf="@id/hide" />
 
@@ -54,21 +53,21 @@
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:background="@drawable/keyboard_arrow_down_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/recyclerView"/>
+        app:layout_constraintBottom_toTopOf="@id/recyclerView"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:background="@color/gray"
-        app:layout_constraintTop_toBottomOf="@id/view"
-        app:layout_constraintBottom_toTopOf="@id/recyclerView"/>
+        app:layout_constraintBottom_toTopOf="@id/recyclerView"
+        app:layout_constraintTop_toBottomOf="@id/view" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="240dp"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

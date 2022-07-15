@@ -14,7 +14,6 @@ import java.security.MessageDigest;
 import java.util.Objects;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;

@@ -189,9 +189,9 @@ public abstract class Analysis {
 
     public void Http(String data, CallBack callBack, boolean bool) {
         if (data.contains("@post->")) {
-            Http_Post(data, callBack ,bool);
+            Http_Post(data, callBack, bool);
         } else {
-            Http_Get(data, callBack ,bool);
+            Http_Get(data, callBack, bool);
         }
     }
 
@@ -222,7 +222,7 @@ public abstract class Analysis {
             }
         }
         init_header(builder);
-        newCall(builder.build(), callback,bool);
+        newCall(builder.build(), callback, bool);
     }
 
     public void Http_Get(String url, CallBack callback, boolean bool) {
@@ -240,7 +240,7 @@ public abstract class Analysis {
                 builder.addHeader(entry.getKey(), String.valueOf(entry.getValue()));
             }
         }
-        newCall(builder.build(), callback,bool);
+        newCall(builder.build(), callback, bool);
     }
 
     private void init_header(Request.Builder builder) {
@@ -284,7 +284,7 @@ public abstract class Analysis {
                     }
                     String s = new String(Objects.requireNonNull(response.body()).bytes(), charset);
                     DiskCache.FileSave(DiskCache.path, call, s);
-                    if (bool){
+                    if (bool) {
                         callback.run(s, null, null);
                     } else {
                         callback.run(Jsoup.parse(s), null, null);

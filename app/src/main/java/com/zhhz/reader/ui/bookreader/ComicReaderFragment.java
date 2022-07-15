@@ -143,7 +143,7 @@ public class ComicReaderFragment extends Fragment {
                     binding.progressText.setText(requireContext().getString(R.string.progress_text, page, count));
 
                     if (mViewModel.getStart() + 1 != page || page == count) {
-                        if (page != count || mViewModel.getStart() + 2 == page ) {
+                        if (page != count || mViewModel.getStart() + 2 == page) {
                             mViewModel.setStart(page - 1);
                             mViewModel.saveProgressComic();
                         }
@@ -193,8 +193,8 @@ public class ComicReaderFragment extends Fragment {
             binding.progress.hide();
             if (map.containsKey("error")) {
                 new AlertDialog.Builder(requireContext()).setTitle("错误提示")
-                                .setMessage((CharSequence) map.get("error"))
-                                .show();
+                        .setMessage((CharSequence) map.get("error"))
+                        .show();
                 binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
                 int length = comicAdapter.getItemData().size();

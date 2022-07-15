@@ -38,19 +38,19 @@ public class BookRackViewModel extends ViewModel {
         data.setValue(SQLiteUtil.readBooks());
     }
 
-    public void updateBooks(){
+    public void updateBooks() {
         data.postValue(SQLiteUtil.readBooks());
     }
 
-    public void updateBook(BookBean bookBean){
+    public void updateBook(BookBean bookBean) {
         SQLiteUtil.saveBook(bookBean);
     }
 
-    public void operationBooks(Integer integer){
+    public void operationBooks(Integer integer) {
         operation.setValue(integer);
     }
 
-    public void removeBooks(String[] s){
+    public void removeBooks(String[] s) {
         SQLiteUtil.removeBooks(s);
     }
 

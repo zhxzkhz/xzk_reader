@@ -90,58 +90,6 @@ public class ReadTextView extends View {
     private int color = Color.BLACK;
     private float[] font_x;
     private final Runnable run = ReadTextView.this::AnalyseTextLine;
-
-    public boolean down_page(){
-        if (textEnd >= text.length()) {
-            if (!downOnClick.onClick()) return true;
-        }
-        textStart = textEnd;
-        updateCallBack.onClick();
-        invalidate();
-        return false;
-    }
-
-    public boolean up_page(){
-        int posIndex = 0;
-        //等于0代表是上一章，
-        if (textStart == 0) {
-            if (upOnClick.onClick()) {
-                int posIndex1 = maxLine / pageMaxLine;
-                //获取能显示完整行数的页面数
-                posIndex = maxLine - posIndex1 * pageMaxLine;
-                if (posIndex == 0) {
-                    posIndex = maxLine - pageMaxLine + 1;
-                } else {
-                    posIndex = posIndex1 * pageMaxLine + 1;
-                }
-            } else {
-                return true;
-            }
-        } else {
-            //判断统计行数没，如果没有，则先统计
-            if (maxLine < 1) {
-                hd.removeCallbacks(run);
-                AnalyseTextLine();
-            }
-            for (Map.Entry<Integer, Integer> value : map.entrySet()) {
-                if (value.getValue() == textStart) {
-                    posIndex = value.getKey() - pageMaxLine;
-                    break;
-                }
-            }
-        }
-
-        if (map.containsKey(posIndex)) {
-            //noinspection ConstantConditions
-            textStart = map.get(posIndex);
-        } else {
-            Toast.makeText(getContext(), "上一页加载失败", Toast.LENGTH_SHORT).show();
-        }
-        updateCallBack.onClick();
-        invalidate();
-        return false;
-    }
-
     private final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
         public boolean onDown(MotionEvent e) {
@@ -193,6 +141,57 @@ public class ReadTextView extends View {
         ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize, 2) / 2f) - textSize / 12f));
         //ttPaint.density = density;
 
+    }
+
+    public boolean down_page() {
+        if (textEnd >= text.length()) {
+            if (!downOnClick.onClick()) return true;
+        }
+        textStart = textEnd;
+        updateCallBack.onClick();
+        invalidate();
+        return false;
+    }
+
+    public boolean up_page() {
+        int posIndex = 0;
+        //等于0代表是上一章，
+        if (textStart == 0) {
+            if (upOnClick.onClick()) {
+                int posIndex1 = maxLine / pageMaxLine;
+                //获取能显示完整行数的页面数
+                posIndex = maxLine - posIndex1 * pageMaxLine;
+                if (posIndex == 0) {
+                    posIndex = maxLine - pageMaxLine + 1;
+                } else {
+                    posIndex = posIndex1 * pageMaxLine + 1;
+                }
+            } else {
+                return true;
+            }
+        } else {
+            //判断统计行数没，如果没有，则先统计
+            if (maxLine < 1) {
+                hd.removeCallbacks(run);
+                AnalyseTextLine();
+            }
+            for (Map.Entry<Integer, Integer> value : map.entrySet()) {
+                if (value.getValue() == textStart) {
+                    posIndex = value.getKey() - pageMaxLine;
+                    break;
+                }
+            }
+        }
+
+        if (map.containsKey(posIndex)) {
+            //noinspection ConstantConditions
+            textStart = map.get(posIndex);
+        } else {
+            Toast.makeText(getContext(), "上一页加载失败", Toast.LENGTH_SHORT).show();
+        }
+        updateCallBack.onClick();
+        invalidate();
+        return false;
     }
 
     public boolean isNewDraw() {

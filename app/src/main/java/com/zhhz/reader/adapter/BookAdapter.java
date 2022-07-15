@@ -2,7 +2,6 @@ package com.zhhz.reader.adapter;
 
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,7 +35,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     public BookAdapter(Context context) {
         this.context = context;
-        drawable = (BitmapDrawable) AppCompatResources.getDrawable(context,R.drawable.no_cover);
+        drawable = (BitmapDrawable) AppCompatResources.getDrawable(context, R.drawable.no_cover);
         this.itemData = new ArrayList<>();
     }
 
@@ -76,9 +75,9 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BookBean book = itemData.get(position);
-        if (mSelectionTracker !=null) {
+        if (mSelectionTracker != null) {
             boolean bool = mSelectionTracker.isSelected(book.getBook_id());
-            if (bool){
+            if (bool) {
                 holder.checkBox.setVisibility(View.VISIBLE);
             } else {
                 holder.checkBox.setVisibility(View.GONE);
@@ -103,7 +102,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         } else {
             holder.imageView.setImageDrawable(drawable);
         }
-        if (holder.update != null){
+        if (holder.update != null) {
             if (book.isUpdate()) {
                 holder.update.setVisibility(View.VISIBLE);
             } else {
@@ -131,29 +130,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         this.mSelectionTracker = mSelectionTracker;
     }
 
-    //② 创建ViewHolder
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public AppCompatImageView imageView;
-        public AppCompatTextView title;
-        public AppCompatTextView author;
-        public AppCompatTextView last;
-        public AppCompatCheckBox checkBox;
-        public View update;
-        private ViewHolder(View v) {
-            super(v);
-            this.imageView = v.findViewById(R.id.item_image);
-            this.title = v.findViewById(R.id.item_title);
-            this.author = v.findViewById(R.id.item_author);
-            this.last = v.findViewById(R.id.item_latest);
-            this.checkBox = v.findViewById(R.id.item_check);
-            this.update = v.findViewById(R.id.item_update);
-        }
-
-        public ItemDetailsLookup.ItemDetails<String> getItemDetails() {
-            return new StringItemDetails(getBindingAdapterPosition(), itemData.get(getBindingAdapterPosition()).getBook_id());
-        }
-    }
-
     static class StringItemDetails extends ItemDetailsLookup.ItemDetails<String> {
 
         private final int position;
@@ -173,6 +149,30 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         @Override
         public String getSelectionKey() {
             return item;
+        }
+    }
+
+    //② 创建ViewHolder
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public AppCompatImageView imageView;
+        public AppCompatTextView title;
+        public AppCompatTextView author;
+        public AppCompatTextView last;
+        public AppCompatCheckBox checkBox;
+        public View update;
+
+        private ViewHolder(View v) {
+            super(v);
+            this.imageView = v.findViewById(R.id.item_image);
+            this.title = v.findViewById(R.id.item_title);
+            this.author = v.findViewById(R.id.item_author);
+            this.last = v.findViewById(R.id.item_latest);
+            this.checkBox = v.findViewById(R.id.item_check);
+            this.update = v.findViewById(R.id.item_update);
+        }
+
+        public ItemDetailsLookup.ItemDetails<String> getItemDetails() {
+            return new StringItemDetails(getBindingAdapterPosition(), itemData.get(getBindingAdapterPosition()).getBook_id());
         }
     }
 

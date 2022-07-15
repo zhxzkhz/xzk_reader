@@ -26,6 +26,7 @@ import okhttp3.Protocol;
 @GlideModule
 public class XluaGlideModule extends AppGlideModule {
 
+    public static GlideBuilder glide;
     //Dns 用于okhttp3的dns
     private static String[] Dns = null;
 
@@ -36,8 +37,6 @@ public class XluaGlideModule extends AppGlideModule {
     public static void setDns(String[] dns) {
         Dns = dns;
     }
-
-    public static GlideBuilder glide;
 
     @Override
     public boolean isManifestParsingEnabled() {

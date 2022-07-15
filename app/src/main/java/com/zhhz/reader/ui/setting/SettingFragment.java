@@ -1,6 +1,5 @@
 package com.zhhz.reader.ui.setting;
 
-import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -38,7 +37,7 @@ public class SettingFragment extends Fragment {
                 requireActivity().startService(new Intent(requireActivity(), LogMonitorService.class));
             } else {
                 // 弹出对话框告诉用户需要权限的原因, 并引导用户去应用权限管理中手动打开权限按钮
-                ManifestUtil.openAppDetails(requireContext(),launcher);
+                ManifestUtil.openAppDetails(requireContext(), launcher);
             }
         });
     }
@@ -58,7 +57,7 @@ public class SettingFragment extends Fragment {
             requireActivity().startService(new Intent(requireActivity(), LogMonitorService.class));
         } else {
             // 弹出对话框告诉用户需要权限的原因, 并引导用户去应用权限管理中手动打开权限按钮
-            ManifestUtil.openAppDetails(requireContext(),launcher);
+            ManifestUtil.openAppDetails(requireContext(), launcher);
         }
 
         final TextView textView = binding.textNotifications;

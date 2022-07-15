@@ -1,7 +1,5 @@
 package com.zhhz.reader.ui.bookreader;
 
-import android.view.KeyEvent;
-
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -32,6 +30,7 @@ public class BookReaderViewModel extends ViewModel {
     private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
     private final MutableLiveData<HashMap<String, Object>> data_content;
     private final MutableLiveData<String> chapters;
+    private final ArrayList<GlideUrl> comic_list;
     //章节页数表，用于无限滑动记录章节页数
     public ArrayList<Integer> comic_page;
     private RuleAnalysis rule;
@@ -44,7 +43,6 @@ public class BookReaderViewModel extends ViewModel {
     private BookBean book;
     //缓存错误次数
     private int cache_error = 0;
-    private final ArrayList<GlideUrl> comic_list;
     private LazyHeaders headers;
 
 

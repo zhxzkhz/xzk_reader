@@ -23,8 +23,8 @@
             android:name=".service.LogMonitorService"
             android:enabled="true"
             android:exported="true"
-            android:theme="@style/Theme.Material3.Light.NoActionBar"
-            android:permission="SYSTEM_ALERT_WINDOW" />
+            android:permission="SYSTEM_ALERT_WINDOW"
+            android:theme="@style/Theme.Material3.Light.NoActionBar" />
 
         <activity
             android:name=".activity.BookReaderActivity"

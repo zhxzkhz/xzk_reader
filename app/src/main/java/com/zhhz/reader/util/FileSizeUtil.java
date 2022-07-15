@@ -8,11 +8,11 @@ import java.util.Objects;
 
 public class FileSizeUtil {
 
-    private static final String TAG=FileSizeUtil.class.getSimpleName();
     public static final int SIZE_TYPE_B = 1;//获取文件大小单位为B的double值
     public static final int SIZE_TYPE_KB = 2;//获取文件大小单位为KB的double值
     public static final int SIZE_TYPE_MB = 3;//获取文件大小单位为MB的double值
     public static final int SIZE_TYPE_GB = 4;//获取文件大小单位为GB的double值
+    private static final String TAG = FileSizeUtil.class.getSimpleName();
 
     /**
      * 获取文件指定文件的指定单位的大小
@@ -54,7 +54,7 @@ public class FileSizeUtil {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Log.e(TAG,"获取文件大小失败!");
+            Log.e(TAG, "获取文件大小失败!");
         }
         return ConvertFileSize(blockSize);
     }
@@ -70,14 +70,13 @@ public class FileSizeUtil {
         if (file.exists()) {
             size = file.length();
         } else {
-            Log.e(TAG,"获取文件大小不存在!");
+            Log.e(TAG, "获取文件大小不存在!");
         }
         return size;
     }
 
     /**
      * 获取指定文件夹
-     *
      */
     private static long getFileSizes(File f) {
         long size = 0;
@@ -120,7 +119,7 @@ public class FileSizeUtil {
     /**
      * 转换文件大小,指定转换的类型
      *
-     * @param fileS 文件大小
+     * @param fileS    文件大小
      * @param sizeType 大小类型
      * @return 转换后大小
      */
