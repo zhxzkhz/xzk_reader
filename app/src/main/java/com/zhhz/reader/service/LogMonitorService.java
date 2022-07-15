@@ -10,22 +10,22 @@ import android.os.IBinder;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.card.MaterialCardView;
 import com.zhhz.reader.R;
-import com.zhhz.reader.ui.bookrack.BookRackViewModel;
+import com.zhhz.reader.adapter.LogCatAdapter;
+import com.zhhz.reader.databinding.ServiceFloatWindowBinding;
 import com.zhhz.reader.util.LogUtil;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import cn.hutool.core.io.LineHandler;
 import cn.hutool.core.io.file.Tailer;
 
 /**
@@ -33,11 +33,12 @@ import cn.hutool.core.io.file.Tailer;
  */
 public class LogMonitorService extends Service {
 
-    private LogMonitorServiceViewModel model;
-    private Observer<String> observer;
+    private ServiceFloatWindowBinding binding;
+    private ArrayList<String> list;
+    private LogCatAdapter logCatAdapter;
     private Tailer tailer;
     private MaterialCardView card;
-    private ArrayList<String> list;
+
     public LogMonitorService() {
     }
 
@@ -51,22 +52,15 @@ public class LogMonitorService extends Service {
     public void onCreate() {
         setTheme(R.style.Theme_小说阅读器);
         super.onCreate();
-        model = new LogMonitorServiceViewModel();
         crateFloatWindow(this);
-        tailer = new Tailer(new File(LogUtil.path), new LineHandler() {
-            @Override
-            public void handle(String line) {
-
-            }
+        tailer = new Tailer(new File(LogUtil.path), line -> {
+            LogMonitorService.this.list.add(line);
+            logCatAdapter.notifyItemInserted(list.size());
         });
-
-        observer = s -> {
-            list.add(s);
-        };
-        model.getData().observeForever(observer);
-
+        //异步执行，同步会卡死
         tailer.start(true);
     }
+
 
     @SuppressLint("ClickableViewAccessibility")
     private void crateFloatWindow(Context context) {
@@ -76,14 +70,23 @@ public class LogMonitorService extends Service {
         card = new MaterialCardView(context);
         card.setBackgroundColor(0xffaaeecc);
         card.setCardBackgroundColor(0xffaaeecc);
-        card.setRadius(24);
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams();
-        params.width = -1;
-        params.height = -1;
-        params.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        params.gravity = Gravity.CENTER | Gravity.END;
+        card.setRadius(36);
 
-        windowManager.addView(card, params);
+        //悬浮按钮 LayoutParams
+        WindowManager.LayoutParams params1 = new WindowManager.LayoutParams();
+        params1.width = 72;
+        params1.height = 72;
+        params1.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        params1.gravity = Gravity.CENTER | Gravity.END;
+
+        //日志适配器 LayoutParams
+        WindowManager.LayoutParams params2 = new WindowManager.LayoutParams();
+        params2.width = -1;
+        params2.height = -2;
+        params2.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        params2.gravity = Gravity.END;
+
+        windowManager.addView(card, params1);
         int width;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             width = windowManager.getCurrentWindowMetrics().getBounds().width();
@@ -95,12 +98,13 @@ public class LogMonitorService extends Service {
         Handler handler = new Handler();
 
         Runnable runnable = () -> {
-            if (card.getX() > (width / 2f)) {
-                card.setX(card.getWidth() / 2f);
+            if (params1.x < (width / 2f)) {
+                params1.x = (int) (card.getWidth() / 2f);
             } else {
-                card.setX(width - card.getWidth() / 2f);
+                params1.x =width - (int) (card.getWidth() / 2f);
             }
             card.setAlpha(0.35f);
+            windowManager.updateViewLayout(card,params1);
         };
 
         GestureDetector gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
@@ -119,20 +123,41 @@ public class LogMonitorService extends Service {
                     handler.removeCallbacks(runnable);
                 }
                 handler.postDelayed(runnable, 3000);
-                System.out.println("distanceX = " + distanceX);
-                card.setX(card.getX() - distanceX);
-                card.setY(card.getY() - distanceY);
+                params1.x = (int) (params1.x - distanceX);
+                params1.y = (int) (params1.y - distanceY);
+                windowManager.updateViewLayout(card,params1);
                 return super.onScroll(e1, e2, distanceX, distanceY);
             }
 
             @Override
             public boolean onSingleTapUp(MotionEvent e) {
                 card.setVisibility(View.GONE);
+                windowManager.addView(binding.getRoot(),params2);
                 return super.onSingleTapUp(e);
             }
         });
 
         card.setOnTouchListener((v, event) -> gestureDetector.onTouchEvent(event));
+
+        logCatAdapter = new LogCatAdapter(list);
+
+        binding = ServiceFloatWindowBinding.inflate((LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE));
+
+        //设置Item增加、移除动画
+        binding.recyclerView.setItemAnimator(null);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        binding.recyclerView.setAdapter(logCatAdapter);
+
+        binding.hide.setOnClickListener(v -> {
+            windowManager.removeView(binding.getRoot());
+            card.setVisibility(View.VISIBLE);
+        });
+
+        binding.clear.setOnClickListener(v -> {
+            int length = list.size();
+            LogMonitorService.this.list.clear();
+            logCatAdapter.notifyItemRangeChanged(0,length);
+        });
 
     }
 
@@ -144,7 +169,7 @@ public class LogMonitorService extends Service {
 
     @Override
     public void onDestroy() {
-        model.getData().removeObserver(observer);
+        list.clear();
         clearFloatWindow();
         tailer.stop();
         super.onDestroy();
