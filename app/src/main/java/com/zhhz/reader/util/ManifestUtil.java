@@ -10,6 +10,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 
+/**
+ * 用于判断权限是否未授权
+ */
+
 public class ManifestUtil {
 
     /**

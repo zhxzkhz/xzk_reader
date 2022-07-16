@@ -12,6 +12,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+/**
+ * 用于监听 okhttp3 进度
+ */
 public class ProgressInterceptor implements Interceptor {
     public static final Map<String, ProgressListener> LISTENER_MAP = new HashMap<>();
 

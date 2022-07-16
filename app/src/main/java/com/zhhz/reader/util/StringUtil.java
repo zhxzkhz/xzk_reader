@@ -2,7 +2,17 @@ package com.zhhz.reader.util;
 
 import java.security.MessageDigest;
 
+/**
+ * 字符串工具类
+ */
+
 public class StringUtil {
+
+    /**
+     * 获取字符串MD5
+     * @param s 字符串
+     * @return 字符串的md5
+     */
     public static String getMD5(String s) {
         try {
             MessageDigest digest = MessageDigest.getInstance("MD5");

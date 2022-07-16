@@ -6,6 +6,9 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
+/**
+ * 用于获取文件大小
+ */
 public class FileSizeUtil {
 
     public static final int SIZE_TYPE_B = 1;//获取文件大小单位为B的double值

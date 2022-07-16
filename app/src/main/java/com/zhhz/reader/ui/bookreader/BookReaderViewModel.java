@@ -10,10 +10,12 @@ import com.bumptech.glide.load.model.LazyHeaders;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.FileUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -86,6 +88,9 @@ public class BookReaderViewModel extends ViewModel {
         this.book = book;
     }
 
+    /**
+     * 获取章节
+     */
     public void queryCatalogue() {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "chapter");
         try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
@@ -110,22 +115,39 @@ public class BookReaderViewModel extends ViewModel {
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
-        rule.BookChapters(book, url, (data, msg, label) -> {
-            HashMap<String, Object> map = new HashMap<>();
-            map.put("end", String.valueOf(bool));
-            if (uuid.equals(label)) {
-                if (msg != null) {
-                    map.put("error", msg.toString());
-                } else {
-                    map.put("content", data.toString());
-                    //自动缓存下一章
-                    if (isHaveNextChapters()) {
-                        cacheBook(progress);
-                    }
-                }
-                data_content.postValue(map);
+
+        HashMap<String, Object> map = new HashMap<>();
+        if (url == null) {
+            map.put("error", "章节地址为空");
+            data_content.postValue(map);
+            return;
+        }
+        map.put("end", String.valueOf(bool));
+        // url 第一个字符是 / 代表是本地章节
+        if (url.startsWith("/")) {
+            byte[] bytes = FileUtil.readFile(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + url);
+            if (bytes == null){
+                map.put("error", "内容获取失败");
+            } else {
+                map.put("content", new String(bytes));
             }
-        }, uuid);
+            data_content.postValue(map);
+        }else {
+            rule.BookChapters(book, url, (data, msg, label) -> {
+                if (uuid.equals(label)) {
+                    if (msg != null) {
+                        map.put("error", msg.toString());
+                    } else {
+                        map.put("content", data.toString());
+                        //自动缓存下一章
+                        if (isHaveNextChapters()) {
+                            cacheBook(progress);
+                        }
+                    }
+                    data_content.postValue(map);
+                }
+            }, uuid);
+        }
     }
 
     /**
@@ -138,8 +160,15 @@ public class BookReaderViewModel extends ViewModel {
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
+
+        HashMap<String, Object> map = new HashMap<>();
+        if (url == null) {
+            map.put("error", "章节地址为空");
+            data_content.postValue(map);
+            return;
+        }
+
         rule.BookChapters(book, url, (data, msg, label) -> {
-            HashMap<String, Object> map = new HashMap<>();
             map.put("end", String.valueOf(bool));
             if (uuid.equals(label)) {
                 if (msg != null) {
@@ -324,6 +353,10 @@ public class BookReaderViewModel extends ViewModel {
         }
     }
 
+    /**
+     * 章节转跳
+     * @param pos 转跳位置
+     */
     public void jumpChapters(int pos) {
         start = 0;
         progress = pos;

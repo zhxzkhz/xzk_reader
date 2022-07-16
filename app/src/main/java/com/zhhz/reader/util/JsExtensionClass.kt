@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec
 
 /**
  * js扩展类, 在js中通过java变量调用
- *
+ * 例如： java.desDecrypt(x,x,x,x)
  */
 interface JsExtensionClass {
 

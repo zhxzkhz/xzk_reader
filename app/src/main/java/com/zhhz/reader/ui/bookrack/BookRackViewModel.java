@@ -1,5 +1,7 @@
 package com.zhhz.reader.ui.bookrack;
 
+import android.net.Uri;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -11,6 +13,7 @@ import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.LocalBookUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -31,10 +34,13 @@ public class BookRackViewModel extends ViewModel {
 
     private final MutableLiveData<Integer> operation;
 
+    private final MutableLiveData<Boolean> callback;
+
     public BookRackViewModel() {
         data = new MutableLiveData<>();
         catalogue = new MutableLiveData<>();
         operation = new MutableLiveData<>();
+        callback = new MutableLiveData<>();
         data.setValue(SQLiteUtil.readBooks());
     }
 
@@ -52,6 +58,22 @@ public class BookRackViewModel extends ViewModel {
 
     public void removeBooks(String[] s) {
         SQLiteUtil.removeBooks(s);
+    }
+
+    /**
+     * 导入本地书本
+     * @param uri 书本位置
+     */
+    public void importLocalBook(Uri uri){
+        BookBean bean = LocalBookUtil.analysisBook(uri);
+        if (bean != null){
+            SQLiteUtil.saveBook(bean);
+            callback.setValue(true);
+            //导入成功后更新本地书架
+            updateBooks();
+        } else {
+            callback.setValue(false);
+        }
     }
 
     /**
@@ -127,5 +149,9 @@ public class BookRackViewModel extends ViewModel {
 
     public MutableLiveData<Integer> getOperation() {
         return operation;
+    }
+
+    public MutableLiveData<Boolean> getCallback() {
+        return callback;
     }
 }

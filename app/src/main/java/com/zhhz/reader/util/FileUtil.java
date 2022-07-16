@@ -8,10 +8,16 @@ import androidx.annotation.NonNull;
 import com.zhhz.reader.MyApplication;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
+
+/**
+ * 文件工具类
+ */
 
 public class FileUtil {
     public static boolean CopyFile(Uri uri, String s) {
@@ -51,7 +57,24 @@ public class FileUtil {
 
     public static byte[] readFile(Context context, Uri uri) {
         try {
-            InputStream fis = context.getContentResolver().openInputStream(uri);
+            return readFile(context.getContentResolver().openInputStream(uri));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static byte[] readFile(String path) {
+        try {
+            return readFile(new FileInputStream(path));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public static byte[] readFile(InputStream fis) {
+        try {
+
             int size = fis.available();
             byte[] bytes = new byte[size];
             if (fis.read(bytes) != size) throw new IOException("文件读取异常");

@@ -20,6 +20,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.ItemKeyProvider;
@@ -32,6 +33,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
@@ -41,6 +43,7 @@ import com.zhhz.reader.databinding.FragmentBookrackBinding;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileSizeUtil;
 import com.zhhz.reader.util.GlideGetPath;
+import com.zhhz.reader.util.LocalBookUtil;
 import com.zhhz.reader.util.StringUtil;
 
 import java.io.BufferedReader;
@@ -61,17 +64,19 @@ public class BookRackFragment extends Fragment {
     private BookAdapter bookAdapter;
     private ActivityResultLauncher<Intent> launcher;
 
+    private ActivityResultLauncher<String> import_launcher;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-            @Override
-            public void onActivityResult(ActivityResult result) {
-                if (bookrackViewModel != null) {
-                    bookrackViewModel.updateBooks();
-                }
+        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (bookrackViewModel != null) {
+                bookrackViewModel.updateBooks();
             }
         });
+
+        import_launcher = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> bookrackViewModel.importLocalBook(result));
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -102,9 +107,8 @@ public class BookRackFragment extends Fragment {
 
         binding.refreshLayout.setOnRefreshListener(refreshLayout -> bookrackViewModel.updateCatalogue());
 
-        binding.bookrackSetting.setOnClickListener(view -> {
-
-        });
+        //导入书本
+        binding.bookrackSetting.setOnClickListener(view -> import_launcher.launch("text/*"));
 
         tracker = new SelectionTracker.Builder<>(
                 "my-selection-id",
@@ -154,6 +158,18 @@ public class BookRackFragment extends Fragment {
 
         bookAdapter.setSelectionTracker(tracker);
 
+        //导入书本回调事件
+        bookrackViewModel.getCallback().observe(getViewLifecycleOwner(), aBoolean -> {
+            String s;
+            if (aBoolean) {
+                s = "成功";
+            } else {
+                s = "失败";
+            }
+            Snackbar.make(binding.getRoot(), "书本导入" + s, Snackbar.LENGTH_SHORT).show();
+        });
+
+        //获取本地书架回调事件
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
             lists.clear();
             for (BookBean bookBean : list) {

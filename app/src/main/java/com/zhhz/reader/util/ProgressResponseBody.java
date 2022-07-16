@@ -12,6 +12,9 @@ import okio.ForwardingSource;
 import okio.Okio;
 import okio.Source;
 
+/**
+ * 用于监听 okhttp3 进度
+ */
 public class ProgressResponseBody extends ResponseBody {
 
     private static final String TAG = "ProgressResponseBody";
@@ -21,7 +24,7 @@ public class ProgressResponseBody extends ResponseBody {
     private ProgressListener listener;
     private long le;
 
-    public ProgressResponseBody(String url, ResponseBody responseBody, @NonNull long l) {
+    public ProgressResponseBody(String url, ResponseBody responseBody, long l) {
         this.responseBody = responseBody;
         le = l;
         if (l < 0) {
@@ -61,7 +64,7 @@ public class ProgressResponseBody extends ResponseBody {
         }
 
         @Override
-        public long read(Buffer sink, long byteCount) throws IOException {
+        public long read(@NonNull Buffer sink, long byteCount) throws IOException {
             long bytesRead = super.read(sink, byteCount);
             long fullLength = contentLength();
             if (bytesRead == -1) {
@@ -72,7 +75,6 @@ public class ProgressResponseBody extends ResponseBody {
             int progress = (int) (100f * totalBytesRead / contentLength());
             if (progress < 0)
                 progress = 0;
-            //Log.d(TAG, "download progress is " + totalBytesRead + "-->" + contentLength());
             if (listener != null && progress != currentProgress) {
                 listener.onProgress(url, progress);
             }
