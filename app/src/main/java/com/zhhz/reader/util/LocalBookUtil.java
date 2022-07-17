@@ -27,45 +27,54 @@ public class LocalBookUtil {
     /**
      * 解析本地Txt文件
      */
-    public static BookBean analysisBook(Uri uri) {
+    public static void analysisBook(Uri uri, CallBack callBack) {
+        new Thread(() -> {
+            //定义一个字符串用来储存读入的小说内容
+            StringBuilder stringBuilder = new StringBuilder();
 
-        //定义一个字符串用来储存读入的小说内容
-        StringBuilder stringBuilder = new StringBuilder();
-
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(MyApplication.context.getContentResolver().openInputStream(uri)))) {
-            //从指定路径读取小说
-            String s;
-            while ((s = bufferedReader.readLine()) != null) {
-                if (s.isEmpty()) continue;
-                stringBuilder.append(s.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "")).append('\n');
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(MyApplication.context.getContentResolver().openInputStream(uri), "gbk"))) {
+                //从指定路径读取小说
+                String s;
+                while ((s = bufferedReader.readLine()) != null) {
+                    if (s.isEmpty()) continue;
+                    stringBuilder.append(s.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "")).append('\n');
+                }
+            } catch (Exception e) {
+                callBack.result(null);
+                e.printStackTrace();
+                return;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
-        String name = uri.getPath().substring(uri.getPath().lastIndexOf("/")+1,uri.getPath().indexOf("."));
+            String name = uri.getPath().substring(uri.getPath().lastIndexOf("/") + 1, uri.getPath().indexOf("."));
 
-        BookBean bean = new BookBean();
-        bean.setBook_id(StringUtil.getMD5(UUID.randomUUID().toString()));
-        bean.setTitle(name);
-        bean.setUpdate(false);
-        bean.setStatus(true);
+            BookBean bean = new BookBean();
+            bean.setBook_id(StringUtil.getMD5(UUID.randomUUID().toString()));
+            bean.setTitle(name);
+            bean.setUpdate(false);
+            bean.setStatus(true);
 
-        if (analysisChapter(stringBuilder.toString(),bean.getBook_id())) {
-            if (new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id()).delete()) return null;
-            return null;
-        }
+            System.out.println("stringBuilder = " + stringBuilder);
 
-        return bean;
+            if (!analysisChapter(stringBuilder.toString(), bean.getBook_id())) {
+                if (new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id()).delete()) {
+                    callBack.result(null);
+                    return;
+                }
+                callBack.result(null);
+                return;
+            }
+            callBack.result(bean);
+        }).start();
     }
 
     /**
      * 解析章节
-     * @param src 书本内容
+     *
+     * @param src     书本内容
      * @param book_id 书本id
      * @return 是否解析成功
      */
-    private static boolean analysisChapter(String src,String book_id) {
+    private static boolean analysisChapter(String src, String book_id) {
 
         //匹配规则
         //[章节卷集部回]
@@ -77,7 +86,7 @@ public class LocalBookUtil {
 
         //根据匹配规则将小说分为一章一章的，并存到list
         for (String s : src.split(pest)) {
-            content_list.add(s.replaceAll("\n{2,}",""));
+            content_list.add(s.replaceAll("\n{2,}", ""));
         }
 
         //分割章节后的内容
@@ -114,7 +123,7 @@ public class LocalBookUtil {
             temp_index = 1;
 
             //用于分割章节内容
-            int count =(int) Math.ceil(temp.length() / (float) content_max);
+            int count = (int) Math.ceil(temp.length() / (float) content_max);
             temp_length = temp.length() / count;
             while (temp_index <= count) {
                 if (temp_index == 1) {
@@ -122,8 +131,8 @@ public class LocalBookUtil {
                 } else {
                     chapter_list.add(chapter + "_" + temp_index);
                 }
-                if (temp.length() > temp_length){
-                    temp_content_list.add(temp.substring(0,temp_length));
+                if (temp.length() > temp_length) {
+                    temp_content_list.add(temp.substring(0, temp_length));
                     temp = temp.substring(temp_length);
                 } else {
                     temp_content_list.add(temp);
@@ -136,23 +145,22 @@ public class LocalBookUtil {
 
         //2.创建目录
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book_id);
-        if (!file.exists()) {
-            if (!file.mkdir()) return false;
-        }
         String file_dir = file.getPath();
-
+        if (!file.exists()) {
+            if (!new File(file_dir + File.separator + "book_chapter").mkdirs()) return false;
+        }
         //章节目录
-        LinkedHashMap<String,Object> chapter = new LinkedHashMap<>();
+        LinkedHashMap<String, Object> chapter = new LinkedHashMap<>();
         //循环生成章节TXT文件
         for (i = 0; i < temp_content_list.size(); i++) {
             //2.在目录下创建TXT文件
-            try (FileWriter fr = new FileWriter(file_dir + File.separator + "book_chapter" + File.separator + i)){
+            try (FileWriter fr = new FileWriter(file_dir + File.separator + "book_chapter" + File.separator + i)) {
                 fr.write(temp_content_list.get(i));
             } catch (Exception e) {
                 e.printStackTrace();
                 return false;
             }
-            chapter.put(chapter_list.get(i),"/" + i);
+            chapter.put(chapter_list.get(i), "/" + i);
         }
 
         try {
@@ -165,6 +173,11 @@ public class LocalBookUtil {
         }
 
         return true;
+    }
+
+
+    public interface CallBack {
+        public void result(BookBean bool);
     }
 
 }

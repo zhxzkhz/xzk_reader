@@ -76,7 +76,9 @@ public class SQLiteUtil {
     public static void removeBooks(String[] ids) {
         helper = new BookSqliteHelper(MyApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
-        int query = database.delete("bookrack", "book_id=?", ids);
+        for (String id : ids) {
+            database.delete("bookrack", "book_id=?", new String[]{id});
+        }
     }
 
     public static RuleBean readRule(String id) {

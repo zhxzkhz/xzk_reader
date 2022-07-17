@@ -10,6 +10,7 @@ public class StringUtil {
 
     /**
      * 获取字符串MD5
+     *
      * @param s 字符串
      * @return 字符串的md5
      */

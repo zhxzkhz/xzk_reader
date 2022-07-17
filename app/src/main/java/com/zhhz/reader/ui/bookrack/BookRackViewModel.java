@@ -62,18 +62,21 @@ public class BookRackViewModel extends ViewModel {
 
     /**
      * 导入本地书本
+     *
      * @param uri 书本位置
      */
-    public void importLocalBook(Uri uri){
-        BookBean bean = LocalBookUtil.analysisBook(uri);
-        if (bean != null){
-            SQLiteUtil.saveBook(bean);
-            callback.setValue(true);
-            //导入成功后更新本地书架
-            updateBooks();
-        } else {
-            callback.setValue(false);
-        }
+    public void importLocalBook(Uri uri) {
+        LocalBookUtil.analysisBook(uri, bean -> {
+            if (bean != null) {
+                SQLiteUtil.saveBook(bean);
+                callback.postValue(true);
+                //导入成功后更新本地书架
+                updateBooks();
+            } else {
+                callback.postValue(false);
+            }
+        });
+
     }
 
     /**

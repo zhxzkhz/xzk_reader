@@ -10,9 +10,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -20,11 +19,9 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.OnDragInitiatedListener;
 import androidx.recyclerview.selection.OperationMonitor;
 import androidx.recyclerview.selection.SelectionPredicates;
 import androidx.recyclerview.selection.SelectionTracker;
@@ -33,7 +30,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
@@ -43,7 +39,6 @@ import com.zhhz.reader.databinding.FragmentBookrackBinding;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileSizeUtil;
 import com.zhhz.reader.util.GlideGetPath;
-import com.zhhz.reader.util.LocalBookUtil;
 import com.zhhz.reader.util.StringUtil;
 
 import java.io.BufferedReader;
@@ -66,6 +61,8 @@ public class BookRackFragment extends Fragment {
 
     private ActivityResultLauncher<String> import_launcher;
 
+    private AlertDialog alertDialog;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +72,14 @@ public class BookRackFragment extends Fragment {
             }
         });
 
-        import_launcher = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> bookrackViewModel.importLocalBook(result));
+
+        alertDialog = new AlertDialog.Builder(requireContext())
+                .setMessage("书本解析中").create();
+
+        import_launcher = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            alertDialog.show();
+            bookrackViewModel.importLocalBook(result);
+        });
 
     }
 
@@ -118,12 +122,6 @@ public class BookRackFragment extends Fragment {
                 StorageStrategy.createStringStorage())
                 .withSelectionPredicate(SelectionPredicates.createSelectAnything())
                 .withOperationMonitor(new OperationMonitor())
-                .withOnDragInitiatedListener(new OnDragInitiatedListener() {
-                    @Override
-                    public boolean onDragInitiated(@NonNull MotionEvent e) {
-                        return false;
-                    }
-                })
                 .withOnItemActivatedListener((item, e) -> {
                     Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
                     //获取点击事件位置
@@ -166,7 +164,8 @@ public class BookRackFragment extends Fragment {
             } else {
                 s = "失败";
             }
-            Snackbar.make(binding.getRoot(), "书本导入" + s, Snackbar.LENGTH_SHORT).show();
+            alertDialog.hide();
+            Toast.makeText(requireContext(), "书本导入" + s, Toast.LENGTH_SHORT).show();
         });
 
         //获取本地书架回调事件
@@ -214,8 +213,8 @@ public class BookRackFragment extends Fragment {
                         .setSingleChoiceItems(adapter, 0, null)
                         .setPositiveButton("确定", (dialogInterface, i) -> {
                             //System.out.println("((AlertDialog) dialogInterface).getListView().getCheckedItemPosition() = " + ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition());
-                            //bookrackViewModel.removeBooks(ss);
-                            //bookrackViewModel.updateBooks();
+                            bookrackViewModel.removeBooks(ss);
+                            bookrackViewModel.updateBooks();
                         })
                         .setOnCancelListener(DialogInterface::dismiss)
                         .setNeutralButton("取消", null)
@@ -268,8 +267,7 @@ public class BookRackFragment extends Fragment {
                         arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(count_size[0]) + ")");
                         adapter.notifyDataSetChanged();
                     });
-                }).start();
-                System.out.println("dialog.getListView().getAdapter().getItem(1) = " + dialog.getListView().getAdapter().getClass());
+                });//.start();
 
             }
         });

@@ -15,7 +15,6 @@ import com.zhhz.reader.util.FileUtil;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -62,6 +61,11 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public void setBook(BookBean book) {
+        this.book = book;
+        //rule 为空代表是本地书本
+        if (!new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule").isFile()) {
+            return;
+        }
         try {
             rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule");
         } catch (IOException e) {
@@ -85,7 +89,6 @@ public class BookReaderViewModel extends ViewModel {
             }
         }
         headers = header.build();
-        this.book = book;
     }
 
     /**
@@ -126,13 +129,13 @@ public class BookReaderViewModel extends ViewModel {
         // url 第一个字符是 / 代表是本地章节
         if (url.startsWith("/")) {
             byte[] bytes = FileUtil.readFile(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + url);
-            if (bytes == null){
+            if (bytes == null) {
                 map.put("error", "内容获取失败");
             } else {
                 map.put("content", new String(bytes));
             }
             data_content.postValue(map);
-        }else {
+        } else {
             rule.BookChapters(book, url, (data, msg, label) -> {
                 if (uuid.equals(label)) {
                     if (msg != null) {
@@ -355,6 +358,7 @@ public class BookReaderViewModel extends ViewModel {
 
     /**
      * 章节转跳
+     *
      * @param pos 转跳位置
      */
     public void jumpChapters(int pos) {
@@ -413,7 +417,7 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public boolean isComic() {
-        return rule.getAnalysis().isComic();
+        return rule != null && rule.getAnalysis().isComic();
     }
 
     public MutableLiveData<LinkedHashMap<String, String>> getDataCatalogue() {
