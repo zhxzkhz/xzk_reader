@@ -122,9 +122,9 @@ public class SQLiteUtil {
             if (o1.isOpen() == o2.isOpen()) {
                 return o1.getName().compareToIgnoreCase(o2.getName());
             } else if (o1.isOpen()) {
-                return 1;
-            } else if (o2.isOpen()) {
                 return -1;
+            } else if (o2.isOpen()) {
+                return 1;
             }
             return 0;
         });
