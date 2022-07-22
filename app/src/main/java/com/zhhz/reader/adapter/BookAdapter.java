@@ -17,12 +17,16 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
 
+/**
+ * 书架适配器
+ */
 
 // ① 创建Adapter
 public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
@@ -31,11 +35,9 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     private ArrayList<BookBean> itemData;
     private View.OnClickListener onClickListener;
     private SelectionTracker<String> mSelectionTracker;
-    private BitmapDrawable drawable;
 
     public BookAdapter(Context context) {
         this.context = context;
-        drawable = (BitmapDrawable) AppCompatResources.getDrawable(context, R.drawable.no_cover);
         this.itemData = new ArrayList<>();
     }
 
@@ -100,7 +102,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
                     .load(book.getCover())
                     .into(holder.imageView);
         } else {
-            holder.imageView.setImageDrawable(drawable);
+            holder.imageView.setImageDrawable(MyApplication.coverDrawable);
         }
         if (holder.update != null) {
             if (book.isUpdate()) {

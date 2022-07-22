@@ -1,5 +1,7 @@
 package com.zhhz.reader.util;
 
+import static com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE;
+
 import android.util.Log;
 
 import com.zhhz.reader.MyApplication;
@@ -31,6 +33,8 @@ public class LogUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //js执行器加上Log函数
+        SCRIPT_ENGINE.put("log",LogUtil.class);
     }
 
     private static boolean check(Object o, String s) {

@@ -26,7 +26,6 @@ public class DiskCache {
 
     //测试缓存时间调整到 300 分钟
     private static final long cache_time = 1000 * 60 * 300;
-    ;
     //用于执行JS
     public static ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
     //public static ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("rhino");

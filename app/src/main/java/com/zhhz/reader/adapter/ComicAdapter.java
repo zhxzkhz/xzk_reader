@@ -28,6 +28,9 @@ import com.zhhz.reader.util.GlideApp;
 import java.util.ArrayList;
 import java.util.Objects;
 
+/**
+ * 漫画阅读适配器
+ */
 
 // ① 创建Adapter
 public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> {

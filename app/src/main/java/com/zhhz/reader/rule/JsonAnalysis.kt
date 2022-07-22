@@ -8,6 +8,7 @@ import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
 import com.zhhz.reader.util.JsExtensionClass
+import com.zhhz.reader.util.LogUtil
 import java.net.URLEncoder
 import java.util.regex.Pattern
 import javax.script.SimpleBindings

@@ -118,8 +118,8 @@ public class CrashHandler implements UncaughtExceptionHandler {
 		}.start();*/
         //收集设备参数信息
         collectDeviceInfo(mContext);
-        //保存日志文件
-        Toast.makeText(MyApplication.context, saveCrashInfo2File(ex), Toast.LENGTH_SHORT).show();
+        //保存日志文件(弹窗不显示，问题未知)
+        Toast.makeText(mContext, saveCrashInfo2File(ex), Toast.LENGTH_SHORT).show();
         return true;
     }
 

@@ -12,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+/**
+ * 日志适配器
+ */
 
 // ① 创建Adapter
 public class LogCatAdapter extends RecyclerView.Adapter<LogCatAdapter.ViewHolder> {

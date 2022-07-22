@@ -1,10 +1,13 @@
 package com.zhhz.reader.rule;
 
+import static com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE;
+
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.AutoBase64;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.StringUtil;
 
 import org.jsoup.nodes.Document;
@@ -31,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 
 public class JsoupAnalysis extends Analysis {
 
@@ -48,8 +52,8 @@ public class JsoupAnalysis extends Analysis {
     }
 
     private void init() {
-        DiskCache.SCRIPT_ENGINE.put("xlua_rule", this);
-        DiskCache.SCRIPT_ENGINE.put("xlua_classloader", ClassLoader.getSystemClassLoader());
+        SCRIPT_ENGINE.put("xlua_rule", this);
+        SCRIPT_ENGINE.put("xlua_classloader", ClassLoader.getSystemClassLoader());
         replace_map = new HashMap<>();
         replace_map.put("<p>", "");
         replace_map.put("</p>", "");
@@ -234,16 +238,29 @@ public class JsoupAnalysis extends Analysis {
                 book.setCatalogue(url);
             } else if (detail_x.getString("catalog").startsWith("js@")) {
 
+                SimpleBindings bindings = new SimpleBindings();
+                bindings.put("element", element);
+                bindings.put("data", element);
+                bindings.put("url", url);
+                bindings.put("label", label);
+                bindings.put("callback", callback);
+                bindings.put("out", System.out);
+                Object result = null;
                 try {
-                    DiskCache.SCRIPT_ENGINE.put("element", element);
-                    DiskCache.SCRIPT_ENGINE.put("url", url);
-                    DiskCache.SCRIPT_ENGINE.put("callback", callback);
-                    DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(detail_x.getString("catalog").substring(3)));
+                    result = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(detail_x.getString("catalog").substring(3)), bindings);
+
                 } catch (ScriptException e) {
+                    LogUtil.error(e);
                     e.printStackTrace();
                 }
-                //DiskCache.engine.eval(Auto_Base64.decodeToString(chapter.getString("js")));
-                book.setCatalogue(DiskCache.SCRIPT_ENGINE.get("result").toString());
+                result = result == null ? SCRIPT_ENGINE.get("result") : result;
+
+                if (result == null){
+                    callback.run(null, "目录地址获取失败", isComic());
+                    return;
+                }
+
+                book.setCatalogue(result.toString());
             } else {
                 String[] obj = parse_array(detail_x.getString("catalog"));
                 String str = to_http(parse_jsoup(element.select(obj[0]), obj[1] != null ? obj[1] : "attr->href"), url);
@@ -268,20 +285,19 @@ public class JsoupAnalysis extends Analysis {
             Element element = (Element) data;
 
             if (catalog.getString("js") != null) {
-                //DiskCache.engine.put("element", element);
-                //DiskCache.engine.put("url", url);
-                //DiskCache.engine.put("callback", callback);
-                //DiskCache.engine.eval(AutoBase64.decodeToString(catalog.getString("js")));
-                Context rhino = Context.enter();
-                ScriptableObject scope = rhino.initStandardObjects();
-                ScriptableObject.putProperty(scope, "xlua_rule", this);
-                ScriptableObject.putProperty(scope, "xlua_classloader", ClassLoader.getSystemClassLoader());
-                ScriptableObject.putProperty(scope, "element", element);
-                ScriptableObject.putProperty(scope, "url", url);
-                ScriptableObject.putProperty(scope, "callback", callback);
-                ScriptableObject.putProperty(scope, "label", label);
-                ScriptableObject.putProperty(scope, "out", System.out);
-                rhino.evaluateString(scope, AutoBase64.decodeToString(catalog.getString("js")), "JsoupAnalysis", 1, null);
+                SimpleBindings bindings = new SimpleBindings();
+                bindings.put("element", element);
+                bindings.put("data", element);
+                bindings.put("url", url);
+                bindings.put("label", label);
+                bindings.put("callback", callback);
+                bindings.put("out", System.out);
+                try {
+                    SCRIPT_ENGINE.eval(AutoBase64.decodeToString(catalog.getString("js")), bindings);
+                } catch (ScriptException e) {
+                    LogUtil.error(e);
+                    e.printStackTrace();
+                }
                 return;
             }
 
@@ -513,21 +529,18 @@ public class JsoupAnalysis extends Analysis {
             }
             //执行js
             if (chapter.getString("js") != null) {
-                Context rhino = Context.enter();
-                ScriptableObject scope = rhino.initStandardObjects();
-                ScriptableObject.putProperty(scope, "xlua_rule", this);
-                ScriptableObject.putProperty(scope, "xlua_classloader", ClassLoader.getSystemClassLoader());
-                ScriptableObject.putProperty(scope, "element", element);
-                ScriptableObject.putProperty(scope, "data", str);
-                ScriptableObject.putProperty(scope, "url", url);
-                ScriptableObject.putProperty(scope, "callback", callback);
-                ScriptableObject.putProperty(scope, "label", label);
-                ScriptableObject.putProperty(scope, "out", System.out);
+                SimpleBindings bindings = new SimpleBindings();
+                bindings.put("element", element);
+                bindings.put("data", element);
+                bindings.put("url", url);
+                bindings.put("label", label);
+                bindings.put("callback", callback);
+                bindings.put("out", System.out);
 
                 try {
-                    rhino.evaluateString(scope, AutoBase64.decodeToString(chapter.getString("js")), "JsoupAnalysis", 1, null);
-                    str = JsToJava(scope.get("result"));
+                    str = JsToJava(SCRIPT_ENGINE.eval(AutoBase64.decodeToString(chapter.getString("js")), bindings));
                 } catch (Exception e) {
+                    LogUtil.error(e);
                     e.printStackTrace();
                     str = null;
                 }
@@ -535,6 +548,7 @@ public class JsoupAnalysis extends Analysis {
                 if (str != null && str.equals("false")) {
                     return;
                 }
+                Context.exit();
             }
 
             if (chapter.getString("page") != null) {

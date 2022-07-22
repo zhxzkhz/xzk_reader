@@ -11,6 +11,7 @@ import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.GlideApp;
@@ -80,10 +81,20 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             GlideApp.with(context)
                     .asBitmap()
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
+                    .error(MyApplication.coverDrawable)
                     .centerCrop()
                     .load(book.getCover())
                     .into(holder.imageView);
+        } else {
+            holder.imageView.setImageDrawable(MyApplication.coverDrawable);
         }
+    }
+
+    @Override
+    public void onViewRecycled(@NonNull ViewHolder holder) {
+        //回收时清空图片，防止被错乱
+        GlideApp.with(context).clear(holder.imageView);
+        super.onViewRecycled(holder);
     }
 
     @Override

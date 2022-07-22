@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.alibaba.fastjson.JSONObject;
@@ -29,6 +30,7 @@ import com.zhhz.reader.util.StringUtil;
 import com.zhhz.reader.view.RecycleViewDivider;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class RuleFragment extends Fragment {
@@ -104,8 +106,10 @@ public class RuleFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ruleViewModel.getRuleList().observe(getViewLifecycleOwner(), ruleBeans -> {
-            ruleAdapter.setItemData(ruleBeans);
-            ruleAdapter.notifyItemRangeInserted(0, ruleBeans.size());
+            DiffUtil.DiffResult result =DiffUtil.calculateDiff(new MyDiffUtilCallback(ruleAdapter.getItemData(), ruleBeans));
+            ruleAdapter.getItemData().clear();
+            ruleAdapter.getItemData().addAll(ruleBeans);
+            result.dispatchUpdatesTo(ruleAdapter);
         });
     }
 
@@ -114,4 +118,37 @@ public class RuleFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
+
+    static class MyDiffUtilCallback extends DiffUtil.Callback {
+
+        private final ArrayList<RuleBean> oldList;
+        private final ArrayList<RuleBean> newList;
+
+        public MyDiffUtilCallback (ArrayList<RuleBean> oldList,ArrayList<RuleBean> newList){
+            this.oldList = oldList;
+            this.newList = newList;
+        }
+
+        @Override
+        public int getOldListSize() {
+            return oldList.size();
+        }
+
+        @Override
+        public int getNewListSize() {
+            return newList.size();
+        }
+
+        @Override
+        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+            return false;
+        }
+
+        @Override
+        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+            return oldList.get(oldItemPosition).toString().equals(newList.get(newItemPosition).toString());
+        }
+    }
+
+
 }

@@ -17,19 +17,22 @@ import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
 
+/**
+ * 历史搜索记录适配器
+ */
 
 // ① 创建Adapter
-public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ViewHolder> {
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
 
     private final Context context;
     private ArrayList<SearchResultBean> itemData;
     private View.OnClickListener onClickListener;
 
-    public SearchAdapter(Context context) {
+    public HistoryAdapter(Context context) {
         this.context = context;
     }
 
-    public SearchAdapter(Context context, ArrayList<SearchResultBean> data) {
+    public HistoryAdapter(Context context, ArrayList<SearchResultBean> data) {
         this.context = context;
         this.itemData = data;
     }

@@ -13,4 +13,20 @@
     <string name="remove">删除</string>
     <string name="other">待定</string>
     <string name="log">日志</string>
+
+
+    <!-- Preference Titles -->
+    <string name="basics">基本设置</string>
+    <string name="advanced">高级功能</string>
+
+    <!-- basics Preferences -->
+    <string name="is_cache">是否启动缓存</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- advanced Preferences -->
+    <string name="is_log">是否启动日志悬浮窗(重启后生效)</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>

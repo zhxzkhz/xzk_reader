@@ -13,6 +13,9 @@ import com.zhhz.reader.bean.RuleBean;
 
 import java.util.ArrayList;
 
+/**
+ * 规则适配器
+ */
 
 // ① 创建Adapter
 public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
@@ -31,6 +34,10 @@ public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
 
     public void setItemData(ArrayList<RuleBean> mData) {
         this.itemData = mData;
+    }
+
+    public ArrayList<RuleBean> getItemData() {
+        return itemData;
     }
 
     //③ 在Adapter中实现3个方法
