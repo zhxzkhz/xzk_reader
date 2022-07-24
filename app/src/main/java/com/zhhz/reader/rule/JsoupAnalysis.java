@@ -141,6 +141,11 @@ public class JsoupAnalysis extends Analysis {
     }
 
     @Override
+    public boolean isHaveSearch(){
+        return json.get("search") != null && json.getJSONObject("search").get("url") != null;
+    }
+
+    @Override
     public void BookSearch(String key_word, CallBack callback, String md5) {
         if (json.getString("encode") != null) {
             try {

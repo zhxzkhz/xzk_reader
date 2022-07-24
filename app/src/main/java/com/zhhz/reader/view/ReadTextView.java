@@ -381,6 +381,16 @@ public class ReadTextView extends View {
             invalidate();
             return;
         }
+
+        //如果首行缩进就取消行前面空格
+        if (indentation){
+            text = text.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "").replaceAll("\n[\u3000\u0020]{2}","\n");
+        }
+
+        if (progress >= text.length()){
+            progress = 0;
+        }
+
         textStart = progress;
         if (textStart >= text.length() - 1) textStart = text.length();
         maxLine = 0;
@@ -399,9 +409,10 @@ public class ReadTextView extends View {
 
                 invalidate();
             } else {
+                String finalText = text;
                 post(() -> {
                     AnalyseTextLine();
-                    if (textStart >= text.length()) {
+                    if (textStart >= finalText.length()) {
                         int y = maxLine % pageMaxLine;
                         y = y == 0 ? pageMaxLine : y;
                         textStart = map.get(maxLine - y + 1);

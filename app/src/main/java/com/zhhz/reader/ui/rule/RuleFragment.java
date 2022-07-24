@@ -82,7 +82,7 @@ public class RuleFragment extends Fragment {
         ruleAdapter = new RuleAdapter();
         ruleAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
-        binding.rv.setItemAnimator(null);
+        //binding.rv.setItemAnimator(null);
         binding.rv.setLayoutManager(new LinearLayoutManager(getContext()));
         //固定高度
         binding.rv.setHasFixedSize(true);

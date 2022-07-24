@@ -101,6 +101,10 @@ class JsonAnalysis : Analysis, JsExtensionClass {
         return s
     }
 
+    override fun isHaveSearch(): Boolean {
+        return true
+    }
+
     override fun BookSearch(key_word: String, callback: CallBack, md5: String) {
         var key: String = key_word;
         if (json["encode"] != null) {

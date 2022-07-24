@@ -1,6 +1,7 @@
 package com.zhhz.reader.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -13,10 +14,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zhhz.reader.R;
+import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.databinding.ActivitySearchBinding;
+import com.zhhz.reader.rule.Analysis;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.ui.search.SearchResultFragment;
 import com.zhhz.reader.ui.search.SearchViewModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -43,18 +49,39 @@ public class SearchActivity extends AppCompatActivity {
                 Toast.makeText(this, "请设置书源", Toast.LENGTH_SHORT).show();
                 return true;
             }
+
+            if (!textView.getText().toString().startsWith("http")) {
+                for (Analysis value : RuleAnalysis.analyses_map.values()) {
+                    if (!value.isHaveSearch()) {
+                        Toast.makeText(this, "请设置有搜索的书源", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                }
+            }
+
             if (i == EditorInfo.IME_ACTION_SEARCH || (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
 
                 binding.searchText.clearFocus();
                 InputMethodManager imm = (InputMethodManager) getBaseContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
-                if (mViewModel.getData().getValue() != null)
-                    //搜索前清除上次搜索记录
-                    mViewModel.getData().setValue(null);
-                mViewModel.searchBook(textView.getText().toString());
-                getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.search_fragment, SearchResultFragment.getInstance(), "SearchResultFragment")
-                        .commitNow();
+
+                SearchResultBean bean = mViewModel.isUrl(textView.getText().toString());
+
+                if (bean!=null){
+                    Intent intent = new Intent(SearchActivity.this, DetailedActivity.class);
+                    intent.putExtra("book", bean);
+                    startActivity(intent);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                } else {
+                    if (mViewModel.getData().getValue() != null)
+                        //搜索前清除上次搜索记录
+                        mViewModel.getData().setValue(null);
+                    mViewModel.searchBook(textView.getText().toString());
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.search_fragment, SearchResultFragment.getInstance(), "SearchResultFragment")
+                            .commitNow();
+                }
+
                 return true;
             }
             return false;

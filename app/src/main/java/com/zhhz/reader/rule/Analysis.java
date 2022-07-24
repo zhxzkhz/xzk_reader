@@ -56,9 +56,14 @@ public abstract class Analysis {
         this.url = jsonObject.getString("url");
         this.name = jsonObject.getString("name");
         this.comic = jsonObject.getBooleanValue("comic");
-        this.charset = (String) (jsonObject.getJSONObject("search").getOrDefault("charset", "utf8"));
+        if (isHaveSearch()) {
+            this.charset = (String) (jsonObject.getJSONObject("search").getOrDefault("charset", "utf8"));
+            this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
+        } else {
+            this.http = "http";
+        }
         if (this.charset == null) this.charset = "utf8";
-        this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
+
     }
 
     public static JSONObject readText(String path) throws IOException {
@@ -172,6 +177,8 @@ public abstract class Analysis {
     public void setDetail(BookBean detail) {
         this.detail = detail;
     }
+
+    public abstract boolean isHaveSearch();
 
     public abstract void BookSearch(String key_word, CallBack callback, String md5);
 

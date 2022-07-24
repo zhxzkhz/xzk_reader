@@ -106,7 +106,7 @@ public class BookBean implements Serializable {
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", cover='" + cover + '\'' +
-                ", categories='" + isUpdate() + '\'' +
+                ", isUpdate='" + isUpdate() + '\'' +
                 ", catalogue='" + catalogue + '\'' +
                 ", latestChapter='" + latestChapter + '\'' +
                 ", update_time='" + update_time + '\'' +
