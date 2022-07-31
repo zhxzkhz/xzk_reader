@@ -253,7 +253,6 @@ public class JsoupAnalysis extends Analysis {
                 Object result = null;
                 try {
                     result = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(detail_x.getString("catalog").substring(3)), bindings);
-
                 } catch (ScriptException e) {
                     LogUtil.error(e);
                     e.printStackTrace();
@@ -536,7 +535,7 @@ public class JsoupAnalysis extends Analysis {
             if (chapter.getString("js") != null) {
                 SimpleBindings bindings = new SimpleBindings();
                 bindings.put("element", element);
-                bindings.put("data", element);
+                bindings.put("data", str);
                 bindings.put("url", url);
                 bindings.put("label", label);
                 bindings.put("callback", callback);
@@ -553,7 +552,6 @@ public class JsoupAnalysis extends Analysis {
                 if (str != null && str.equals("false")) {
                     return;
                 }
-                Context.exit();
             }
 
             if (chapter.getString("page") != null) {
