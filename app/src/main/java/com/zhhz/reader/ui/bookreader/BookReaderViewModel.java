@@ -11,6 +11,7 @@ import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
+import com.zhhz.reader.util.NotificationUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -261,7 +262,7 @@ public class BookReaderViewModel extends ViewModel {
      * @param bool     是否缓存所有章节
      */
     public void cacheBook(int progress, boolean bool) {
-        progress = progress > -1 ? this.progress : progress;
+        progress = progress > -1 ? progress : this.progress;
         progress++;
         uuid = UUID.randomUUID().toString();
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
@@ -278,6 +279,9 @@ public class BookReaderViewModel extends ViewModel {
             } else if (bool) {
                 if (isHaveNextChapters(finalProgress)) {
                     cacheBook(finalProgress + 1, true);
+                } else {
+                    //全部缓存完成事件
+                    NotificationUtil.sendMessage("《" + book.getTitle() + "》缓存完成");
                 }
             }
         }, uuid);
@@ -327,6 +331,7 @@ public class BookReaderViewModel extends ViewModel {
 
     private int _havePreviousChapters(int progress) {
         int progress_temp = progress > -1 ? progress : this.progress;
+
         if (progress_temp - 1 < 0) {
             return progress;
         }

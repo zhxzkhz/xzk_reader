@@ -95,6 +95,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
+        binding.menuCache.setOnClickListener(view -> mViewModel.cacheBook(-1,true));
         return root;
     }
 
@@ -111,7 +112,8 @@ public class BookMenuFragment extends Fragment {
         });
 
         mViewModel.getChapters().observe(getViewLifecycleOwner(), s -> {
-            binding.menuSource.setText(Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(s));
+            //binding.menuSource.setText(Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(s));
+            binding.menuSource.setText(s);
             int pos = catalogueAdapter.getPos();
             catalogueAdapter.setPos(mViewModel.getProgress());
             Objects.requireNonNull((LinearLayoutManager) binding.menuCatalogueList.getLayoutManager()).scrollToPositionWithOffset(mViewModel.getProgress(), (int) (height * 0.4f));

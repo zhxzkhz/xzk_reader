@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.util.AutoBase64;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.LogUtil;
 
 import org.jsoup.Jsoup;
 import org.mozilla.javascript.NativeArray;
@@ -279,7 +280,7 @@ public abstract class Analysis {
             }
 
             @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            public void onResponse(@NonNull Call call, @NonNull Response response) {
                 if (response.code() == 200 && response.body() != null) {
                     MediaType contentType = response.body().contentType();
                     String charset = null;
@@ -289,12 +290,22 @@ public abstract class Analysis {
                     if (charset == null) {
                         charset = Analysis.this.charset;
                     }
-                    String s = new String(Objects.requireNonNull(response.body()).bytes(), charset);
-                    DiskCache.FileSave(DiskCache.path, call, s);
-                    if (bool) {
-                        callback.run(s, null, null);
-                    } else {
-                        callback.run(Jsoup.parse(s), null, null);
+                    String s = null;
+                    try {
+                        s = new String(Objects.requireNonNull(response.body()).bytes(), charset);
+                        DiskCache.FileSave(DiskCache.path, call, s);
+                    } catch (IOException e) {
+                        LogUtil.error(e);
+                        e.printStackTrace();
+                    }
+                    if (s == null){
+                        callback.run(null, null, null);
+                    }else {
+                        if (bool) {
+                            callback.run(s, null, null);
+                        } else {
+                            callback.run(Jsoup.parse(s), null, null);
+                        }
                     }
                 } else {
                     callback.run(null, response.message(), null);

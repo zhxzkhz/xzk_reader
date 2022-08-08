@@ -52,8 +52,6 @@ public class JsoupAnalysis extends Analysis {
     }
 
     private void init() {
-        SCRIPT_ENGINE.put("xlua_rule", this);
-        SCRIPT_ENGINE.put("xlua_classloader", ClassLoader.getSystemClassLoader());
         replace_map = new HashMap<>();
         replace_map.put("<p>", "");
         replace_map.put("</p>", "");
@@ -244,6 +242,7 @@ public class JsoupAnalysis extends Analysis {
             } else if (detail_x.getString("catalog").startsWith("js@")) {
 
                 SimpleBindings bindings = new SimpleBindings();
+                bindings.put("xlua_rule", this);
                 bindings.put("element", element);
                 bindings.put("data", element);
                 bindings.put("url", url);
@@ -290,6 +289,7 @@ public class JsoupAnalysis extends Analysis {
 
             if (catalog.getString("js") != null) {
                 SimpleBindings bindings = new SimpleBindings();
+                bindings.put("xlua_rule", this);
                 bindings.put("element", element);
                 bindings.put("data", element);
                 bindings.put("url", url);
@@ -534,6 +534,7 @@ public class JsoupAnalysis extends Analysis {
             //执行js
             if (chapter.getString("js") != null) {
                 SimpleBindings bindings = new SimpleBindings();
+                bindings.put("xlua_rule", this);
                 bindings.put("element", element);
                 bindings.put("data", str);
                 bindings.put("url", url);

@@ -107,11 +107,24 @@
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/menu_catalogue"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="46dp"
         android:background="@color/white"
         android:gravity="center"
-        android:text="@string/app_name"
+        android:text="@string/detailed_update_time"
+        app:layout_constraintEnd_toStartOf="@id/menu_cache"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/menu_cache"
+        android:layout_width="0dp"
+        android:layout_height="46dp"
+        android:background="@color/white"
+        android:gravity="center"
+        android:text="@string/cache"
+        app:layout_constraintStart_toEndOf="@id/menu_catalogue"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

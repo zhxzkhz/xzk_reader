@@ -458,7 +458,6 @@ public class ReadTextView extends View {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        System.out.println("event = " + event);
         return gestureDetector.onTouchEvent(event);
     }
 
