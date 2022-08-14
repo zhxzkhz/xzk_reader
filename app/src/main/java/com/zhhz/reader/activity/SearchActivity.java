@@ -51,11 +51,16 @@ public class SearchActivity extends AppCompatActivity {
             }
 
             if (!textView.getText().toString().startsWith("http")) {
+                //没有搜索源则为true，给予提示
+                boolean bool = true;
                 for (Analysis value : RuleAnalysis.analyses_map.values()) {
-                    if (!value.isHaveSearch()) {
-                        Toast.makeText(this, "请设置有搜索的书源", Toast.LENGTH_SHORT).show();
-                        return true;
+                    if (value.isHaveSearch()) {
+                        bool = false;
+                        break;
                     }
+                }
+                if (bool) {
+                    Toast.makeText(this, "请设置有搜索的书源", Toast.LENGTH_SHORT).show();
                 }
             }
 
