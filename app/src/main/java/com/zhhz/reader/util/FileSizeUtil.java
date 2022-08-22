@@ -102,7 +102,7 @@ public class FileSizeUtil {
      */
     public static String ConvertFileSize(long file_size) {
         DecimalFormat df = new DecimalFormat("#.00");
-        String fileSizeString = "";
+        String fileSizeString;
         String wrongSize = "0B";
         if (file_size == 0) {
             return wrongSize;

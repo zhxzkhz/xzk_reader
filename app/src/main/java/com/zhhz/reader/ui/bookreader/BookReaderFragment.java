@@ -16,8 +16,6 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.zhhz.reader.databinding.FragmentBookreaderBinding;
 
-import java.util.Objects;
-
 public class BookReaderFragment extends Fragment {
 
     private BookReaderViewModel mViewModel;
@@ -94,8 +92,9 @@ public class BookReaderFragment extends Fragment {
                 binding.readerText.setText(String.valueOf(map.get("error")));
                 binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
-                if (Objects.equals(map.get("end"), "true")) {
-                    mViewModel.setStart(String.valueOf(map.get("content")).length());
+                //判断是否转跳到文本末尾
+                if (map.containsKey("end") && Boolean.parseBoolean(String.valueOf(map.get("end")))) {
+                    mViewModel.setStart(String.valueOf(map.get("content")).length()-1);
                 }
                 binding.readerText.setText(String.valueOf(map.get("content")), mViewModel.getStart());
             }

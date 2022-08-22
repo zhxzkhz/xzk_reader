@@ -77,7 +77,7 @@ public class LogCatAdapter extends RecyclerView.Adapter<LogCatAdapter.ViewHolder
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public AppCompatTextView textView;
+        public final AppCompatTextView textView;
 
         private ViewHolder(AppCompatTextView v) {
             super(v);

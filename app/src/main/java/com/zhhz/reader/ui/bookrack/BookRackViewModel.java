@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.livedata.SingleLiveEvent;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.DiskCache;
@@ -32,15 +33,15 @@ public class BookRackViewModel extends ViewModel {
 
     private final MutableLiveData<BookBean> catalogue;
 
-    private final MutableLiveData<Integer> operation;
+    private final SingleLiveEvent<Integer> operation;
 
-    private final MutableLiveData<Boolean> callback;
+    private final SingleLiveEvent<Boolean> callback;
 
     public BookRackViewModel() {
         data = new MutableLiveData<>();
         catalogue = new MutableLiveData<>();
-        operation = new MutableLiveData<>();
-        callback = new MutableLiveData<>();
+        operation = new SingleLiveEvent<>();
+        callback = new SingleLiveEvent<>();
         data.setValue(SQLiteUtil.readBooks());
     }
 
@@ -150,11 +151,11 @@ public class BookRackViewModel extends ViewModel {
         return catalogue;
     }
 
-    public MutableLiveData<Integer> getOperation() {
+    public SingleLiveEvent<Integer> getOperation() {
         return operation;
     }
 
-    public MutableLiveData<Boolean> getCallback() {
+    public SingleLiveEvent<Boolean> getCallback() {
         return callback;
     }
 }

@@ -8,16 +8,15 @@ import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
 import com.zhhz.reader.util.JsExtensionClass
-import com.zhhz.reader.util.LogUtil
 import java.net.URLEncoder
 import java.util.regex.Pattern
 import javax.script.SimpleBindings
 
 
 class JsonAnalysis : Analysis, JsExtensionClass {
-    constructor(path: String?) : super(path) {}
+    constructor(path: String?) : super(path)
 
-    constructor(jsonObject: JSONObject?) : super(jsonObject) {}
+    constructor(jsonObject: JSONObject?) : super(jsonObject)
 
     private fun parseArray(s: String): Array<String> {
         val v1: String
@@ -41,7 +40,7 @@ class JsonAnalysis : Analysis, JsExtensionClass {
         }
     }
 
-    fun parseJson(json: Any, reg: String, bindings: SimpleBindings): Any {
+    private fun parseJson(json: Any, reg: String, bindings: SimpleBindings): Any {
         if (reg.isEmpty()) return ""
         var jsonTemp: Any = json
         val regs = parseArray(reg)
@@ -106,7 +105,7 @@ class JsonAnalysis : Analysis, JsExtensionClass {
     }
 
     override fun BookSearch(key_word: String, callback: CallBack, md5: String) {
-        var key: String = key_word;
+        var key: String = key_word
         if (json["encode"] != null) {
             key = URLEncoder.encode(key_word, charset)
         }

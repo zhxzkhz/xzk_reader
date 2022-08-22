@@ -10,7 +10,6 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatButton;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,7 +25,6 @@ import com.zhhz.reader.R;
 import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 /**
  * 漫画阅读适配器
@@ -40,6 +38,7 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
     private final RequestListener<Bitmap> requestListener = new RequestListener<Bitmap>() {
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+            /*
             AppCompatButton button = new AppCompatButton(context);
             button.setText("重新加载");
             button.setOnClickListener(v -> {
@@ -47,6 +46,8 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
                 ((FrameLayout) v.getParent()).removeView(v);
             });
             ((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).addView(button, layout_params);
+            */
+            ((AppCompatTextView)((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).getChildAt(1)).setText("加载失败");
             return false;
         }
 
@@ -54,20 +55,16 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
         public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
             ((BitmapImageViewTarget) target).getView().setLayoutParams(layout_params);
             ((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).setMinimumHeight(0);
+            ((AppCompatTextView)((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).getChildAt(1)).setText(null);
             return false;
         }
     };
     private ArrayList<GlideUrl> itemData;
-    private View.OnClickListener onClickListener;
 
     public ComicAdapter(Context context) {
         this.context = context;
         this.itemData = new ArrayList<>();
         layout_params.gravity = Gravity.CENTER;
-    }
-
-    public void setOnClickListener(View.OnClickListener onClickListener) {
-        this.onClickListener = onClickListener;
     }
 
     public ArrayList<GlideUrl> getItemData() {
@@ -89,7 +86,8 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         //String book = itemData.get(position);
-        //holder.title.setText(book.getTitle());
+        holder.title.setText("加载中");
+        ((FrameLayout)holder.imageView.getParent()).setMinimumHeight(1080);
         GlideApp.with(context)
                 .asBitmap()
                 .diskCacheStrategy(DiskCacheStrategy.DATA)
@@ -116,8 +114,8 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
 
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public AppCompatImageView imageView;
-        public AppCompatTextView title;
+        public final AppCompatImageView imageView;
+        public final AppCompatTextView title;
 
         private ViewHolder(View v) {
             super(v);

@@ -88,7 +88,7 @@ public class DetailedFragment extends Fragment {
                 catalogueAdapter.setItemData(map);
                 catalogueAdapter.notifyDataSetChanged();
                 int[] pro = mViewModel.readProgress(bookBean.getBook_id());
-                if (pro[0] + pro[1] > 0) {
+                if (pro[0] + pro[1] > 0 && catalogueAdapter.getTitle().size() > pro[0]) {
                     binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
                 } else {
                     binding.startRead.setText("开始阅读");

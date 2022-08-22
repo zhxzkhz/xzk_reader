@@ -77,7 +77,7 @@ interface JsExtensionClass {
 
     /**
      * 返回对称加密或解密的字节。
-     * @param str 待处理字符串
+     * @param data 待处理字符串
      * @param key 解密的key
      * @param mode 加密的方式
      * @param paddings 加密的类型

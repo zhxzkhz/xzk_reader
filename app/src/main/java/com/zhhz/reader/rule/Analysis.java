@@ -62,6 +62,7 @@ public abstract class Analysis {
             this.http = jsonObject.getJSONObject("search").getString("url").split(":")[0];
         } else {
             this.http = "http";
+            this.charset = (String) jsonObject.getOrDefault("charset", "utf8");
         }
         if (this.charset == null) this.charset = "utf8";
 

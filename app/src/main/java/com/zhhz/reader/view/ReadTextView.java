@@ -40,14 +40,14 @@ public class ReadTextView extends View {
     //用于存储 newDraw 下的每行字间距平摊间距
     private final HashMap<Integer, Float> wordSpaceMap = new HashMap<>();
     //float density
-    float density;
+    final float density;
     CallBack downOnClick;
     CallBack upOnClick;
     CallBack menuOnClick;
     CallBack updateCallBack;
-    DecimalFormat format1 = new DecimalFormat("##%");
+    final DecimalFormat format1 = new DecimalFormat("##%");
     //一行字体位置数组
-    float[] line_font = new float[200];
+    final float[] line_font = new float[200];
     //顶部标题间距
     private float topSpace = 45f;
     //底部信息间距
@@ -772,7 +772,7 @@ public class ReadTextView extends View {
     }
 
     public interface CallBack {
-        public boolean onClick();
+        boolean onClick();
     }
 
 }

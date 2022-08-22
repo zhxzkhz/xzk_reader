@@ -13,7 +13,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zhhz.reader.databinding.FragmentSettingBinding;
@@ -61,12 +60,7 @@ public class SettingFragment extends Fragment {
         }
 
         final TextView textView = binding.textNotifications;
-        settingViewModelViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+        settingViewModelViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
         return root;
     }
 

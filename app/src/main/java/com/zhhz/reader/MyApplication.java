@@ -21,7 +21,7 @@ public class MyApplication extends Application {
     public static Context context;
 
     //调试模式
-    public static boolean DeBug = false;
+    public static final boolean DeBug = false;
     public static BitmapDrawable coverDrawable;
 
     @Override

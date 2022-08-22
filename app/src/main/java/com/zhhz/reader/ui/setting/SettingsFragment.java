@@ -1,7 +1,6 @@
 package com.zhhz.reader.ui.setting;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 
@@ -9,13 +8,10 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreferenceCompat;
 
 import com.zhhz.reader.R;
-import com.zhhz.reader.service.LogMonitorService;
 import com.zhhz.reader.util.ManifestUtil;
 
 import java.util.Objects;

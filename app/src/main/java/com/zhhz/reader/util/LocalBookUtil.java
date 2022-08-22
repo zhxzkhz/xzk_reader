@@ -53,8 +53,6 @@ public class LocalBookUtil {
             bean.setUpdate(false);
             bean.setStatus(true);
 
-            System.out.println("stringBuilder = " + stringBuilder);
-
             if (!analysisChapter(stringBuilder.toString(), bean.getBook_id())) {
                 if (new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id()).delete()) {
                     callBack.result(null);
@@ -110,7 +108,7 @@ public class LocalBookUtil {
         //临时下标，用于标记分割章节名字
         int temp_index;
         //每章最大字数(一章最多2w字，超过后分割)
-        int content_max = 20000;
+        float content_max = 20000;
         //循环匹配
         while (m.find()) {
             //替换换行符
@@ -123,7 +121,14 @@ public class LocalBookUtil {
             temp_index = 1;
 
             //用于分割章节内容
-            int count = (int) Math.ceil(temp.length() / (float) content_max);
+            int count = (int) Math.ceil(temp.length() / content_max);
+
+            //如果内容为空就跳过
+            if (count == 0) {
+                i++;
+                continue;
+            }
+
             temp_length = temp.length() / count;
             while (temp_index <= count) {
                 if (temp_index == 1) {
@@ -175,9 +180,8 @@ public class LocalBookUtil {
         return true;
     }
 
-
     public interface CallBack {
-        public void result(BookBean bool);
+        void result(BookBean bool);
     }
 
 }

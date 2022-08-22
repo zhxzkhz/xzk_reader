@@ -1,14 +1,12 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
-import android.graphics.drawable.BitmapDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -156,12 +154,12 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     //② 创建ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public AppCompatImageView imageView;
-        public AppCompatTextView title;
-        public AppCompatTextView author;
-        public AppCompatTextView last;
-        public AppCompatCheckBox checkBox;
-        public View update;
+        public final AppCompatImageView imageView;
+        public final AppCompatTextView title;
+        public final AppCompatTextView author;
+        public final AppCompatTextView last;
+        public final AppCompatCheckBox checkBox;
+        public final View update;
 
         private ViewHolder(View v) {
             super(v);

@@ -34,7 +34,7 @@ public class BookReaderViewModel extends ViewModel {
     private final MutableLiveData<String> chapters;
     private final ArrayList<GlideUrl> comic_list;
     //章节页数表，用于无限滑动记录章节页数
-    public ArrayList<Integer> comic_page;
+    public final ArrayList<Integer> comic_page;
     private RuleAnalysis rule;
     //目录进度
     private int progress = 0;
@@ -126,7 +126,7 @@ public class BookReaderViewModel extends ViewModel {
             data_content.postValue(map);
             return;
         }
-        map.put("end", String.valueOf(bool));
+        map.put("end", bool);
         // url 第一个字符是 / 代表是本地章节
         if (url.startsWith("/")) {
             byte[] bytes = FileUtil.readFile(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + url);
@@ -173,7 +173,7 @@ public class BookReaderViewModel extends ViewModel {
         }
 
         rule.BookChapters(book, url, (data, msg, label) -> {
-            map.put("end", String.valueOf(bool));
+            map.put("end", bool);
             if (uuid.equals(label)) {
                 if (msg != null) {
                     map.put("error", msg.toString());

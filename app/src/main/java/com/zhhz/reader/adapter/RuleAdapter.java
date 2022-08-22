@@ -78,7 +78,7 @@ public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
-        public SwitchMaterial switchMaterial;
+        public final SwitchMaterial switchMaterial;
 
         private ViewHolder(SwitchMaterial v) {
             super(v);

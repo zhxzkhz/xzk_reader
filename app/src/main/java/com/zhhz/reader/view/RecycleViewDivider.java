@@ -23,7 +23,6 @@ public class RecycleViewDivider extends RecyclerView.ItemDecoration {
     /**
      * 默认分割线：高度为2px，颜色为灰色
      *
-     * @param context
      * @param orientation 列表方向
      */
     public RecycleViewDivider(Context context, int orientation) {
@@ -40,7 +39,6 @@ public class RecycleViewDivider extends RecyclerView.ItemDecoration {
     /**
      * 自定义分割线
      *
-     * @param context
      * @param orientation 列表方向
      * @param drawableId  分割线图片
      */
@@ -54,7 +52,6 @@ public class RecycleViewDivider extends RecyclerView.ItemDecoration {
     /**
      * 自定义分割线
      *
-     * @param context
      * @param orientation   列表方向
      * @param dividerHeight 分割线高度
      * @param dividerColor  分割线颜色
@@ -94,8 +91,6 @@ public class RecycleViewDivider extends RecyclerView.ItemDecoration {
      * 绘制纵向列表时的分隔线  这时分隔线是横着的
      * 每次 left相同，top根据child变化，right相同，bottom也变化
      *
-     * @param canvas
-     * @param parent
      */
     private void drawVertical(Canvas canvas, RecyclerView parent) {
         final int left = parent.getPaddingLeft();
@@ -120,8 +115,6 @@ public class RecycleViewDivider extends RecyclerView.ItemDecoration {
      * 绘制横向列表时的分隔线  这时分隔线是竖着的
      * l、r 变化； t、b 不变
      *
-     * @param canvas
-     * @param parent
      */
     private void drawHorizontal(Canvas canvas, RecyclerView parent) {
         final int top = parent.getPaddingTop();

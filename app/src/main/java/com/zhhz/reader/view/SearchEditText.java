@@ -20,7 +20,6 @@ public class SearchEditText extends AppCompatEditText implements
         View.OnFocusChangeListener, TextWatcher {
 
 
-    private final Context context;
     private Drawable mClearDrawable;
     private Drawable mSearchDrawable;
     private Drawable mSearchingDrawable;
@@ -38,7 +37,6 @@ public class SearchEditText extends AppCompatEditText implements
 
     public SearchEditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        this.context = context;
         init();
     }
 

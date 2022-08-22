@@ -12,10 +12,10 @@ import okhttp3.OkHttpClient;
 
 public class RuleAnalysis {
 
-    public static OkHttpClient client = new OkHttpClient.Builder().addInterceptor(DiskCache.interceptor).build();
+    public static final OkHttpClient client = new OkHttpClient.Builder().addInterceptor(DiskCache.interceptor).build();
 
     //储存已加载的规则
-    public static LinkedHashMap<String, Analysis> analyses_map = new LinkedHashMap<>();
+    public static final LinkedHashMap<String, Analysis> analyses_map = new LinkedHashMap<>();
 
     private Analysis analysis;
 

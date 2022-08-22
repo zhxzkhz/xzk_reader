@@ -32,10 +32,9 @@ public class SearchFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentSearchBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
 
 
-        return root;
+        return binding.getRoot();
     }
 
 }

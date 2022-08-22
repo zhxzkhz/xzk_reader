@@ -27,13 +27,13 @@ public class DiskCache {
     //测试缓存时间调整到 300 分钟
     private static final long cache_time = 1000 * 60 * 300;
     //用于执行JS
-    public static ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
+    public static final ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
     //public static ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("rhino");
     public static String path = "/storage/emulated/0/星☆空";
     //缓存删除时间标记
     private static boolean cache_delete_tag = true;
     private static long currentTimeMillis = System.currentTimeMillis();
-    public static Interceptor interceptor = chain -> {
+    public static final Interceptor interceptor = chain -> {
         delete_cache();
         byte[] b;
         //post提交取消缓存
@@ -45,7 +45,6 @@ public class DiskCache {
                 int size = fis.available();
                 b = new byte[size];
                 if (fis.read(b) != size) return chain.proceed(chain.request());
-                ;
             } catch (IOException e) {
                 e.printStackTrace();
                 return chain.proceed(chain.request());
@@ -96,7 +95,6 @@ public class DiskCache {
                         if (file1.delete()) {
                             System.out.println("delete_cache -> 缓存已清除");
                         }
-                        ;
                     }
                 }
             }
@@ -121,17 +119,17 @@ public class DiskCache {
         return dataStr;
     }
 
-    public static boolean FileSave(String pt, @NonNull okhttp3.Call call, String data) {
-        return FileSave(pt, call.request().url(), data);
+    public static void FileSave(String pt, @NonNull okhttp3.Call call, String data) {
+        FileSave(pt, call.request().url(), data);
     }
 
-    public static boolean FileSave(String pt, HttpUrl call, String data) {
+    public static void FileSave(String pt, HttpUrl call, String data) {
         File file = urlToFile(call, pt);
-        if (file == null || file.isFile()) return false;
+        if (file == null || file.isFile()) return ;
         try {
             if (!Objects.requireNonNull(file.getParentFile()).isDirectory()) {
                 if (!file.getParentFile().mkdirs()) {
-                    return false;
+                    return ;
                 }
             }
             FileOutputStream fos = new FileOutputStream(file);
@@ -139,10 +137,8 @@ public class DiskCache {
             fos.close();
 
         } catch (Exception e) {
-            //Log.i("FileSave错误 ->", e.getMessage());
-            return false;
+            LogUtil.error(e);
         }
-        return true;
     }
 
 

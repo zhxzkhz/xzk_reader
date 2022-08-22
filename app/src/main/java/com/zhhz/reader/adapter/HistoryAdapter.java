@@ -96,8 +96,8 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHold
 
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public AppCompatImageView imageView;
-        public AppCompatTextView textView;
+        public final AppCompatImageView imageView;
+        public final AppCompatTextView textView;
 
         private ViewHolder(View v) {
             super(v);

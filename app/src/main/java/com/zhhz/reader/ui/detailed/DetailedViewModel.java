@@ -53,7 +53,7 @@ public class DetailedViewModel extends ViewModel {
     }
 
     public void saveProgress(String id, int progress) {
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(DiskCache.path + File.separator + "book" + File.separator + id + File.separator + "progress"));) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(DiskCache.path + File.separator + "book" + File.separator + id + File.separator + "progress"))) {
             bufferedWriter.write(progress + ",0");
         } catch (IOException ignored) {
         }

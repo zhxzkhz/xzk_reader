@@ -1,6 +1,8 @@
 package com.zhhz.reader.ui.bookreader;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -96,6 +98,17 @@ public class BookMenuFragment extends Fragment {
 
         binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
         binding.menuCache.setOnClickListener(view -> mViewModel.cacheBook(-1,true));
+
+        binding.menuSource.setOnClickListener(view -> {
+            String url = Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(binding.menuSource.getText().toString());
+            if (url != null && url.startsWith("http")) {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                //请注意下面的选择器。如果没有匹配的应用程序，
+                // Android会显示系统消息。因此无需尝试捕获。
+                startActivity(Intent.createChooser(intent, "请选择浏览器"));
+            }
+        });
+
         return root;
     }
 

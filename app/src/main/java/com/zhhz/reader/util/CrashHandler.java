@@ -12,8 +12,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
-import com.zhhz.reader.MyApplication;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
@@ -41,7 +39,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
     @SuppressLint("StaticFieldLeak")
     private static final CrashHandler INSTANCE = new CrashHandler();
     //用来存储设备信息和异常信息
-    private final Map<String, String> info = new LinkedHashMap<String, String>();
+    private final Map<String, String> info = new LinkedHashMap<>();
     //用于格式化日期,作为日志文件名的一部分
     @SuppressLint("SimpleDateFormat")
     private final DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");

@@ -114,10 +114,10 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public AppCompatImageView imageView;
-        public AppCompatTextView title;
-        public AppCompatTextView author;
-        public AppCompatTextView last;
+        public final AppCompatImageView imageView;
+        public final AppCompatTextView title;
+        public final AppCompatTextView author;
+        public final AppCompatTextView last;
 
         private ViewHolder(View v) {
             super(v);
