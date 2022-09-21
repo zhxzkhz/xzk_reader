@@ -138,6 +138,8 @@ public class BookReaderViewModel extends ViewModel {
             data_content.postValue(map);
         } else {
             rule.BookChapters(book, url, (data, msg, label) -> {
+                System.out.println("uuid = " + uuid);
+                System.out.println("label = " + label);
                 if (uuid.equals(label)) {
                     if (msg != null) {
                         map.put("error", msg.toString());
@@ -188,6 +190,18 @@ public class BookReaderViewModel extends ViewModel {
                 data_content.postValue(map);
             }
         }, uuid);
+    }
+
+    /**
+     * 清除当前章节缓存，重新加载
+     */
+    public void clearCurrentCache(){
+        DiskCache.cache_delete_tag = true;
+        DiskCache.delete_cache();
+        String url = data_catalogue.getValue().get(catalogue.get(progress));
+        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
+        file.delete();
+        getContent();
     }
 
     public void saveProgress(int progress) {

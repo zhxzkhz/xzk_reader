@@ -43,7 +43,7 @@ public class SearchViewModel extends ViewModel {
      */
     public SearchResultBean isUrl(String key){
         for (Map.Entry<String, Analysis> entry : RuleAnalysis.analyses_map.entrySet()) {
-            if (key.matches("https?://" + entry.getValue().getUrl() + "/(.+)") && entry.getValue().getJson().getJSONObject("detail").getString("title")!=null){
+            if (key.matches("https?://" + entry.getValue().getUrl() + "/(.+)") && entry.getValue().getJson().getJSONObject("detail").getString("name")!=null){
                 SearchResultBean bean = new SearchResultBean();
                 bean.setUrl(key);
                 List<String> source = new ArrayList<>();

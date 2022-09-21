@@ -60,7 +60,11 @@ public class BookMenuFragment extends Fragment {
 
         binding.menuBack.setOnClickListener((view) -> requireActivity().finish());
         binding.menuTitle.setClickable(true);
-        binding.menuMore.setClickable(true);
+        if (mViewModel.isComic()){
+            binding.menuRefresh.setVisibility(View.VISIBLE);
+        } else {
+            binding.menuRefresh.setOnClickListener(view -> mViewModel.clearCurrentCache());
+        }
         binding.menuNextPage.setClickable(true);
         binding.menuSource.setClickable(true);
         binding.menuPreviousPage.setClickable(true);

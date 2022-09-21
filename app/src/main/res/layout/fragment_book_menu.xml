@@ -32,19 +32,19 @@
         android:textColor="@color/black"
         android:textSize="18sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@+id/menu_more"
+        app:layout_constraintEnd_toStartOf="@+id/menu_refresh"
         app:layout_constraintStart_toEndOf="@+id/menu_back"
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatImageButton
-        android:id="@+id/menu_more"
+        android:id="@+id/menu_refresh"
         android:layout_width="54dp"
         android:layout_height="48dp"
         android:background="@color/white"
         android:ellipsize="end"
         android:padding="10dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/more_horiz_icon"
+        android:src="@drawable/refresh_24"
         android:tint="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toLeftOf="@id/menu_title"

@@ -56,6 +56,8 @@ public class LogUtil {
             bufferedWriter.newLine();
             bufferedWriter.flush();
         } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
             Log.i("error", String.valueOf(object));
         }
     }

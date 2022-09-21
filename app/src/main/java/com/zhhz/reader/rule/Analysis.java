@@ -234,6 +234,17 @@ public abstract class Analysis {
         newCall(builder.build(), callback, bool);
     }
 
+    //兼用以前的用法
+    public void Http_Get(String url, CallBack callback){
+        Http_Get(url, callback,false);
+    }
+
+    /**
+     * GET请求
+     * @param url 地址
+     * @param callback 回调事件
+     * @param bool 是否使用JSOUP解析
+     */
     public void Http_Get(String url, CallBack callback, boolean bool) {
         String header = null;
         if (url.contains("$header")) {

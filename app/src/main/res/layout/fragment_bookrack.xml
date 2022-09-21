@@ -23,6 +23,7 @@
         android:id="@+id/bookrack_setting"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:contentDescription="@string/import_book"
         android:background="@color/transparent"
         android:src="@drawable/ic_settings_black_24"
         app:layout_constraintBottom_toBottomOf="@id/action_bar"

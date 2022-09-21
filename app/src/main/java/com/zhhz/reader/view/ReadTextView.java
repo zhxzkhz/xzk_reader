@@ -384,7 +384,7 @@ public class ReadTextView extends View {
 
         //如果首行缩进就取消行前面空格
         if (indentation){
-            text = text.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "").replaceAll("\n[\u3000\u0020]{2}","\n");
+            text = text.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "").replaceAll("\n+[\u3000\u0020]{2}","\n").replaceAll("\n+","\n");
         }
 
         if (progress >= text.length()){
@@ -573,13 +573,15 @@ public class ReadTextView extends View {
                 }
 
                 if (textStr.equals("\n")) {
-                    if (tmp_index + fontIndex + 1 <= text.length() && text.substring(tmp_index + fontIndex, tmp_index + fontIndex + 1).equals("\n")) {
+                    minWidth = widthPixels;
+                    indentation_a = indentation;
+                    /*if (tmp_index + fontIndex + 1 <= text.length() && text.substring(tmp_index + fontIndex, tmp_index + fontIndex + 1).equals("\n")) {
                         fontIndex++;
                         font_x[tmp_index + fontIndex - 1] = minWidth;
                     } else {
                         minWidth = widthPixels;
                         indentation_a = indentation;
-                    }
+                    }*/
                 }
 
             }
@@ -682,7 +684,7 @@ public class ReadTextView extends View {
         pageMaxLine = (int) ((heightPixels) / (finalHeight));
 
         int line = 0;
-        //字体、高度变化时更新行数
+        //字体、高度变化时更新行数,如果不是当前页第一行，校验为当前页第一行
         if (textStart > 0) {
             for (Map.Entry<Integer, Integer> value : map.entrySet()) {
                 line = value.getKey();
