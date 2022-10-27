@@ -11,6 +11,7 @@ import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
+import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.NotificationUtil;
 
 import java.io.BufferedReader;
@@ -197,10 +198,14 @@ public class BookReaderViewModel extends ViewModel {
      */
     public void clearCurrentCache(){
         DiskCache.cache_delete_tag = true;
-        DiskCache.delete_cache();
+        DiskCache.delete_cache(true);
         String url = data_catalogue.getValue().get(catalogue.get(progress));
-        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
-        file.delete();
+        if (url != null) {
+            File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
+            file.delete();
+        } else {
+            LogUtil.info("缓存清除失败 -> " + catalogue.get(progress));
+        }
         getContent();
     }
 

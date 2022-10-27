@@ -204,6 +204,11 @@ public abstract class Analysis {
         }
     }
 
+    //兼用以前的用法
+    public void Http_Post(String url, CallBack callback){
+        Http_Post(url, callback,false);
+    }
+
     public void Http_Post(String url, CallBack callback, boolean bool) {
         String header = null, data;
         MediaType mt;
@@ -319,6 +324,7 @@ public abstract class Analysis {
                             callback.run(Jsoup.parse(s), null, null);
                         }
                     }
+                    response.body().close();
                 } else {
                     callback.run(null, response.message(), null);
                 }

@@ -85,7 +85,18 @@ public class DiskCache {
         }
     }
 
+    /**
+     * 清除五分钟前的缓存
+     */
     public static void delete_cache() {
+        delete_cache(false);
+    }
+
+    /**
+     * 清除缓存
+     * @param bool 是否强制清除所有
+     */
+    public static void delete_cache(boolean bool) {
 
         long time = System.currentTimeMillis();
 
