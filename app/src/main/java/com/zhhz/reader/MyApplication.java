@@ -39,9 +39,10 @@ public class MyApplication extends Application {
         }
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-
+        //是否开启日志悬浮窗
         boolean bool = sharedPrefs.getBoolean("log",false);
         if (bool) {
+            //检测是否具有悬浮窗权限
             boolean isAllGranted = Settings.canDrawOverlays(context);
             if (isAllGranted){
                 startService(new Intent(this, LogMonitorService.class));

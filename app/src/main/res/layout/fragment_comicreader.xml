@@ -8,7 +8,7 @@
     android:clickable="true"
     tools:context=".ui.bookreader.ComicReaderFragment">
 
-    <androidx.recyclerview.widget.RecyclerView
+    <com.zhhz.reader.view.XluaRecyclerView
         android:id="@+id/reader_comic"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -97,6 +97,19 @@ public class RuleFragment extends Fragment {
             }
         });
 
+        ruleAdapter.setOnLongClickListener(view -> {
+            RuleBean ruleBean = Objects.requireNonNull(ruleViewModel.getRuleList().getValue()).get(binding.rv.getChildAdapterPosition(view));
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("删除提示")
+                    .setMessage("确定删除书源 " + ruleBean.getName() + "?")
+                    .setPositiveButton("确定", (dialogInterface, i) -> {
+                        ruleViewModel.removeRule(ruleBean);
+                    })
+                    .setNeutralButton("取消", null)
+                    .show();
+            return true;
+        });
+
         binding.ruleAdd.setOnClickListener(view -> launch.launch("*/*"));
 
         return root;
@@ -106,7 +119,7 @@ public class RuleFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ruleViewModel.getRuleList().observe(getViewLifecycleOwner(), ruleBeans -> {
-            DiffUtil.DiffResult result =DiffUtil.calculateDiff(new MyDiffUtilCallback(ruleAdapter.getItemData(), ruleBeans));
+            DiffUtil.DiffResult result = DiffUtil.calculateDiff(new MyDiffUtilCallback(ruleAdapter.getItemData(), ruleBeans));
             ruleAdapter.getItemData().clear();
             ruleAdapter.getItemData().addAll(ruleBeans);
             result.dispatchUpdatesTo(ruleAdapter);
@@ -124,7 +137,7 @@ public class RuleFragment extends Fragment {
         private final ArrayList<RuleBean> oldList;
         private final ArrayList<RuleBean> newList;
 
-        public MyDiffUtilCallback (ArrayList<RuleBean> oldList,ArrayList<RuleBean> newList){
+        public MyDiffUtilCallback(ArrayList<RuleBean> oldList, ArrayList<RuleBean> newList) {
             this.oldList = oldList;
             this.newList = newList;
         }

@@ -24,12 +24,18 @@ public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
     private ArrayList<RuleBean> itemData;
     private View.OnClickListener onClickListener;
 
+    private View.OnLongClickListener onLongClickListener;
+
     public RuleAdapter() {
         itemData = new ArrayList<>();
     }
 
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
+    }
+
+    public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
+        this.onLongClickListener = onLongClickListener;
     }
 
     public void setItemData(ArrayList<RuleBean> mData) {
@@ -50,6 +56,9 @@ public class RuleAdapter extends RecyclerView.Adapter<RuleAdapter.ViewHolder> {
         view.setGravity(Gravity.CENTER_VERTICAL);
         if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
+        }
+        if (onLongClickListener != null) {
+            view.setOnLongClickListener(onLongClickListener);
         }
         return new ViewHolder(view);
     }

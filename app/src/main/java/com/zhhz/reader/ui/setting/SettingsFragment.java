@@ -12,6 +12,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.SwitchPreferenceCompat;
 
 import com.zhhz.reader.R;
+import com.zhhz.reader.service.LogMonitorService;
 import com.zhhz.reader.util.ManifestUtil;
 
 import java.util.Objects;
@@ -24,8 +25,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey);
 
+        //开启日志悬浮窗需要检查是否有权限
         @NonNull SwitchPreferenceCompat log = Objects.requireNonNull(findPreference("log"));
-
         log.setOnPreferenceChangeListener((preference, newValue) -> {
             if (Boolean.getBoolean(newValue.toString())){
                 boolean isAllGranted = Settings.canDrawOverlays(getContext());
@@ -46,7 +47,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
             boolean isAllGranted = Settings.canDrawOverlays(getContext());
             //如果没有赋予权限，着取消勾选
             if (isAllGranted) {
-                ((SwitchPreferenceCompat) Objects.requireNonNull(findPreference("log"))).setChecked(true);
+                requireActivity().startService(new Intent(requireActivity(), LogMonitorService.class));
+            }else {
+                ((SwitchPreferenceCompat) Objects.requireNonNull(findPreference("log"))).setChecked(false);
             }
         });
     }

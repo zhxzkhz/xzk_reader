@@ -38,4 +38,12 @@ public class RuleViewModel extends ViewModel {
         mRuleList.setValue(SQLiteUtil.readRules());
     }
 
+    public void removeRule(RuleBean bean){
+        SQLiteUtil.removeRules(new String[]{bean.getId()});
+        if (bean.isOpen()) {
+            RuleAnalysis.analyses_map.remove(StringUtil.getMD5(bean.getName()));
+        }
+        mRuleList.setValue(SQLiteUtil.readRules());
+    }
+
 }

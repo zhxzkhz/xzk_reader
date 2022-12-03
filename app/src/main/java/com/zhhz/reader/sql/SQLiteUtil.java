@@ -139,4 +139,12 @@ public class SQLiteUtil {
         database.close();
     }
 
+    public static void removeRules(String[] ids) {
+        helper = new BookSqliteHelper(MyApplication.context, "bookrule.db", null, 1);
+        SQLiteDatabase database = helper.getWritableDatabase();
+        for (String id : ids) {
+            database.delete("bookrule", "id=?", new String[]{id});
+        }
+    }
+
 }

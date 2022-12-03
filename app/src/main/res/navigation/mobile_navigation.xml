@@ -18,7 +18,7 @@
 
     <fragment
         android:id="@+id/navigation_setting"
-        android:name="com.zhhz.reader.ui.setting.SettingFragment"
+        android:name="com.zhhz.reader.ui.setting.SettingsFragment"
         android:label="@string/title_setting"
         tools:layout="@layout/fragment_setting" />
 </navigation>

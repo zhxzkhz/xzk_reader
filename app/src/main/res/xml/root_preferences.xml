@@ -1,34 +1,38 @@
-<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <PreferenceCategory app:title="@string/basics">
+    <PreferenceCategory
+        android:layout="@layout/settings_titlebar" />
+
+    <PreferenceCategory app:title="@string/basics"
+        app:iconSpaceReserved="false">
 
         <SwitchPreferenceCompat
+            app:defaultValue="true"
+            app:iconSpaceReserved="false"
             app:key="cache"
-            app:title="@string/is_cache"
-            app:defaultValue="true"/>
+            app:title="@string/is_cache" />
 
+<!--
         <ListPreference
             app:defaultValue="reply"
             app:entries="@array/reply_entries"
             app:entryValues="@array/reply_values"
+            app:iconSpaceReserved="false"
             app:key="reply"
             app:title="@string/reply_title"
             app:useSimpleSummaryProvider="true" />
+-->
 
     </PreferenceCategory>
 
-    <PreferenceCategory app:title="@string/advanced">
+    <PreferenceCategory app:title="@string/advanced"
+        app:iconSpaceReserved="false">
 
         <SwitchPreferenceCompat
+            app:iconSpaceReserved="false"
             app:key="log"
             app:title="@string/is_log" />
-
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
 
     </PreferenceCategory>
 

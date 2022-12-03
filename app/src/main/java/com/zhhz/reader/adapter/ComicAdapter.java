@@ -93,6 +93,7 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
                 .diskCacheStrategy(DiskCacheStrategy.DATA)
                 .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
                 .listener(requestListener)
+                .error(GlideApp.with(context).asBitmap().load(itemData.get(position)).into(holder.imageView))
                 .load(itemData.get(position))
                 .into(holder.imageView);
     }

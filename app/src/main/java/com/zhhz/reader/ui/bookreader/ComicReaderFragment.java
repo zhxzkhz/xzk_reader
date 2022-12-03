@@ -1,12 +1,15 @@
 package com.zhhz.reader.ui.bookreader;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -60,7 +63,6 @@ public class ComicReaderFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentComicreaderBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
         comicAdapter = new ComicAdapter(requireContext());
         //comicAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
@@ -161,11 +163,6 @@ public class ComicReaderFragment extends Fragment {
         });
 
         GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDown(MotionEvent e) {
-                return true;
-            }
-
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 if (e.getX() > binding.readerComic.getWidth() / 3f && e.getX() < binding.readerComic.getWidth() / 3f * 2f)
