@@ -29,7 +29,7 @@ public class RuleViewModel extends ViewModel {
         if (bean.isOpen()) {
             try {
                 new RuleAnalysis(bean.getFile(), true);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {

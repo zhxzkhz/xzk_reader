@@ -32,24 +32,23 @@ public class DetailedViewModel extends ViewModel {
     }
 
     public void queryDetailed(SearchResultBean bean, int index) {
-        Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).BookDetail(bean.getUrl(), (data, msg, isComic) -> {
-            BookBean book = (BookBean) data;
-            if (book.getTitle() == null || book.getTitle().isEmpty()) {
-                book.setTitle(bean.getTitle());
+        Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).bookDetail(bean.getUrl(), (data) -> {
+            if (data.getTitle() == null || data.getTitle().isEmpty()) {
+                data.setTitle(bean.getTitle());
             }
-            if (book.getAuthor() == null || book.getAuthor().isEmpty()) {
-                book.setAuthor(bean.getAuthor());
+            if (data.getAuthor() == null || data.getAuthor().isEmpty()) {
+                data.setAuthor(bean.getAuthor());
             }
-            if (book.getCover() == null || book.getCover().isEmpty()) {
-                book.setCover(bean.getCover());
+            if (data.getCover() == null || data.getCover().isEmpty()) {
+                data.setCover(bean.getCover());
             }
-            book.setBook_id(StringUtil.getMD5(book.getTitle() + "▶☀" + isComic + "☀◀" + book.getAuthor()));
-            DetailedViewModel.this.data.postValue(book);
+            data.setBook_id(StringUtil.getMD5(data.getTitle() + "▶☀" + RuleAnalysis.analyses_map.get(bean.getSource().get(index)).isComic() + "☀◀" + ((BookBean) data).getAuthor()));
+            DetailedViewModel.this.data.postValue((BookBean) data);
         });
     }
 
     public void queryCatalogue(String url, SearchResultBean bean, int index) {
-        Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).BookDirectory(url, (data, msg, label) -> DetailedViewModel.this.data_catalogue.postValue((LinkedHashMap<String, String>) data));
+        Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).bookDirectory(url, (data, label) -> DetailedViewModel.this.data_catalogue.postValue((LinkedHashMap<String, String>) data));
     }
 
     public void saveProgress(String id, int progress) {
@@ -93,7 +92,7 @@ public class DetailedViewModel extends ViewModel {
     public void saveRule(SearchResultBean bean, String id, int index) {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + id + File.separator + "rule");
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
-            bufferedWriter.write(Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).getJson().toJSONString());
+            bufferedWriter.write(JSON.toJSONString(Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).getJson()));
         } catch (IOException ignored) {
         }
     }

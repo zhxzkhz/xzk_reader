@@ -42,6 +42,10 @@ public class SearchActivity extends AppCompatActivity {
         });
         binding.searchText.changeSearchLogo(true);
         binding.searchText.setOnEditorActionListener((textView, i, keyEvent) -> {
+            if (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+                return true;
+            }
+
             if (RuleAnalysis.analyses_map.size() == 0) {
                 Toast.makeText(this, "请设置书源", Toast.LENGTH_SHORT).show();
                 return true;

@@ -14,6 +14,7 @@ import java.security.MessageDigest;
 import java.util.Objects;
 
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -29,6 +30,7 @@ public class DiskCache {
     private static final long cache_time = 1000 * 60 * 300;
     //用于执行JS
     public static final ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
+    //public static final ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("JavaScript");
     //public static ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("rhino");
     public static String path = "/storage/emulated/0/星☆空";
     //缓存删除时间标记
@@ -71,7 +73,7 @@ public class DiskCache {
                 .protocol(Protocol.HTTP_1_1)
                 .protocol(Protocol.HTTP_2)
                 .message("本地缓存")
-                .body(ResponseBody.create(MediaType.parse("text/html;charset=utf-8"), b))
+                .body(ResponseBody.create(b,MediaType.parse("text/html;charset=utf-8")))
                 .request(chain.request())
                 .build();
     };

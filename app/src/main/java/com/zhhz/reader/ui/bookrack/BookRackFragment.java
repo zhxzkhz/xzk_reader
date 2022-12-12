@@ -40,15 +40,19 @@ import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileSizeUtil;
 import com.zhhz.reader.util.GlideGetPath;
 import com.zhhz.reader.util.StringUtil;
+import com.zhhz.reader.util.XluaTask;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 public class BookRackFragment extends Fragment {
 
@@ -205,7 +209,7 @@ public class BookRackFragment extends Fragment {
                 for (String s : tracker.getSelection()) {
                     ss[index++] = s;
                 }
-
+                ArrayList<String> fileList = new ArrayList<>();
                 arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:计算中)");
                 AlertDialog dialog = new AlertDialog.Builder(requireContext())
                         .setTitle("删除提示")
@@ -215,21 +219,16 @@ public class BookRackFragment extends Fragment {
                             //System.out.println("((AlertDialog) dialogInterface).getListView().getCheckedItemPosition() = " + ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition());
                             bookrackViewModel.removeBooks(ss);
                             bookrackViewModel.updateBooks();
+                            CompletableFuture.runAsync(() -> fileList.forEach(s -> new File(s).delete()),XluaTask.getThreadPool());
                         })
                         .setOnCancelListener(DialogInterface::dismiss)
                         .setNeutralButton("取消", null)
                         .create();
                 dialog.show();
 
-                //效率极低，待优化（）
-                new Thread(() -> {
-                    try {
-                        GlideGetPath.init();
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    }
 
-                    final long[] count_size = {0};
+                CompletableFuture.runAsync(() -> {
+                    long count_size = 0;
                     for (String s : ss) {
                         BookBean bean = null;
                         for (BookBean itemDatum : bookAdapter.getItemData()) {
@@ -239,7 +238,7 @@ public class BookRackFragment extends Fragment {
                             }
                         }
                         String path = DiskCache.path + File.separator + "book" + File.separator + s;
-                        count_size[0] += FileSizeUtil.getFileOrFilesSize(path, FileSizeUtil.SIZE_TYPE_B);
+                        count_size += FileSizeUtil.getFileOrFilesSize(path, FileSizeUtil.SIZE_TYPE_B);
                         if (bean != null && bean.getBook_id().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))) {
                             File file = new File(path + File.separator + "book_chapter");
                             if (file.isDirectory()) {
@@ -247,12 +246,14 @@ public class BookRackFragment extends Fragment {
                                     try {
                                         FileReader fileReader = new FileReader(listFile);
                                         BufferedReader bufferedReader = new BufferedReader(fileReader);
-                                        bufferedReader.lines().forEach(s1 -> {
-                                            File f = GlideGetPath.getCacheFile(s1);
-                                            if (f != null) {
-                                                count_size[0] += FileSizeUtil.getFileOrFilesSize(f.getPath(), 1);
+                                        //File f = GlideGetPath.getCacheFile(s1);
+                                        count_size += bufferedReader.lines().map(GlideGetPath::getCacheFileKey).filter(Objects::nonNull).mapToLong(f -> {
+                                            long len = (long) FileSizeUtil.getFileOrFilesSize(f, 1);
+                                            if (len > 0){
+                                                fileList.add(f);
                                             }
-                                        });
+                                            return len;
+                                        }).sum();
                                         bufferedReader.close();
                                         fileReader.close();
                                     } catch (IOException e) {
@@ -262,12 +263,12 @@ public class BookRackFragment extends Fragment {
                             }
                         }
                     }
-
+                    long finalCount_size = count_size;
                     requireActivity().runOnUiThread(() -> {
-                        arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(count_size[0]) + ")");
+                        arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(finalCount_size) + ")");
                         adapter.notifyDataSetChanged();
                     });
-                });//.start();
+                }, XluaTask.getThreadPool());
 
             }
         });

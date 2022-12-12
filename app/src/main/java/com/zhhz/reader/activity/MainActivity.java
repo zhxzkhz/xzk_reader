@@ -49,12 +49,15 @@ public class MainActivity extends AppCompatActivity {
             if (rule.isOpen()) {
                 try {
                     new RuleAnalysis(rule.getFile(), true);
-                } catch (IOException e) {
+                } catch (Exception e) {
+                    e.printStackTrace();
+/*
                     Snackbar.make(binding.getRoot(), rule.getName() + " -> 导入失败", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(this)
                             .setTitle("错误提示")
                             .setMessage(e.getMessage())
                             .setOnCancelListener(DialogInterface::dismiss)
                             .show()).show();
+                    */
                 }
             }
         }

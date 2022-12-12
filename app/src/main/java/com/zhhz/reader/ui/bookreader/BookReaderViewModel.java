@@ -69,21 +69,21 @@ public class BookReaderViewModel extends ViewModel {
             return;
         }
         try {
-            rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule");
-        } catch (IOException e) {
+            rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule",false);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
         LazyHeaders.Builder header = new LazyHeaders.Builder();
-        if (rule.getAnalysis().getJson().get("img_header") != null) {
-            if (rule.getAnalysis().getJson().getJSONObject("img_header").get("header") != null) {
-                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getJSONObject("img_header").getString("header"));
+        if (rule.getAnalysis().getJson().getImgHeader() != null) {
+            if (rule.getAnalysis().getJson().getImgHeader().getHeader() != null) {
+                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getImgHeader().getHeader());
                 for (Map.Entry<String, Object> entry : header_x.entrySet()) {
                     header.addHeader(entry.getKey(), (String) entry.getValue());
                 }
                 header_x.clear();
             }
-            if (rule.getAnalysis().getJson().getJSONObject("img_header").get("reuse") != null) {
-                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getString("header"));
+            if (rule.getAnalysis().getJson().getImgHeader().getReuse()) {
+                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getHeader());
                 for (Map.Entry<String, Object> entry : header_x.entrySet()) {
                     header.addHeader(entry.getKey(), (String) entry.getValue());
                 }
@@ -138,19 +138,19 @@ public class BookReaderViewModel extends ViewModel {
             }
             data_content.postValue(map);
         } else {
-            rule.BookChapters(book, url, (data, msg, label) -> {
-                System.out.println("uuid = " + uuid);
-                System.out.println("label = " + label);
+            rule.bookChapters(book, url, (data, label) -> {
+
                 if (uuid.equals(label)) {
-                    if (msg != null) {
-                        map.put("error", msg.toString());
-                    } else {
-                        map.put("content", data.toString());
+                    if (data.isStatus()){
+                        map.put("content", data.getData());
                         //自动缓存下一章
                         if (isHaveNextChapters()) {
                             cacheBook(progress);
                         }
+                    } else {
+                        map.put("error", data.getError());
                     }
+
                     data_content.postValue(map);
                 }
             }, uuid);
@@ -175,18 +175,18 @@ public class BookReaderViewModel extends ViewModel {
             return;
         }
 
-        rule.BookChapters(book, url, (data, msg, label) -> {
+        rule.bookChapters(book, url, (data, label) -> {
             map.put("end", bool);
             if (uuid.equals(label)) {
-                if (msg != null) {
-                    map.put("error", msg.toString());
-                } else {
-                    String[] arr = data.toString().split("\n");
+                if (data.isStatus()){
+                    String[] arr = data.getData().split("\n");
                     for (String s : arr) {
                         comic_list.add(new GlideUrl(s, headers));
                     }
                     comic_page.add(comic_list.size());
                     map.put("content", comic_list);
+                } else {
+                    map.put("error", data.getError());
                 }
                 data_content.postValue(map);
             }
@@ -286,8 +286,8 @@ public class BookReaderViewModel extends ViewModel {
         uuid = UUID.randomUUID().toString();
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         int finalProgress = progress;
-        rule.BookChapters(book, url, (data, msg, label) -> {
-            if (msg != null) {
+        rule.bookChapters(book, url, (data, label) -> {
+            if (!data.isStatus()){
                 cache_error++;
                 //失败三次取消缓存
                 if (cache_error < 3) {

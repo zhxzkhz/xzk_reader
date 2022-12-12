@@ -73,10 +73,10 @@ public class DetailedFragment extends Fragment {
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
             }
-            binding.detailedLayout.itemLatest.setText(bean.getLatestChapter());
+            binding.detailedLayout.itemLatest.setText(bean.getLastChapter());
             binding.detailedIntro.setText("简介：" + bean.getIntro());
-            if (bean.getUpdate_time() != null) {
-                binding.detailedUpdateTime.setText("目录（更新时间:" + bean.getUpdate_time() + "）");
+            if (bean.getUpdateTime() != null) {
+                binding.detailedUpdateTime.setText("目录（更新时间:" + bean.getUpdateTime() + "）");
             }
             mViewModel.queryCatalogue(bean.getCatalogue(), searchResultBean, 0);
         });

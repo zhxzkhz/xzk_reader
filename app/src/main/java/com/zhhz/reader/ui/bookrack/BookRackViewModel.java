@@ -87,19 +87,18 @@ public class BookRackViewModel extends ViewModel {
         for (BookBean bookBean : Objects.requireNonNull(data.getValue())) {
             RuleAnalysis rule;
             try {
-                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "rule");
+                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "rule",false);
                 rule.getAnalysis().setDetail(bookBean);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
                 continue;
             }
 
-            rule.BookDirectory(bookBean.getCatalogue(), (data, msg, url) -> {
+            rule.bookDirectory(bookBean.getCatalogue(), (data, url) -> {
                 if (data == null) {
                     catalogue.postValue(null);
                 } else {
-                    LinkedHashMap<String, String> mv = (LinkedHashMap<String, String>) data;
-                    if (mv.size() == 0) {
+                    if (((LinkedHashMap<String, String>) data).size() == 0) {
                         catalogue.postValue(null);
                         return;
                     }
@@ -116,21 +115,20 @@ public class BookRackViewModel extends ViewModel {
                     }
 
                     //获取章节最后一章的名字来和以前存储的章节比较，如果最后一章不存在，就代表更新了
-                    Iterator<String> iterator = mv.keySet().iterator();
+                    Iterator<String> iterator = ((LinkedHashMap<String, String>) data).keySet().iterator();
                     String key = null;
                     while (iterator.hasNext()) {
                         key = iterator.next();
                     }
 
                     if (!old_map.containsKey(key)) {
-                        old_map.putAll(mv);
+                        old_map.putAll((LinkedHashMap<String, String>) data);
                         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
                             bufferedWriter.write(JSON.toJSONString(old_map));
                         } catch (IOException ignored) {
                         }
                         if (url != null) {
-                            String s = String.valueOf(url);
-                            if (!s.isEmpty()) bookBean.setCatalogue(s);
+                            if (!url.isEmpty()) bookBean.setCatalogue(url);
                         }
                         bookBean.setUpdate(true);
                         SQLiteUtil.saveBook(bookBean);

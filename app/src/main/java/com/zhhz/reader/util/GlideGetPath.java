@@ -6,10 +6,12 @@ import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory;
 import com.bumptech.glide.load.engine.cache.SafeKeyGenerator;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.signature.EmptySignature;
+import com.bumptech.glide.util.Util;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.security.MessageDigest;
 
 public class GlideGetPath {
 
@@ -20,7 +22,6 @@ public class GlideGetPath {
         Field field = GlideBuilder.class.getDeclaredField("diskCacheFactory");
         field.setAccessible(true);
         DiskLruCacheFactory df = (DiskLruCacheFactory) field.get(XluaGlideModule.glide);
-
         field = DiskLruCacheFactory.class.getDeclaredField("cacheDirectoryGetter");
         field.setAccessible(true);
         DiskLruCacheFactory.CacheDirectoryGetter dcf = (DiskLruCacheFactory.CacheDirectoryGetter) field.get(df);
@@ -46,4 +47,19 @@ public class GlideGetPath {
         }
         return null;
     }
+
+    public static String getCacheFileKey(String url) {
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            EmptySignature signature = EmptySignature.obtain();
+            signature.updateDiskCacheKey(messageDigest);
+            new GlideUrl(url).updateDiskCacheKey(messageDigest);
+            String safeKey = Util.sha256BytesToHex(messageDigest.digest());
+            return DiskCache.path + File.separator + "Disc_ImageCache" + File.separator + safeKey + ".0";
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

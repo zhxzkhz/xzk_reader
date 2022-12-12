@@ -4,6 +4,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
+import cn.hutool.core.codec.Base64;
+
 
 /**
  * 自动识别是否是win系统，如果是则调用 java.util.Base64,反之调用 android.util.Base64
@@ -81,8 +83,10 @@ public class AutoBase64 {
             if (isWin) {
                 return (byte[]) Encoder.getMethod("encode", byte[].class).invoke(encoder, (Object) str.getBytes());
             } else {
-                return (byte[]) Base64.getDeclaredMethod("encode", String.class, int.class).invoke(null, str, 0);
+                //return (byte[]) Base64.getDeclaredMethod("encode", String.class, int.class).invoke(null, str, 0);
+                return cn.hutool.core.codec.Base64.encode(str).getBytes();
             }
+
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }

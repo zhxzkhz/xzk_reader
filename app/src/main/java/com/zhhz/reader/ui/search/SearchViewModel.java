@@ -26,7 +26,7 @@ public class SearchViewModel extends ViewModel {
             Analysis analysis = entry.getValue();
             if (analysis.isHaveSearch()) {
                 bool = false;
-                analysis.BookSearch(key, (data, msg, label) -> SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data), entry.getKey());
+                analysis.bookSearch(key, (data) -> SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data), entry.getKey());
             }
         }
         if (bool) {
@@ -43,7 +43,7 @@ public class SearchViewModel extends ViewModel {
      */
     public SearchResultBean isUrl(String key){
         for (Map.Entry<String, Analysis> entry : RuleAnalysis.analyses_map.entrySet()) {
-            if (key.matches("https?://" + entry.getValue().getUrl() + "/(.+)") && entry.getValue().getJson().getJSONObject("detail").getString("name")!=null){
+            if (key.matches("https?://" + entry.getValue().getUrl() + "/(.+)") && entry.getValue().getJson().getDetail().getName()!=null){
                 SearchResultBean bean = new SearchResultBean();
                 bean.setUrl(key);
                 List<String> source = new ArrayList<>();

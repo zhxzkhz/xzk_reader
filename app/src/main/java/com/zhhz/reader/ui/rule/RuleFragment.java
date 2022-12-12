@@ -17,11 +17,13 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.zhhz.reader.adapter.RuleAdapter;
 import com.zhhz.reader.bean.RuleBean;
+import com.zhhz.reader.bean.rule.RuleJsonBean;
 import com.zhhz.reader.databinding.FragmentRuleBinding;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
@@ -44,10 +46,10 @@ public class RuleFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
-            JSONObject content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(), result)));
+            RuleJsonBean content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(), result)),RuleJsonBean.class);
             try {
-                String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + content.getString("name") + ".json";
-                if (!FileUtil.CopyFile(content.toString(), new File(s))) {
+                String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + content.getName() + ".json";
+                if (!FileUtil.CopyFile(JSON.toJSONString(content), new File(s))) {
                     Toast.makeText(requireContext(), "文件导入异常", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -61,8 +63,8 @@ public class RuleFragment extends Fragment {
                 ruleViewModel.saveRule(ruleBean);
                 Toast.makeText(requireContext(), "导入成功", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
-                RuleAnalysis.analyses_map.remove(StringUtil.getMD5(content.getString("name")));
-                Snackbar.make(binding.getRoot(), "导入失败，该文件不是规则文件", Snackbar.LENGTH_SHORT).setAction("查看详细", v -> new AlertDialog.Builder(requireContext())
+                RuleAnalysis.analyses_map.remove(StringUtil.getMD5(content.getName()));
+                Snackbar.make(binding.getRoot(), "导入失败，该文件不是规则文件", Snackbar.LENGTH_LONG).setAction("查看详细", v -> new AlertDialog.Builder(requireContext())
                         .setTitle("错误提示")
                         .setMessage(e.getMessage())
                         .setOnCancelListener(DialogInterface::dismiss)
@@ -102,9 +104,7 @@ public class RuleFragment extends Fragment {
             new AlertDialog.Builder(requireContext())
                     .setTitle("删除提示")
                     .setMessage("确定删除书源 " + ruleBean.getName() + "?")
-                    .setPositiveButton("确定", (dialogInterface, i) -> {
-                        ruleViewModel.removeRule(ruleBean);
-                    })
+                    .setPositiveButton("确定", (dialogInterface, i) -> ruleViewModel.removeRule(ruleBean))
                     .setNeutralButton("取消", null)
                     .show();
             return true;

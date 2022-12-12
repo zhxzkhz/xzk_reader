@@ -1,6 +1,5 @@
 package com.zhhz.reader.bean;
 
-import androidx.annotation.NonNull;
 
 import java.io.Serializable;
 
@@ -11,9 +10,9 @@ public class BookBean implements Serializable {
     private String author;
     private String cover;
     private String catalogue;
-    private String latestChapter;
+    private String lastChapter;
     private boolean update;
-    private String update_time;
+    private String updateTime;
     private String intro;
     //是否完结
     private boolean status;
@@ -50,7 +49,7 @@ public class BookBean implements Serializable {
         this.cover = cover;
     }
 
-    public boolean isUpdate() {
+    public boolean getUpdate() {
         return update;
     }
 
@@ -66,20 +65,20 @@ public class BookBean implements Serializable {
         this.catalogue = catalogue;
     }
 
-    public String getLatestChapter() {
-        return latestChapter;
+    public String getLastChapter() {
+        return lastChapter;
     }
 
-    public void setLatestChapter(String latestChapter) {
-        this.latestChapter = latestChapter;
+    public void setLastChapter(String lastChapter) {
+        this.lastChapter = lastChapter;
     }
 
-    public String getUpdate_time() {
-        return update_time;
+    public String getUpdateTime() {
+        return updateTime;
     }
 
     public void setUpdateTime(String update_time) {
-        this.update_time = update_time;
+        this.updateTime = update_time;
     }
 
     public String getIntro() {
@@ -90,7 +89,7 @@ public class BookBean implements Serializable {
         this.intro = intro;
     }
 
-    public boolean isStatus() {
+    public boolean getStatus() {
         return status;
     }
 
@@ -98,7 +97,6 @@ public class BookBean implements Serializable {
         this.status = status;
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "BookBean{" +
@@ -106,10 +104,10 @@ public class BookBean implements Serializable {
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", cover='" + cover + '\'' +
-                ", isUpdate='" + isUpdate() + '\'' +
+                ", update='" + update + '\'' +
                 ", catalogue='" + catalogue + '\'' +
-                ", latestChapter='" + latestChapter + '\'' +
-                ", update_time='" + update_time + '\'' +
+                ", latestChapter='" + lastChapter + '\'' +
+                ", update_time='" + updateTime + '\'' +
                 ", intro='" + intro + '\'' +
                 ", status=" + status +
                 '}';

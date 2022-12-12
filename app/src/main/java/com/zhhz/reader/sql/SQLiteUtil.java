@@ -20,7 +20,7 @@ public class SQLiteUtil {
     public static void saveBook(BookBean book) {
         helper = new BookSqliteHelper(MyApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
-        database.execSQL("replace into bookrack (book_id,title,author,cover,chapter_update,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.isUpdate(), book.getCatalogue(), book.getLatestChapter(), book.isStatus() ? 1 : 0, book.getUpdate_time(), book.getIntro()});
+        database.execSQL("replace into bookrack (book_id,title,author,cover,chapter_update,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getUpdate(), book.getCatalogue(), book.getLastChapter(), book.getStatus() ? 1 : 0, book.getUpdateTime(), book.getIntro()});
         database.close();
     }
 
@@ -40,7 +40,7 @@ public class SQLiteUtil {
             bookBean.setCover(query.getString(3));
             bookBean.setUpdate(query.getInt(4) == 1);
             bookBean.setCatalogue(query.getString(5));
-            bookBean.setLatestChapter(query.getString(6));
+            bookBean.setLastChapter(query.getString(6));
             bookBean.setStatus(query.getInt(7) == 1);
             bookBean.setUpdateTime(query.getString(8));
             bookBean.setIntro(query.getString(9));
@@ -64,7 +64,7 @@ public class SQLiteUtil {
         bookBean.setCover(query.getString(3));
         bookBean.setUpdate(query.getInt(4) == 1);
         bookBean.setCatalogue(query.getString(5));
-        bookBean.setLatestChapter(query.getString(6));
+        bookBean.setLastChapter(query.getString(6));
         bookBean.setStatus(query.getInt(7) == 0);
         bookBean.setUpdateTime(query.getString(8));
         bookBean.setIntro(query.getString(9));

@@ -90,7 +90,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             holder.author.setText(book.getAuthor());
         }
         if (holder.last != null && book.getAuthor() != null) {
-            holder.last.setText(book.getLatestChapter());
+            holder.last.setText(book.getLastChapter());
         }
         if (book.getCover() != null) {
             GlideApp.with(context)
@@ -103,7 +103,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             holder.imageView.setImageDrawable(MyApplication.coverDrawable);
         }
         if (holder.update != null) {
-            if (book.isUpdate()) {
+            if (book.getUpdate()) {
                 holder.update.setVisibility(View.VISIBLE);
             } else {
                 holder.update.setVisibility(View.GONE);

@@ -1,5 +1,9 @@
 package com.zhhz.reader.view;
 
+import static android.view.MotionEvent.ACTION_DOWN;
+import static android.view.MotionEvent.ACTION_MOVE;
+import static android.view.MotionEvent.ACTION_UP;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,10 +14,6 @@ import android.view.ScaleGestureDetector;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
-
-import static android.view.MotionEvent.ACTION_DOWN;
-import static android.view.MotionEvent.ACTION_MOVE;
-import static android.view.MotionEvent.ACTION_UP;
 
 public class XluaRecyclerView extends RecyclerView {
 
@@ -34,7 +34,7 @@ public class XluaRecyclerView extends RecyclerView {
     //缩放比例因子
     public float mScaleFactor = 1.0f;
     //默认缩放比例因子
-    public float defaultScaleFactor = 1.0f;
+    public final float defaultScaleFactor = 1.0f;
 
     public float centerX;
 

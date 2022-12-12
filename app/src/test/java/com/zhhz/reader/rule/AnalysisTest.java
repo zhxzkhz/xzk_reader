@@ -28,8 +28,8 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\api_255zw_com.json");
-        analysis.BookSearch("魔王", (data, msg, label) -> {
+        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\jmcomic.json",false);
+        analysis.bookSearch("魔王", (data) -> {
             System.out.println("data.toString() = " + data.toString());
             assertTrue(((List<SearchResultBean>) data).size() > 0);
             System.out.printf("耗时 -> %d%n", System.currentTimeMillis() - time);
@@ -49,9 +49,9 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\jmcomic_asia.json");
+        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\www_yqxs_cc.json",false);
 
-        analysis.BookDetail("https://jmcomic.asia/album/220960/翻车汉化组-digital-lover-なかじまゆか-人妻幼馴染とひと夏のできごと3-dlo-14-中国翻訳", (data, msg, label) -> {
+        analysis.bookDetail("https://www.yqxs.cc/html/123/123636/index.html", (data) -> {
             System.out.println("data = " + data);
             assertNotNull(data);
             countDownLatch.countDown();
@@ -69,12 +69,11 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\jmcomic_asia.json");
+        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\www_yqxs_cc.json",false);
         BookBean bookBean = new BookBean();
         bookBean.setBook_id(UUID.randomUUID().toString());
-        String s = "https://jmcomic.asia/album/277707/%E5%BC%82%E4%B8%96%E7%95%8C%E4%B8%8D%E4%BC%A6%E5%8B%87%E8%80%85-%E7%95%B0%E4%B8%96%E7%95%8C%E4%B8%8D%E5%80%AB%E5%8B%87%E8%80%85-%E6%9E%AB%E5%8F%B6%E6%B1%89%E5%8C%96-%E3%81%84%E3%81%AE%E3%81%BE%E3%82%8B-%E5%A4%A7%E4%BA%95%E6%98%8C%E5%92%8C-%E7%95%B0%E4%B8%96%E7%95%8C%E4%B8%8D%E5%80%AB-%E9%AD%94%E7%8E%8B%E8%A8%8E%E4%BC%90%E3%81%8B%E3%82%89%E5%8D%81%E5%B9%B4-%E5%A6%BB%E3%81%A8%E3%81%AF%E3%83%AC%E3%82%B9%E3%81%AE%E5%85%83%E5%8B%87%E8%80%85%E3%81%A8-%E5%A4%AB%E3%82%92%E4%BA%A1%E3%81%8F%E3%81%97%E3%81%9F%E5%A5%B3%E6%88%A6%E5%A3%AB";
-        //s="https://jmcomic.asia/album/220960/翻车汉化组-digital-lover-なかじまゆか-人妻幼馴染とひと夏のできごと3-dlo-14-中国翻訳";
-        analysis.BookDirectory(s, (data, msg, label) -> {
+        String s = "https://www.yqxs.cc/html/123/123636/index.html";
+        analysis.bookDirectory(s, (data, label) -> {
             System.out.println("data.toString() = " + data.toString());
             assertNotNull(data);
             countDownLatch.countDown();
@@ -91,11 +90,12 @@ public class AnalysisTest {
         DiskCache.path = "D:\\星-阅读";
         CountDownLatch countDownLatch = new CountDownLatch(1);
         long time = System.currentTimeMillis();
-        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\jmcomic_asia.json");
+        RuleAnalysis analysis = new RuleAnalysis("D:\\星-阅读\\new\\www_diyibanzhu_xyz-x.json",false);
         BookBean bookBean = new BookBean();
         bookBean.setBook_id(UUID.randomUUID().toString());
-        analysis.BookChapters(bookBean, "https://jmcomic.asia/photo/277709", (data, msg, label) -> {
+        analysis.bookChapters(bookBean, "http://www.tzkxs7777.com/20/20412/722529.html", (data, label) -> {
             System.out.println("data = " + data);
+
             assertNotNull(data);
             countDownLatch.countDown();
         }, 1);

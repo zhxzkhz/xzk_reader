@@ -1,23 +1,29 @@
 package com.zhhz.reader.rule
 
+import cn.hutool.core.util.ObjectUtil
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONArray
 import com.alibaba.fastjson.JSONObject
+import com.alibaba.fastjson.JSONPath
 import com.zhhz.reader.bean.BookBean
+import com.zhhz.reader.bean.HttpResponseBean
 import com.zhhz.reader.bean.SearchResultBean
+import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
-import com.zhhz.reader.util.JsExtensionClass
-import java.net.URLEncoder
 import java.util.regex.Pattern
+import javax.script.ScriptException
 import javax.script.SimpleBindings
 
 
-class JsonAnalysis : Analysis, JsExtensionClass {
-    constructor(path: String?) : super(path)
+class JsonAnalysis : Analysis{
+    constructor(path: String) : super(path)
 
-    constructor(jsonObject: JSONObject?) : super(jsonObject)
+    constructor(jsonObject: RuleJsonBean) : super(jsonObject)
 
+
+
+    //规则分割
     private fun parseArray(s: String): Array<String> {
         val v1: String
         val v2: String
@@ -40,135 +46,305 @@ class JsonAnalysis : Analysis, JsExtensionClass {
         }
     }
 
-    private fun parseJson(json: Any, reg: String, bindings: SimpleBindings): Any {
-        if (reg.isEmpty()) return ""
-        var jsonTemp: Any = json
+    private fun parseRule(data: Any, reg: String, bindings: SimpleBindings): Any {
+        if (reg.isEmpty()) return data
+        var dataTemp: Any = data
         val regs = parseArray(reg)
 
-        if (regs[0].isNotEmpty()) {
-            val pattern = "\\$([^$.]+)".toRegex()
-            val found = pattern.findAll(regs[0])
-            found.forEach { f ->
-                jsonTemp = parse(jsonTemp, f.value.substring(1))
-            }
-            val i = regs[0].indexOf("$")
-            if (i > 0) {
-                jsonTemp = regs[0].substring(0, i) + jsonTemp
-            }
+        //循环JSONPath解析  xx{$a}xx{$b} = xxx data[a] xxx data[b]
+        regs[0] = regs[0].replace("\\{([^{}]+)\\}".toRegex()) {
+            it.groupValues
+            val regx = parseArray(it.groupValues[1])
+            val temp = JSONPath.eval(dataTemp, regx[0])
+            if (regx[1].isEmpty()) return@replace temp.toString()
+            return@replace regexRule(regx[1], temp,bindings).toString()
+        }
+        val i = regs[0].indexOf("\$")
+        dataTemp = if (i > 0) {
+            regs[0].substring(0, i) + JSONPath.eval(dataTemp, regs[0].substring(i))
+        } else if (i == 0 ){
+            val s = JSONPath.eval(dataTemp, regs[0].substring(i))
+            return s
+        } else {
+            regs[0]
         }
 
-        if (regs[1].isEmpty()) return jsonTemp
+        if (regs[1].isEmpty()) return dataTemp
 
-        val mailPattern = Pattern.compile("([^-]*)->(.*)")
+        return regexRule(regs[1], dataTemp, bindings)
+    }
+
+    //@js->xxx@match->xxx
+    private val mailPattern = Pattern.compile("([^-]*)->(.*)")
+
+    private fun regexRule(regs: String, tmp: Any, bindings: SimpleBindings): Any {
+        var value = tmp
+
         //优化方法，支持多次使用方法
-        val regexp = regs[1].split("@").toTypedArray()
-        var s: Any = jsonTemp
-        for (reg_x in regexp) {
-            val matcher = mailPattern.matcher(reg_x)
+        val regexp = regs.split("@")
+        for (regex in regexp) {
+            val matcher = mailPattern.matcher(regex)
             if (!matcher.find()) {
-                s = jsonTemp.toString()
-                break
+                return value
             }
             val k = matcher.group(1)
             var v = matcher.group(2)
             if (v == null) v = ""
-            assert(k != null)
-            if (k != "js" && s !is String) {
-                s = s.toString()
-            }
+            if (k == null) return value
+
             when (k) {
                 "js" -> {
-                    bindings["data"] = s
-                    bindings["out"] = System.out
-                    s = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(v), bindings)
+                    bindings["value"] = value
+                    value = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(v), bindings)
                 }
+
                 "match" -> {
                     val p = Pattern.compile(v)
-                    val m = p.matcher(s as String)
+                    val m = p.matcher(value.toString())
                     if (m.find()) {
-                        s = m.group()
+                        value = m.group()
                     }
                 }
+
                 "replace" -> {
                     val m = mailPattern.matcher(v)
                     if (m.find()) {
-                        s = (s as String).replace(m.group(1).orEmpty(), m.group(2).orEmpty())
+                        value = (value.toString()).replace(m.group(1).orEmpty(), m.group(2).orEmpty())
                     }
                 }
+
+                "append" -> {
+                    value = value.toString() + v
+                }
+
+                "set" -> {
+                    setShareValue(v, value)
+                    value = ""
+                }
+
+                "get" -> {
+                    if (value is String && value.length > 0) {
+                        value += getShareValue(v)
+                    } else {
+                        value = getShareValue(v)
+                    }
+                }
+
             }
         }
-        return s
+        return value
     }
 
-    override fun isHaveSearch(): Boolean {
-        return true
+
+    //运行js进行解密
+    private fun jsDecryption(s: String, bindings: SimpleBindings): String {
+        bindings["data"] = s
+        return SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.jsDecryption), bindings).toString()
     }
 
-    override fun BookSearch(key_word: String, callback: CallBack, md5: String) {
-        var key: String = key_word
-        if (json["encode"] != null) {
-            key = URLEncoder.encode(key_word, charset)
+    private fun responseParse(result: HttpResponseBean, bindings: SimpleBindings): JSON {
+        //把原数据保存到 bindings里面
+        bindings["response"] = result
+        val data: JSON = (if (json.jsDecryption.isEmpty() || result.data.isEmpty()) {
+            result.data
+        } else {
+            jsDecryption(result.data, bindings)
+        }).ifEmpty { "{}" }.let {
+            JSON.parse(it) as JSON
         }
+        //把解密后的值保存到 bindings里面
+        bindings["data"] = data
+        return data
+    }
 
+    override fun bookSearch(keyWord: String, callback: AnalysisCallBack.SearchCallBack, label: String) {
         val bindings = SimpleBindings()
-        bindings["java"] = this
-        val search = json.getJSONObject("search")
-        var url = search.getString("url").replace("\${key}", key)
-        val page = search.getString("page")
-        if (page != null) {
-            url = url.replace("\${page}", page)
-        }
+        bindings["xlua_rule"] = this
+        bindings["url"] = url
+        bindings["callback"] = callback
+        val search = json.search
+        val url = search.url.replace("\${key}", keyWord)
 
-        Http(url, { data: Any?, msg: Any?, label: Any? ->
-            if (data == null) {
-                callback.run(null, msg, label)
+        Http(url) { result ->
+            val al: MutableList<SearchResultBean> = ArrayList()
+
+            if (!result.isStatus) {
+                callback.run(al)
                 return@Http
             }
-            val al: MutableList<SearchResultBean> = ArrayList()
-            val json: JSON = JSON.parse(data as String) as JSON
-            val list = parseJson(json, search.getString("list"), bindings)
+
+            val data = responseParse(result, bindings)
+
+            val list = parseRule(data,search.list,bindings)
 
             if (list is List<*>) {
                 list.forEach { book ->
                     if (book != null) {
-                        val result = SearchResultBean()
-                        val source: List<String> = ArrayList()
-                        source.plus(md5)
-                        result.name = name
-                        result.title =
-                            parseJson(book, search.getString("name"), bindings).toString()
-                        if (search["author"] != null)
-                            result.author =
-                                parseJson(book, search.getString("author"), bindings).toString()
-                        if (search["cover"] != null)
-                            result.cover =
-                                to_http(
-                                    parseJson(
-                                        book,
-                                        search.getString("cover"),
-                                        bindings
-                                    ).toString(), url
-                                )
-                        result.url =
-                            to_http(
-                                parseJson(
-                                    book,
-                                    search.getString("detail"),
-                                    bindings
-                                ).toString(), url
-                            )
-                        al.add(result)
+                        val searchResultBean = SearchResultBean()
+                        val source: ArrayList<String> = ArrayList()
+                        source.add(label)
+                        searchResultBean.source=source
+                        searchResultBean.name = name
+                        searchResultBean.title = parseRule(book, search.name, bindings).toString()
+                        if (ObjectUtil.isNotEmpty(search.author))
+                            searchResultBean.author = parseRule(book, search.author, bindings).toString()
+                        if (ObjectUtil.isNotEmpty(search.cover))
+                            searchResultBean.cover = toAbsoluteUrl(parseRule(book, search.cover, bindings).toString(), url)
+                        searchResultBean.url = toAbsoluteUrl(parseRule(book, search.detail, bindings).toString(), url)
+                        al.add(searchResultBean)
                     }
                 }
             }
-            callback.run(al, null, null)
+            callback.run(al)
             bindings.clear()
-        }, true)
+        }
 
     }
 
-    override fun BookDirectory(url: String, callback: CallBack) {}
-    override fun BookDetail(url: String, callback: CallBack) {}
-    override fun BookChapters(book: BookBean, url: String, callback: CallBack, random: Any) {}
-    override fun BookContent(url: String, callback: CallBack, random: Any) {}
+    override fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack) {
+        val bindings = SimpleBindings()
+        bindings["xlua_rule"] = this
+        bindings["url"] = url
+        bindings["callback"] = callback
+        Http(url) { result ->
+            val book = BookBean()
+            if (!result.isStatus) {
+                callback.run(book)
+                return@Http
+            }
+
+            val data = responseParse(result, bindings)
+
+            book.title = parseRule(data, json.detail.name, bindings).toString()
+
+            if (ObjectUtil.isNotEmpty(json.detail.author))
+                book.author = parseRule(data, json.detail.author, bindings).toString()
+
+            if (ObjectUtil.isNotEmpty(json.detail.cover))
+                book.cover = parseRule(data, json.detail.cover, bindings).toString()
+
+            if (ObjectUtil.isNotEmpty(json.detail.lastChapter))
+                book.lastChapter = parseRule(data, json.detail.lastChapter, bindings).toString()
+
+            if (ObjectUtil.isNotEmpty(json.detail.status))
+                book.status = parseRule(data, json.detail.status, bindings).toString().contains("完结")
+
+            if (ObjectUtil.isNotEmpty(json.detail.intro))
+                book.intro = parseRule(data, json.detail.intro, bindings).toString()
+
+            if (ObjectUtil.isNotEmpty(json.detail.updateTime))
+                book.updateTime = parseRule(data, json.detail.updateTime, bindings).toString()
+
+            if (json.detail.catalog.isEmpty()) {
+                book.catalogue = url
+            } else if (json.detail.catalog.startsWith("js@")) {
+                var resultJs: Any? = null
+                try {
+                    resultJs = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.detail.catalog.substring(3)), bindings)
+                } catch (e: ScriptException) {
+                    log(e)
+                    e.printStackTrace()
+                }
+                resultJs = resultJs ?: SCRIPT_ENGINE["result"]
+                if (resultJs == null) {
+                    callback.run(null)
+                    return@Http
+                }
+                book.catalogue = resultJs.toString()
+            } else {
+                book.catalogue = toAbsoluteUrl(parseRule(data, json.detail.catalog, bindings).toString(), url)
+            }
+
+            callback.run(book)
+        }
+
+    }
+
+    override fun bookDirectory(url: String, callback: AnalysisCallBack.DirectoryCallBack) {
+        val bindings = SimpleBindings()
+        bindings["xlua_rule"] = this
+        bindings["url"] = url
+        bindings["callback"] = callback
+        Http(url) { result ->
+            val lhm: LinkedHashMap<String, String> = LinkedHashMap()
+            if (!result.isStatus) {
+                callback.run(lhm,url)
+                return@Http
+            }
+
+            val data = responseParse(result, bindings)
+
+            if (ObjectUtil.isNotEmpty(json.catalog.js)) {
+                try {
+                    SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.catalog.js), bindings)
+                } catch (e: ScriptException) {
+                    log(e)
+                    e.printStackTrace()
+                }
+                return@Http
+            }
+
+            var list = parseRule(data, json.catalog.list, bindings)
+            if (list is List<*>) {
+                if (json.catalog.inverted) {
+                    list = list.reversed()
+                }
+            }
+            if (list is List<*>) {
+                list.forEach {
+                    if (it != null)
+                        lhm[parseRule(it, json.catalog.name, bindings).toString()] =
+                            parseRule(it, json.catalog.chapter, bindings).toString()
+                }
+            }
+
+            callback.run(lhm,url)
+
+        }
+    }
+
+    override fun bookContent(url: String, callback: AnalysisCallBack.ContentCallBack, label: Any) {
+        val bindings = SimpleBindings()
+        bindings["xlua_rule"] = this
+        bindings["url"] = url
+        bindings["callback"] = callback
+        bindings["label"] = label
+        val httpResponseBean = HttpResponseBean()
+        httpResponseBean.isStatus = true
+        bindings["CallBackData"] = httpResponseBean
+        Http(url) { result ->
+            var s = ""
+            if (!result.isStatus) {
+                callback.run(result, label)
+                return@Http
+            }
+
+            val data = responseParse(result, bindings)
+
+            if (ObjectUtil.isNotEmpty(json.chapter.content)) {
+                s = parseRule(data, json.chapter.content, bindings).toString()
+            }
+            bindings["value"] = s
+            //执行js
+            if (ObjectUtil.isNotEmpty(json.chapter.js)) {
+                try {
+                    val tempJs = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.chapter.js),bindings)
+                    s = jsToJavaObject(bindings["result"] ?: tempJs)
+                } catch (e: Exception) {
+                    httpResponseBean.isStatus = false
+                    httpResponseBean.error = e.message.toString()
+                    log(e)
+                    e.printStackTrace()
+                }
+                //返回false代表 js 内部处理
+                if (s == "false") {
+                    return@Http
+                }
+            }
+            httpResponseBean.data = s
+            callback.run(httpResponseBean, label)
+
+        }
+    }
+
 }
