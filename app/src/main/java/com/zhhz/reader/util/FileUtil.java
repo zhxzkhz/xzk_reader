@@ -13,6 +13,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Objects;
 
 /**
@@ -84,6 +90,33 @@ public class FileUtil {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * 删除文件夹
+     * @param path 文件夹路径
+     */
+    public static void deleteFolders(String path){
+        Path path1 = Paths.get(path);
+
+        try {
+            Files.walkFileTree(path1,new SimpleFileVisitor<Path>(){
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    Files.delete(file);
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    Files.delete(dir);
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            LogUtil.error(e);
+        }
+
     }
 
 }

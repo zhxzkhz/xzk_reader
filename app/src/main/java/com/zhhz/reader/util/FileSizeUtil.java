@@ -25,7 +25,10 @@ public class FileSizeUtil {
      * @return double值的大小
      */
     public static double getFileOrFilesSize(String filePath, int sizeType) {
-        File file = new File(filePath);
+        return getFileOrFilesSize(new File(filePath),sizeType);
+    }
+
+    public static double getFileOrFilesSize(File file, int sizeType) {
         long blockSize = 0;
         try {
             if (file.isDirectory()) {

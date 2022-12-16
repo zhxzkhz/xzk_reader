@@ -28,6 +28,8 @@ import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.GlideApp;
 import com.zhhz.reader.view.RecycleViewDivider;
 
+import cn.hutool.core.util.ObjectUtil;
+
 public class DetailedFragment extends Fragment {
 
     private DetailedViewModel mViewModel;
@@ -78,7 +80,12 @@ public class DetailedFragment extends Fragment {
             if (bean.getUpdateTime() != null) {
                 binding.detailedUpdateTime.setText("目录（更新时间:" + bean.getUpdateTime() + "）");
             }
-            mViewModel.queryCatalogue(bean.getCatalogue(), searchResultBean, 0);
+            if (ObjectUtil.isEmpty(bean.getCatalogue())){
+                binding.startRead.setText("目录为空或者获取失败");
+                binding.startRead.setOnClickListener(v -> mViewModel.queryDetailed(searchResultBean, 0));
+            } else {
+                mViewModel.queryCatalogue(bean.getCatalogue(), searchResultBean, 0);
+            }
         });
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
             if (map == null) {

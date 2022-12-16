@@ -167,7 +167,6 @@ class JsonAnalysis : Analysis{
 
         Http(url) { result ->
             val al: MutableList<SearchResultBean> = ArrayList()
-
             if (!result.isStatus) {
                 callback.run(al)
                 return@Http
@@ -209,6 +208,7 @@ class JsonAnalysis : Analysis{
         Http(url) { result ->
             val book = BookBean()
             if (!result.isStatus) {
+                log(result.error)
                 callback.run(book)
                 return@Http
             }
@@ -268,6 +268,7 @@ class JsonAnalysis : Analysis{
         Http(url) { result ->
             val lhm: LinkedHashMap<String, String> = LinkedHashMap()
             if (!result.isStatus) {
+                log(result.error)
                 callback.run(lhm,url)
                 return@Http
             }

@@ -52,7 +52,8 @@ interface JsExtensionClass {
                 okHttpClient.newCall(builder.build()).execute().body.bytes().let { String(it) }
             }.onFailure {
                 //log("ajax(${url}) error\n${it.localizedMessage}
-                it.message
+                it.printStackTrace()
+                LogUtil.warning(it.message)
             }.getOrElse {
                 val byteArrayOutputStream = ByteArrayOutputStream()
                 it.printStackTrace(PrintStream(byteArrayOutputStream))

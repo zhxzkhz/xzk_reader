@@ -101,8 +101,12 @@ public class BookMenuFragment extends Fragment {
         });
 
         binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
-        binding.menuCache.setOnClickListener(view -> mViewModel.cacheBook(-1,true));
 
+        if (mViewModel.isLocalBooks()) {
+            binding.menuCache.setClickable(false);
+        } else {
+            binding.menuCache.setOnClickListener(view -> mViewModel.cacheBook(-1, true));
+        }
         binding.menuSource.setOnClickListener(view -> {
             String url = Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(binding.menuSource.getText().toString());
             if (url != null && url.startsWith("http")) {

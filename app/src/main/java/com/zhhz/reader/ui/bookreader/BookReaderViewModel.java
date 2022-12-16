@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -48,6 +50,7 @@ public class BookReaderViewModel extends ViewModel {
     private int cache_error = 0;
     private LazyHeaders headers;
 
+    private boolean localBooks = false;
 
     public BookReaderViewModel() {
         this.data_catalogue = new MutableLiveData<>();
@@ -58,6 +61,10 @@ public class BookReaderViewModel extends ViewModel {
         this.comic_page = new ArrayList<>();
     }
 
+    public boolean isLocalBooks() {
+        return localBooks;
+    }
+
     public BookBean getBook() {
         return book;
     }
@@ -66,6 +73,7 @@ public class BookReaderViewModel extends ViewModel {
         this.book = book;
         //rule 为空代表是本地书本
         if (!new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule").isFile()) {
+            localBooks = true;
             return;
         }
         try {
@@ -199,10 +207,13 @@ public class BookReaderViewModel extends ViewModel {
     public void clearCurrentCache(){
         DiskCache.cache_delete_tag = true;
         DiskCache.delete_cache(true);
-        String url = data_catalogue.getValue().get(catalogue.get(progress));
+        String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         if (url != null) {
-            File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1));
-            file.delete();
+            try {
+                Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1)));
+            } catch (IOException e) {
+                LogUtil.error(e);
+            }
         } else {
             LogUtil.info("缓存清除失败 -> " + catalogue.get(progress));
         }
@@ -286,6 +297,7 @@ public class BookReaderViewModel extends ViewModel {
         uuid = UUID.randomUUID().toString();
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         int finalProgress = progress;
+        if (url == null) return;
         rule.bookChapters(book, url, (data, label) -> {
             if (!data.isStatus()){
                 cache_error++;
@@ -433,11 +445,6 @@ public class BookReaderViewModel extends ViewModel {
 
     public boolean isSubtitle(int progress) {
         return Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress)) == null;
-    }
-
-    public boolean isSubtitleTest(int progress) {
-        System.out.println("catalogue.get(progress) = " + catalogue.get(progress));
-        return catalogue.get(progress) == null;
     }
 
     public boolean isComic() {

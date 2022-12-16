@@ -85,7 +85,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             builder.cookieJar(object : CookieJar {
                 private val cookieStore = HashMap<String, List<Cookie>>()
                 override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-                    cookieStore[url.host] = cookies
+                    cookieStore[url.host] = cookieStore[url.host] ?: cookies
                 }
 
                 override fun loadForRequest(url: HttpUrl): List<Cookie> {
@@ -302,7 +302,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         client!!.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 httpResponseBean.isStatus = false
-                httpResponseBean.error = e.message!!
+                httpResponseBean.error = e.message.toString()
                 callback.run(httpResponseBean)
             }
             override fun onResponse(call: Call, response: Response) {

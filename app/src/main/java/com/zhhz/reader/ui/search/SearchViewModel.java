@@ -26,7 +26,9 @@ public class SearchViewModel extends ViewModel {
             Analysis analysis = entry.getValue();
             if (analysis.isHaveSearch()) {
                 bool = false;
-                analysis.bookSearch(key, (data) -> SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data), entry.getKey());
+                analysis.bookSearch(key, (data) -> {
+                    SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data);
+                }, entry.getKey());
             }
         }
         if (bool) {
