@@ -22,7 +22,6 @@ import java.nio.charset.Charset
 import java.util.*
 import javax.script.ScriptException
 import javax.script.SimpleBindings
-import kotlin.jvm.Throws
 
 abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 

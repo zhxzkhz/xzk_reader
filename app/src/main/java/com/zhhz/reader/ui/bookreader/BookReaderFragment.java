@@ -50,6 +50,7 @@ public class BookReaderFragment extends Fragment {
         });
 
         binding.readerText.setDownPage(() -> {
+            if (mViewModel.isLoading()) return true;
             if (mViewModel.isHaveNextChapters()) {
                 mViewModel.setStart(0);
                 mViewModel.loadNextChapters();
@@ -61,6 +62,7 @@ public class BookReaderFragment extends Fragment {
         });
 
         binding.readerText.setUpPage(() -> {
+            if (mViewModel.isLoading()) return true;
             if (mViewModel.isHavePreviousChapters()) {
                 mViewModel.setStart(0);
                 mViewModel.loadPreviousChapters();
@@ -80,6 +82,7 @@ public class BookReaderFragment extends Fragment {
 
         error_btn = new AppCompatButton(requireContext());
         error_btn.setText("重新加载");
+        error_btn.setOnClickListener(view -> mViewModel.getContent());
         return root;
     }
 
@@ -116,9 +119,11 @@ public class BookReaderFragment extends Fragment {
 
     public boolean onKeyDown(int keyCode, KeyEvent ignoredEvent) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            if (mViewModel.isLoading()) return true;
             binding.readerText.up_page();
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            if (mViewModel.isLoading()) return true;
             binding.readerText.down_page();
             return true;
         }

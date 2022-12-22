@@ -12,7 +12,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
-import java.util.*
+import java.util.Collections
 import java.util.regex.Pattern
 import javax.script.ScriptException
 import javax.script.SimpleBindings

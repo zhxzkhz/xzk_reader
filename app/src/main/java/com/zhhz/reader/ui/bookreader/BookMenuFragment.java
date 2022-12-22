@@ -77,6 +77,10 @@ public class BookMenuFragment extends Fragment {
         });
 
         catalogueAdapter.setOnClickListener(v -> {
+            if (mViewModel.isLoading()) {
+                Toast.makeText(requireContext(), "章节加载中", Toast.LENGTH_SHORT).show();
+                return;
+            }
             mViewModel.jumpChapters(binding.menuCatalogueList.getChildAdapterPosition(v));
             binding.menuHide.callOnClick();
             binding.menuCatalogue.callOnClick();

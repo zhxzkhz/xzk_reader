@@ -1,17 +1,14 @@
 package com.zhhz.reader.activity;
 
 import android.annotation.SuppressLint;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.NavigationUI;
 
-import com.google.android.material.snackbar.Snackbar;
 import com.scwang.smart.refresh.header.ClassicsHeader;
 import com.scwang.smart.refresh.layout.SmartRefreshLayout;
 import com.zhhz.reader.R;
@@ -21,7 +18,6 @@ import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.ui.bookrack.BookRackViewModel;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity {

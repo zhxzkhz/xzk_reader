@@ -8,7 +8,6 @@ import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.StringUtil;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class RuleViewModel extends ViewModel {

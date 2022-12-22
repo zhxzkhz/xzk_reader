@@ -24,7 +24,7 @@
     <string name="reply_title">Default reply action</string>
 
     <!-- advanced Preferences -->
-    <string name="is_log">是否启动日志悬浮窗(重启后生效)</string>
+    <string name="is_log">是否启动日志悬浮窗</string>
     <string name="attachment_title">Download incoming attachments</string>
     <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>

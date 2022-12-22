@@ -40,6 +40,9 @@ public class LogMonitorService extends Service {
 
     private Tailer tailer;
 
+    private Handler handler;
+
+    private Runnable runnable;
     private MaterialCardView card;
 
     public LogMonitorService() {
@@ -111,10 +114,10 @@ public class LogMonitorService extends Service {
         }
 
         // 创建一个Handler，用于处理悬浮自动靠边和透明话事件
-        Handler handler = new Handler();
+        handler = new Handler();
 
         //悬浮球自动靠和透明边事件
-        Runnable runnable = () -> {
+        runnable = () -> {
             if (params1.x < (width / 2f)) {
                 params1.x = 0;
                 windowManager.updateViewLayout(card, params1);
@@ -213,11 +216,12 @@ public class LogMonitorService extends Service {
     private void clearFloatWindow() {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         windowManager.removeView(card);
-        windowManager.removeView(binding.getRoot());
+        //windowManager.removeView(binding.getRoot());
     }
 
     @Override
     public void onDestroy() {
+        handler.removeCallbacks(runnable);
         list.clear();
         clearFloatWindow();
         tailer.stop();

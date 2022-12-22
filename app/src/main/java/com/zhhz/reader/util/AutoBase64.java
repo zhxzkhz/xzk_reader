@@ -4,8 +4,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import cn.hutool.core.codec.Base64;
-
 
 /**
  * 自动识别是否是win系统，如果是则调用 java.util.Base64,反之调用 android.util.Base64

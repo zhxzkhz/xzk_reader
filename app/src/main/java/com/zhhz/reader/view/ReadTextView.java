@@ -387,10 +387,6 @@ public class ReadTextView extends View {
             text = text.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "").replaceAll("\n+[\u3000\u0020]{2}","\n").replaceAll("\n+","\n");
         }
 
-        if (progress >= text.length()){
-            progress = 0;
-        }
-
         textStart = progress;
         if (textStart >= text.length() - 1) textStart = text.length();
         maxLine = 0;

@@ -90,7 +90,8 @@ public class BookRackViewModel extends ViewModel {
                 rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "rule",false);
                 rule.getAnalysis().setDetail(bookBean);
             } catch (Exception e) {
-                e.printStackTrace();
+                //规则为空代表是本地导入书本
+                //e.printStackTrace();
                 continue;
             }
 
@@ -98,7 +99,7 @@ public class BookRackViewModel extends ViewModel {
                 if (data == null) {
                     catalogue.postValue(null);
                 } else {
-                    if (((LinkedHashMap<String, String>) data).size() == 0) {
+                    if (data.size() == 0) {
                         catalogue.postValue(null);
                         return;
                     }
@@ -115,14 +116,14 @@ public class BookRackViewModel extends ViewModel {
                     }
 
                     //获取章节最后一章的名字来和以前存储的章节比较，如果最后一章不存在，就代表更新了
-                    Iterator<String> iterator = ((LinkedHashMap<String, String>) data).keySet().iterator();
+                    Iterator<String> iterator = data.keySet().iterator();
                     String key = null;
                     while (iterator.hasNext()) {
                         key = iterator.next();
                     }
 
                     if (!old_map.containsKey(key)) {
-                        old_map.putAll((LinkedHashMap<String, String>) data);
+                        old_map.putAll(data);
                         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
                             bufferedWriter.write(JSON.toJSONString(old_map));
                         } catch (IOException ignored) {

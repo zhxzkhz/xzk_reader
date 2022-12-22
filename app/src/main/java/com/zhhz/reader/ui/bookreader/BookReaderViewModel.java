@@ -13,6 +13,7 @@ import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.NotificationUtil;
+import com.zhhz.reader.util.StringUtil;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -28,6 +29,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
+import cn.hutool.core.util.ObjectUtil;
 
 public class BookReaderViewModel extends ViewModel {
 
@@ -49,6 +52,9 @@ public class BookReaderViewModel extends ViewModel {
     //缓存错误次数
     private int cache_error = 0;
     private LazyHeaders headers;
+
+    //加载状态
+    private boolean loading = false;
 
     private boolean localBooks = false;
 
@@ -83,7 +89,7 @@ public class BookReaderViewModel extends ViewModel {
         }
         LazyHeaders.Builder header = new LazyHeaders.Builder();
         if (rule.getAnalysis().getJson().getImgHeader() != null) {
-            if (rule.getAnalysis().getJson().getImgHeader().getHeader() != null) {
+            if (ObjectUtil.isNotEmpty(rule.getAnalysis().getJson().getImgHeader().getHeader())) {
                 JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getImgHeader().getHeader());
                 for (Map.Entry<String, Object> entry : header_x.entrySet()) {
                     header.addHeader(entry.getKey(), (String) entry.getValue());
@@ -113,6 +119,14 @@ public class BookReaderViewModel extends ViewModel {
             data_catalogue.setValue(map);
         } catch (IOException ignored) {
         }
+    }
+
+    public boolean isLoading() {
+        return loading;
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
     }
 
     public void getContent() {
@@ -146,8 +160,9 @@ public class BookReaderViewModel extends ViewModel {
             }
             data_content.postValue(map);
         } else {
+            loading = true;
             rule.bookChapters(book, url, (data, label) -> {
-
+                loading = false;
                 if (uuid.equals(label)) {
                     if (data.isStatus()){
                         map.put("content", data.getData());
@@ -168,7 +183,7 @@ public class BookReaderViewModel extends ViewModel {
     /**
      * 获取内容
      *
-     * @param bool 是否往上一页翻
+     * @param bool 是否加载历史记录位置
      */
     public void getContentComic(boolean bool) {
         comic_list.clear();
@@ -182,8 +197,9 @@ public class BookReaderViewModel extends ViewModel {
             data_content.postValue(map);
             return;
         }
-
+        loading = true;
         rule.bookChapters(book, url, (data, label) -> {
+            loading = false;
             map.put("end", bool);
             if (uuid.equals(label)) {
                 if (data.isStatus()){
@@ -205,12 +221,12 @@ public class BookReaderViewModel extends ViewModel {
      * 清除当前章节缓存，重新加载
      */
     public void clearCurrentCache(){
-        DiskCache.cache_delete_tag = true;
         DiskCache.delete_cache(true);
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         if (url != null) {
             try {
-                Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1)));
+                //Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1)));
+                Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(url)));
             } catch (IOException e) {
                 LogUtil.error(e);
             }

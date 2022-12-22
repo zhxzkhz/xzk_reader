@@ -8,14 +8,11 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.StrictMode;
 import android.provider.Settings;
-import android.widget.Toast;
 
-import androidx.annotation.UiThread;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
 
 import com.zhhz.reader.rule.Analysis;
-import com.zhhz.reader.rule.AnalysisCallBack;
 import com.zhhz.reader.service.LogMonitorService;
 import com.zhhz.reader.util.CrashHandler;
 import com.zhhz.reader.util.LogUtil;

@@ -146,7 +146,8 @@ public class ComicReaderFragment extends Fragment {
                             mViewModel.setStart(page - 1);
                             mViewModel.saveProgressComic();
                         }
-                        if (page + 7 > count && !loading && mViewModel.isHaveNextChapters(mViewModel.current_progress_page(page - 1)[0])) {
+                        //通过最后一页判断是否还有下一章，从当前页加载时会因为加载的只有一张时重复加载
+                        if (page + 7 > count && !loading && mViewModel.isHaveNextChapters(mViewModel.current_progress_page(count - 1)[0])) {
                             loading = true;
                             mViewModel.loadNextChapters();
                         }
@@ -175,7 +176,7 @@ public class ComicReaderFragment extends Fragment {
 
         error_btn = new AppCompatButton(requireContext());
         error_btn.setText("重新加载");
-
+        error_btn.setOnClickListener(view -> mViewModel.getContentComic(true));
         return root;
     }
 

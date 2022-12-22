@@ -28,12 +28,15 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         //开启日志悬浮窗需要检查是否有权限
         @NonNull SwitchPreferenceCompat log = Objects.requireNonNull(findPreference("log"));
         log.setOnPreferenceChangeListener((preference, newValue) -> {
-            if (Boolean.getBoolean(newValue.toString())){
+            if (Boolean.parseBoolean(newValue.toString())){
                 boolean isAllGranted = Settings.canDrawOverlays(getContext());
                 if (!isAllGranted){
                     ManifestUtil.openAppDetails(requireContext(), launcher);
                     return false;
                 }
+                requireActivity().startService(new Intent(requireActivity(), LogMonitorService.class));
+            } else {
+                requireActivity().stopService(new Intent(requireActivity(), LogMonitorService.class));
             }
             return true;
         });

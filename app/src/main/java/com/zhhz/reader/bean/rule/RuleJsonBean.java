@@ -1,7 +1,8 @@
 package com.zhhz.reader.bean.rule;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson2.annotation.JSONType;
+
+import cn.hutool.core.util.ObjectUtil;
 
 @JSONType(orders={"name","version","url","encode","dns","type","header","comic","charset","imgHeader","search","detail","catalog","chapter"})
 public class RuleJsonBean {

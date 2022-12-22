@@ -1,7 +1,5 @@
 package com.zhhz.reader.util;
 
-import android.util.Log;
-
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.Objects;

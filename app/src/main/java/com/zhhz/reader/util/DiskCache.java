@@ -14,7 +14,6 @@ import java.security.MessageDigest;
 import java.util.Objects;
 
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -27,7 +26,7 @@ import okhttp3.ResponseBody;
 public class DiskCache {
 
     //测试缓存时间调整到 300 分钟
-    private static final long cache_time = 1000 * 60 * 300;
+    private static final long cache_time = 1000 * 60 * 5;
     //用于执行JS
     public static final ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
     //public static final ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("JavaScript");
@@ -109,7 +108,7 @@ public class DiskCache {
             cache_delete_tag = true;
         }
 
-        if (cache_delete_tag) {
+        if (cache_delete_tag || bool) {
             cache_delete_tag = false;
             String pt = path == null ? MyApplication.context.getExternalCacheDir().getAbsolutePath() : path;
             String file = pt + File.separator + "Disk_Cache" + File.separator;
@@ -117,7 +116,7 @@ public class DiskCache {
             //删除缓存时间大于五分钟的
             if (files != null) {
                 for (File file1 : files) {
-                    if ((time - file1.lastModified()) > cache_time) {
+                    if (((time - file1.lastModified()) > cache_time)| bool) {
                         if (file1.delete()) {
                             System.out.println("delete_cache -> 缓存已清除");
                         }
