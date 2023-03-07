@@ -14,7 +14,7 @@ public class RuleJsonBean {
     private String init;
     private int type;
     private String header;
-    private String jsDecryption;
+    private String jsDecryption = "";
     private boolean comic;
     private boolean cache = true;
     private String charset;

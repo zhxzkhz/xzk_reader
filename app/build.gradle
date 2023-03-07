@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.zhhz.reader"
         minSdk 27
-        targetSdk 28
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 

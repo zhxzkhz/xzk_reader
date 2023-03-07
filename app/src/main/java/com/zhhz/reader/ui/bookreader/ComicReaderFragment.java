@@ -190,7 +190,8 @@ public class ComicReaderFragment extends Fragment {
                 new AlertDialog.Builder(requireContext()).setTitle("错误提示")
                         .setMessage((CharSequence) map.get("error"))
                         .show();
-                binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
+                if (comicAdapter.getItemData().size() == 0)
+                    binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
                 int length = comicAdapter.getItemData().size();
                 if ("true".equals(String.valueOf(map.get("end")))) {
