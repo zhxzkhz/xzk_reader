@@ -741,7 +741,11 @@ public class ReadTextView extends View {
                 // path.moveTo(marginSpacing,finalHeight * (indexLine + 1) - topSpacing + lineSpacing + topSpace + statusBar);
                 for (int s = 0; s < index; s++) {
                     //path.lineTo( marginSpacing + line_font[s],finalHeight * (indexLine + 1) - topSpacing + lineSpacing + topSpace + statusBar);
-                    canvas.drawText(text.substring(tts + s, tts + s + 1), marginSpacing + line_font[s], finalHeight * (indexLine + 1) - topSpacing + lineSpacing + topSpace + statusBar, textPaint);
+                    //修复Android会把换行符绘制出来的问题
+                    String tmp_s = text.substring(tts + s, tts + s + 1);
+                    if (!tmp_s.equals("\n")) {
+                        canvas.drawText(tmp_s, marginSpacing + line_font[s], finalHeight * (indexLine + 1) - topSpacing + lineSpacing + topSpace + statusBar, textPaint);
+                    }
                 }
                 // canvas.drawTextOnPath(text.substring(tts, tts + index),path,0,0,textPaint);
                 // path.reset();
