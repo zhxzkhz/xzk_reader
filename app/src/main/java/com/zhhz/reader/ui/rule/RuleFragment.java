@@ -46,6 +46,10 @@ public class RuleFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         launch = registerForActivityResult(new ActivityResultContracts.GetContent(), result -> {
+            if (result == null) {
+                Toast.makeText(requireContext(), "未选择文件", Toast.LENGTH_SHORT).show();
+                return;
+            }
             RuleJsonBean content = JSONObject.parseObject(new String(FileUtil.readFile(requireContext(), result)),RuleJsonBean.class);
             try {
                 String s = DiskCache.path + File.separator + "config" + File.separator + "rule" + File.separator + content.getName() + ".json";
