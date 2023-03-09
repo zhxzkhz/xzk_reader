@@ -309,7 +309,6 @@ public class BookReaderViewModel extends ViewModel {
      */
     public void cacheBook(int progress, boolean bool) {
         progress = progress > -1 ? progress : this.progress;
-        progress++;
         uuid = UUID.randomUUID().toString();
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
         int finalProgress = progress;
