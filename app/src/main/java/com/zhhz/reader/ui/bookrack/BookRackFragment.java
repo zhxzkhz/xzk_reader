@@ -164,14 +164,8 @@ public class BookRackFragment extends Fragment {
 
         //导入书本回调事件
         bookrackViewModel.getCallback().observe(getViewLifecycleOwner(), aBoolean -> {
-            String s;
-            if (aBoolean) {
-                s = "成功";
-            } else {
-                s = "失败";
-            }
             alertDialog.hide();
-            Toast.makeText(requireContext(), "书本导入" + s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), "书本导入" + (aBoolean ? "成功" : "失败"), Toast.LENGTH_SHORT).show();
         });
 
         //获取本地书架回调事件
@@ -199,7 +193,7 @@ public class BookRackFragment extends Fragment {
 
         final TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
                 com.google.android.material.R.attr.alertDialogStyle, 0);
-        ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)"));
+        ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)","清除章节和图片缓存"));
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), arr_list);
         a.recycle();
 
@@ -218,26 +212,32 @@ public class BookRackFragment extends Fragment {
                         //.setMessage("确定删除书本？")
                         .setSingleChoiceItems(adapter, 0, null)
                         .setPositiveButton("确定", (dialogInterface, i) -> {
-                            bookrackViewModel.removeBooks(ss);
-                            bookrackViewModel.updateBooks();
-                            //为1时删除所以记录
-                            if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) == 1) {
+                            //为1时删除所以记录 为2仅清除缓存
+                            if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) > 0) {
                                 CompletableFuture.runAsync(() -> {
-                                    for (String value : ss) {
-                                        FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + value);
+                                    if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) == 1){
+                                        bookrackViewModel.removeBooks(ss);
+                                        bookrackViewModel.updateBooks();
+                                        for (String value : ss) {
+                                            FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + value);
+                                        }
+                                    } else {
+                                        for (String value : ss) {
+                                            FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + value + File.separator + "book_chapter");
+                                        }
                                     }
                                     fileList.forEach(s -> new File(s).delete());
-                                }, XluaTask.getThreadPool());
+                                });
                             }
                         })
                         .setOnCancelListener(DialogInterface::dismiss)
                         .setNeutralButton("取消", null)
+                        .setOnCancelListener(dialog1 -> XluaTask.getThreadPool().shutdown())
                         .create();
                 dialog.show();
 
 
                 CompletableFuture.runAsync(() -> {
-                    long time = System.currentTimeMillis();
                     AtomicLong count_size = new AtomicLong();
                     AtomicInteger list_index = new AtomicInteger(0);
                     ArrayList<File> paths = new ArrayList<>();
