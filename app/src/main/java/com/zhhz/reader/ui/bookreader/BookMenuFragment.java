@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import com.zhhz.reader.adapter.CatalogueAdapter;
 import com.zhhz.reader.databinding.FragmentBookMenuBinding;
 import com.zhhz.reader.view.RecycleViewDivider;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class BookMenuFragment extends Fragment {
@@ -76,6 +78,7 @@ public class BookMenuFragment extends Fragment {
             }
         });
 
+
         catalogueAdapter.setOnClickListener(v -> {
             if (mViewModel.isLoading()) {
                 Toast.makeText(requireContext(), "章节加载中", Toast.LENGTH_SHORT).show();
@@ -87,7 +90,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         binding.menuNextPage.setOnClickListener(view -> {
-            int progress = mViewModel.current_progress_page(mViewModel.getStart())[0];
+            int progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getStart())[0] : mViewModel.getProgress();
             if (mViewModel.isHaveNextChapters(progress)) {
                 mViewModel.jumpChapters(progress + 1);
             } else {
@@ -96,7 +99,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         binding.menuPreviousPage.setOnClickListener(view -> {
-            int progress = mViewModel.current_progress_page(mViewModel.getStart())[0];
+            int progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getStart())[0] : mViewModel.getProgress();
             if (mViewModel.isHavePreviousChapters(progress)) {
                 mViewModel.jumpChapters(progress - 1);
             } else {
@@ -124,6 +127,23 @@ public class BookMenuFragment extends Fragment {
         return root;
     }
 
+    //显示菜单时更新标题和目录章节位置
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            //显示时更新标题
+            int tmp_progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getStart())[0] : mViewModel.getProgress();
+            int pos = catalogueAdapter.getPos();
+            catalogueAdapter.setPos(tmp_progress);
+            int height = requireActivity().getResources().getDisplayMetrics().heightPixels;
+            Objects.requireNonNull((LinearLayoutManager) binding.menuCatalogueList.getLayoutManager()).scrollToPositionWithOffset(tmp_progress, (int) (height * 0.4f));
+            catalogueAdapter.notifyItemChanged(pos);
+            catalogueAdapter.notifyItemChanged(tmp_progress);
+            binding.menuSource.setText(mViewModel.getCatalogue().get(tmp_progress));
+        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -137,13 +157,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         mViewModel.getChapters().observe(getViewLifecycleOwner(), s -> {
-            //binding.menuSource.setText(Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(s));
-            binding.menuSource.setText(s);
-            int pos = catalogueAdapter.getPos();
-            catalogueAdapter.setPos(mViewModel.getProgress());
-            Objects.requireNonNull((LinearLayoutManager) binding.menuCatalogueList.getLayoutManager()).scrollToPositionWithOffset(mViewModel.getProgress(), (int) (height * 0.4f));
-            catalogueAdapter.notifyItemChanged(pos);
-            catalogueAdapter.notifyItemChanged(mViewModel.getProgress());
+            onHiddenChanged(false);
         });
     }
 

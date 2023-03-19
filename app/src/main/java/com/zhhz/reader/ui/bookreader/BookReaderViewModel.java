@@ -67,6 +67,10 @@ public class BookReaderViewModel extends ViewModel {
         this.comic_page = new ArrayList<>();
     }
 
+    public ArrayList<String> getCatalogue() {
+        return catalogue;
+    }
+
     public boolean isLocalBooks() {
         return localBooks;
     }
@@ -298,7 +302,7 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public void cacheBook(int progress) {
-        cacheBook(progress, false);
+        cacheBook(progress + 1, false);
     }
 
     /**
