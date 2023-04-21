@@ -61,7 +61,7 @@ public class ReadTextView extends View {
     //绘制文字结束位置
     private int textEnd = 0;
     //左右边缘间距
-    private float marginSpacing = 45f;
+    private float marginSpacing = 46f;
     //字间距
     private float fontSpacing = 1f;
     //字间距倍率
@@ -120,7 +120,6 @@ public class ReadTextView extends View {
     public ReadTextView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         density = getResources().getDisplayMetrics().density;
-        textSize = (int) (textSize * density);
         pt = new Paint();
         pt.setStrokeWidth(1);
 
@@ -129,7 +128,7 @@ public class ReadTextView extends View {
         textPaint.setStyle(Paint.Style.FILL);
         textPaint.setStrokeWidth(0);
         textPaint.setSubpixelText(true);
-        textPaint.setTextSize(textSize);
+        textPaint.setTextSize(textSize * density);
         //textPaint.density = density;
 
         ttPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
@@ -138,7 +137,7 @@ public class ReadTextView extends View {
         ttPaint.setStrokeWidth(0);
         ttPaint.setSubpixelText(true);
         // 字体大小是正文的 x ^ 2 / - x / 12
-        ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize, 2) / 2f) - textSize / 12f));
+        ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize * density, 2) / 2f) - textSize * density / 12f));
         //ttPaint.density = density;
 
     }
@@ -326,7 +325,7 @@ public class ReadTextView extends View {
     public void setTextSize(int textSize) {
         this.textSize = textSize;
         textPaint.setTextSize(textSize * density);
-        ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize * density, 2) / 2f) - textSize / 12f));
+        ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize * density, 2) / 2f) - textSize * density / 12f));
         if (text.length() == 0) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
@@ -383,8 +382,8 @@ public class ReadTextView extends View {
         }
 
         //如果首行缩进就取消行前面空格
-        if (indentation){
-            text = text.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "").replaceAll("\n+[\u3000\u0020]{2}","\n").replaceAll("\n+","\n");
+        if (indentation) {
+            text = text.replaceAll("^[\u3000\u0020]*|[\u3000\u0020]*$", "").replaceAll("\n+[\u3000\u0020]{2}", "\n").replaceAll("\n+", "\n");
         }
 
         textStart = progress;
@@ -615,6 +614,11 @@ public class ReadTextView extends View {
             tmp_index = tmp_index + fontNumber;
 
             if (skip) {
+                /*
+                StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+                for (StackTraceElement stackTraceElement : stackTrace) {
+                    System.out.println(stackTraceElement.getClassName() + "--->" + stackTraceElement.getMethodName() + "--->" + stackTraceElement.getLineNumber() + "\n");
+                }*/
                 Log.i("计算时间", String.valueOf(System.currentTimeMillis() - times));
                 break;
             }
@@ -703,7 +707,7 @@ public class ReadTextView extends View {
         int indexLine = 0;
 
         //使用临时变量存储绘制时的位置
-        int tts = textStart;
+        int tts = Math.max(textStart, 0);
 
         //行数索引采用的一，所以行数减一
         //行间距平摊高度

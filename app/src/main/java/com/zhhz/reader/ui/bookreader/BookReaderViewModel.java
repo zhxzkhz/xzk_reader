@@ -38,9 +38,10 @@ public class BookReaderViewModel extends ViewModel {
     private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
     private final MutableLiveData<HashMap<String, Object>> data_content;
     private final MutableLiveData<String> chapters;
+    private final MutableLiveData<String> font_setting;
     private final ArrayList<GlideUrl> comic_list;
     //章节页数表，用于无限滑动记录章节页数
-    public final ArrayList<Integer> comic_page;
+    public final ArrayList<Integer> comic_chapters;
     private RuleAnalysis rule;
     //目录进度
     private int progress = 0;
@@ -62,9 +63,10 @@ public class BookReaderViewModel extends ViewModel {
         this.data_catalogue = new MutableLiveData<>();
         this.data_content = new MutableLiveData<>();
         this.chapters = new MutableLiveData<>();
+        this.font_setting = new MutableLiveData<>();
         this.catalogue = new ArrayList<>();
         this.comic_list = new ArrayList<>();
-        this.comic_page = new ArrayList<>();
+        this.comic_chapters = new ArrayList<>();
     }
 
     public ArrayList<String> getCatalogue() {
@@ -211,7 +213,7 @@ public class BookReaderViewModel extends ViewModel {
                     for (String s : arr) {
                         comic_list.add(new GlideUrl(s, headers));
                     }
-                    comic_page.add(comic_list.size());
+                    comic_chapters.add(comic_list.size());
                     map.put("content", comic_list);
                 } else {
                     map.put("error", data.getError());
@@ -420,7 +422,7 @@ public class BookReaderViewModel extends ViewModel {
         start = 0;
         progress = pos;
         comic_list.clear();
-        comic_page.clear();
+        comic_chapters.clear();
         saveProgress(progress);
         if (isComic()) {
             getContentComic(true);
@@ -440,9 +442,9 @@ public class BookReaderViewModel extends ViewModel {
         int[] pages = new int[2];
         int index = 0;
         // 当前总页数减去每章页数，得到当前的页数的位置
-        for (; index < comic_page.size(); index++) {
-            if (current_page > comic_page.get(index)) {
-                current_page = current_page - comic_page.get(index);
+        for (; index < comic_chapters.size(); index++) {
+            if (current_page > comic_chapters.get(index)) {
+                current_page = current_page - comic_chapters.get(index);
             } else {
                 break;
             }
@@ -456,7 +458,7 @@ public class BookReaderViewModel extends ViewModel {
             }
         }
         //最开始位置 + 卷 + 章节 = 实际位置
-        pages[0] = (progress - comic_page.size() + 1) + index + temp;
+        pages[0] = (progress - Math.max(comic_chapters.size(),1) + 1) + index + temp;
 
         pages[1] = current_page - 1;
         return pages;
@@ -482,4 +484,11 @@ public class BookReaderViewModel extends ViewModel {
         return chapters;
     }
 
+    public void setFont_setting(String s){
+        font_setting.postValue(s);
+    }
+
+    public MutableLiveData<String> getFont_setting() {
+        return font_setting;
+    }
 }

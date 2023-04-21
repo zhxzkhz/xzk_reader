@@ -11,7 +11,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.zhhz.reader.databinding.FragmentBookreaderBinding;
@@ -80,6 +82,8 @@ public class BookReaderFragment extends Fragment {
             return false;
         });
 
+
+
         error_btn = new AppCompatButton(requireContext());
         error_btn.setText("重新加载");
         error_btn.setOnClickListener(view -> mViewModel.getContent());
@@ -89,10 +93,62 @@ public class BookReaderFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        mViewModel.getFont_setting().observe(getViewLifecycleOwner(), new Observer<String>() {
+            @Override
+            public void onChanged(String s) {
+                switch (s){
+                    case "font_size_sub": {
+                        binding.readerText.setTextSize(binding.readerText.getTextSize() - 1);
+                        break;
+                    }
+                    case "font_size_add": {
+                        binding.readerText.setTextSize(binding.readerText.getTextSize() + 1);
+                        break;
+                    }
+                    case "font_margin_sub": {
+                        binding.readerText.setMarginSpacing(binding.readerText.getMarginSpacing() - 1f);
+                        break;
+                    }
+                    case "font_margin_add": {
+                        binding.readerText.setMarginSpacing(binding.readerText.getMarginSpacing() + 1f);
+                        break;
+                    }
+                    case "font_field_spacing_sub": {
+                        binding.readerText.setLineHeight(binding.readerText.getLineHeight() - 1f);
+                        break;
+                    }
+                    case "font_field_spacing_add": {
+                        binding.readerText.setLineHeight(binding.readerText.getLineHeight() + 1f);
+                        break;
+                    }
+                    case "font_spacing_sub": {
+                        binding.readerText.setFontSpacing(binding.readerText.getFontSpacing() - 1f);
+                        break;
+                    }
+                    case "font_spacing_add": {
+                        binding.readerText.setFontSpacing(binding.readerText.getFontSpacing() + 1f);
+                        break;
+                    }
+                    case "font_line_spacing_sub": {
+                        binding.readerText.setLineHeightRatio(binding.readerText.getLineHeightRatio() - 0.1f);
+                        break;
+                    }
+                    case "font_line_spacing_add": {
+                        binding.readerText.setLineHeightRatio(binding.readerText.getLineHeightRatio() + 0.1f);
+                        break;
+                    }
+                }
+            }
+        });
+
         mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
             binding.progress.hide();
             if (map.containsKey("error")) {
                 binding.readerText.setText(String.valueOf(map.get("error")));
+                if (error_btn.getParent()!=null){
+                    ((android.view.ViewGroup)error_btn.getParent()).removeView(error_btn);
+                }
                 binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
             } else {
                 //判断是否转跳到文本末尾

@@ -10,6 +10,7 @@
     <string name="progress_text">%1$d/%2$d</string>
     <string name="pack">打包</string>
     <string name="cache">缓存</string>
+    <string name="setting">设置</string>
     <string name="remove">删除</string>
     <string name="other">待定</string>
     <string name="log">日志</string>
@@ -29,9 +30,20 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
 
-
-
     <string name="import_book">导入本地书本</string>
+
+    <string name="menu_refresh_tip">重新加载当前页面内容</string>
+    <string name="menu_back_tip">返回</string>
+    <string name="font_setting"> ● 字体设置 ● </string>
+
+    <string name="font_size">0.0</string>
+    <string name="font_field_spacing_title">段距</string>
+    <string name="font_spacing_title">字距</string>
+    <string name="font_line_spacing_title">行距</string>
+    <string name="font_style_title">字体</string>
+    <string name="font_style">系统字体</string>
+    <string name="font_size_title">字号</string>
+    <string name="font_margin_title">边距</string>
 
 
 </resources>

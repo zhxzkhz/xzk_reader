@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:state_enabled="false">
+        <layer-list>
+            <item android:drawable="@drawable/sub" android:width="12dp" android:height="12dp" android:left="12dp" android:right="12dp" android:bottom="22dp" android:top="22dp"/>
+        </layer-list>
+    </item>
+
+    <item android:state_enabled="true">
+        <layer-list>
+            <item android:drawable="@drawable/sub_1" android:width="12dp" android:height="12dp" android:left="12dp" android:right="12dp" android:bottom="22dp" android:top="22dp"/>
+        </layer-list>
+    </item>
+
+</selector>

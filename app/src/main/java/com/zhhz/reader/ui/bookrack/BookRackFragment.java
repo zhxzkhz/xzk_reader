@@ -199,7 +199,9 @@ public class BookRackFragment extends Fragment {
 
         //长按多选事件
         bookrackViewModel.getOperation().observe(getViewLifecycleOwner(), integer -> {
-            if (integer == 2) {
+            if (integer == 1) {
+
+            } else if (integer == 2) {
                 String[] ss = new String[tracker.getSelection().size()];
                 int index = 0;
                 for (String s : tracker.getSelection()) {
@@ -215,7 +217,7 @@ public class BookRackFragment extends Fragment {
                             //为1时删除所以记录 为2仅清除缓存
                             if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) > 0) {
                                 CompletableFuture.runAsync(() -> {
-                                    if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) == 1){
+                                    if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) == 1) {
                                         bookrackViewModel.removeBooks(ss);
                                         bookrackViewModel.updateBooks();
                                         for (String value : ss) {
@@ -308,7 +310,6 @@ public class BookRackFragment extends Fragment {
 
 
                 }, XluaTask.getThreadPool());
-
             }
         });
 

@@ -18,7 +18,7 @@ public class BookReaderViewModelTest extends TestCase {
 
             if (s != null) {
                 list.add(50);
-                model.comic_page.add(50);
+                model.comic_chapters.add(50);
             } else {
                 list.add(0);
             }

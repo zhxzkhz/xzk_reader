@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.bookreader.SettingDialogFragment">
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="6dp"
+        android:text="@string/font_setting"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@id/font_style_sub"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_style_sub"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_sub"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/font_field_spacing_sub"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/font_style" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_style_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/font_style_title"
+        android:textSize="11sp"
+        app:layout_constraintLeft_toLeftOf="@id/font_style_sub"
+        app:layout_constraintRight_toRightOf="@id/font_style_add"
+        app:layout_constraintTop_toTopOf="@id/font_style_sub" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_style"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/font_style"
+        app:layout_constraintBottom_toBottomOf="@id/font_style_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_style_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_style_add"
+        app:layout_constraintTop_toTopOf="@id/font_style_sub" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_style_add"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_add"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/font_field_spacing_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_style"
+        app:layout_constraintRight_toLeftOf="@id/font_size_sub" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="0dp"
+        android:background="@color/gray_a"
+        app:layout_constraintBottom_toBottomOf="@+id/font_style"
+        app:layout_constraintLeft_toRightOf="@id/font_style_add"
+        app:layout_constraintRight_toLeftOf="@id/font_size_sub"
+        app:layout_constraintTop_toTopOf="@+id/font_style" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_size_sub"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_sub"
+        android:tag="font_size_sub"
+        app:layout_constraintBottom_toTopOf="@+id/font_field_spacing_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_field_spacing_add"
+        app:layout_constraintRight_toLeftOf="@id/font_size" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_size_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/font_size_title"
+        android:textSize="11sp"
+        app:layout_constraintLeft_toLeftOf="@id/font_size_sub"
+        app:layout_constraintRight_toRightOf="@id/font_size_add"
+        app:layout_constraintTop_toTopOf="@id/font_size_sub" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_size"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/font_size"
+        app:layout_constraintBottom_toBottomOf="@id/font_style_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_size_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_size_add"
+        app:layout_constraintTop_toTopOf="@id/font_style_sub" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_size_add"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_add"
+        android:tag="font_size_add"
+        app:layout_constraintBottom_toTopOf="@+id/font_field_spacing_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_size"
+        app:layout_constraintRight_toLeftOf="@id/font_line_spacing_sub" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="0dp"
+        android:background="@color/gray_a"
+        app:layout_constraintBottom_toBottomOf="@+id/font_style"
+        app:layout_constraintLeft_toRightOf="@id/font_size_add"
+        app:layout_constraintRight_toLeftOf="@id/font_margin_sub"
+        app:layout_constraintTop_toTopOf="@+id/font_style" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_margin_sub"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_sub"
+        android:tag="font_margin_sub"
+        app:layout_constraintBottom_toTopOf="@+id/font_field_spacing_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_spacing_add"
+        app:layout_constraintRight_toLeftOf="@id/font_margin" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_margin_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/font_margin_title"
+        android:textSize="11sp"
+        app:layout_constraintLeft_toLeftOf="@id/font_margin_sub"
+        app:layout_constraintRight_toRightOf="@id/font_margin_add"
+        app:layout_constraintTop_toTopOf="@id/font_margin_sub" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_margin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/font_size"
+        app:layout_constraintBottom_toBottomOf="@id/font_style_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_margin_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_margin_add"
+        app:layout_constraintTop_toTopOf="@id/font_style_sub" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_margin_add"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_add"
+        android:tag="font_margin_add"
+        app:layout_constraintBottom_toTopOf="@+id/font_field_spacing_sub"
+        app:layout_constraintLeft_toRightOf="@id/font_margin"
+        app:layout_constraintRight_toRightOf="parent" />
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_field_spacing_sub"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_sub"
+        android:tag="font_field_spacing_sub"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/font_field_spacing_title" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_field_spacing_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/font_field_spacing_title"
+        android:textSize="11sp"
+        app:layout_constraintLeft_toRightOf="@id/font_field_spacing_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_field_spacing_add"
+        app:layout_constraintTop_toTopOf="@id/font_field_spacing_sub" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_field_spacing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/font_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_field_spacing_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_field_spacing_add"
+        app:layout_constraintTop_toTopOf="@id/font_field_spacing_sub" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_field_spacing_add"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_add"
+        android:tag="font_field_spacing_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_field_spacing_title"
+        app:layout_constraintRight_toLeftOf="@id/font_spacing_sub" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="0dp"
+        android:background="@color/gray_a"
+        app:layout_constraintBottom_toBottomOf="@+id/font_field_spacing"
+        app:layout_constraintLeft_toRightOf="@id/font_field_spacing_add"
+        app:layout_constraintRight_toLeftOf="@id/font_spacing_sub"
+        app:layout_constraintTop_toTopOf="@+id/font_field_spacing" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_spacing_sub"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_sub"
+        android:tag="font_spacing_sub"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_field_spacing_add"
+        app:layout_constraintRight_toLeftOf="@id/font_spacing_title" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_spacing_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/font_spacing_title"
+        android:textSize="11sp"
+        app:layout_constraintLeft_toRightOf="@id/font_spacing_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_spacing_add"
+        app:layout_constraintTop_toTopOf="@id/font_spacing_sub" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_spacing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/font_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_spacing_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_spacing_add"
+        app:layout_constraintTop_toBottomOf="@id/font_spacing_title"
+        app:layout_constraintTop_toTopOf="@id/font_field_spacing_sub" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_spacing_add"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_add"
+        android:tag="font_spacing_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_spacing_title"
+        app:layout_constraintRight_toLeftOf="@id/font_line_spacing_sub" />
+
+    <View
+        android:layout_width="1px"
+        android:layout_height="0dp"
+        android:background="@color/gray_a"
+        app:layout_constraintBottom_toBottomOf="@+id/font_field_spacing"
+        app:layout_constraintLeft_toRightOf="@id/font_spacing_add"
+        app:layout_constraintRight_toLeftOf="@id/font_line_spacing_sub"
+        app:layout_constraintTop_toTopOf="@+id/font_field_spacing" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_line_spacing_sub"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_sub"
+        android:tag="font_line_spacing_sub"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_spacing_add"
+        app:layout_constraintRight_toLeftOf="@id/font_line_spacing_title" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_line_spacing_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/font_line_spacing_title"
+        android:textSize="11sp"
+        app:layout_constraintLeft_toRightOf="@id/font_line_spacing_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_line_spacing_add"
+        app:layout_constraintTop_toTopOf="@id/font_line_spacing_sub" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/font_line_spacing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:padding="2dp"
+        android:text="@string/font_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_line_spacing_sub"
+        app:layout_constraintRight_toLeftOf="@id/font_line_spacing_add"
+        app:layout_constraintTop_toBottomOf="@id/font_line_spacing_title"
+        app:layout_constraintTop_toTopOf="@id/font_field_spacing_sub" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/font_line_spacing_add"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/font_add"
+        android:tag="font_line_spacing_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/font_line_spacing_title"
+        app:layout_constraintRight_toRightOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

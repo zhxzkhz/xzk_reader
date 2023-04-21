@@ -12,6 +12,8 @@
         android:layout_width="54dp"
         android:layout_height="48dp"
         android:background="@color/white"
+        android:contentDescription="@string/menu_back_tip"
+        android:tooltipText="@string/menu_back_tip"
         android:ellipsize="end"
         android:padding="10dp"
         android:scaleType="centerCrop"
@@ -42,11 +44,13 @@
         android:layout_width="54dp"
         android:layout_height="48dp"
         android:background="@color/white"
+        android:contentDescription="@string/menu_refresh_tip"
         android:ellipsize="end"
         android:padding="10dp"
         android:scaleType="centerCrop"
         android:src="@drawable/refresh_24"
         android:tint="@color/black"
+        android:tooltipText="@string/menu_refresh_tip"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintRight_toLeftOf="@id/menu_title"
         app:layout_constraintTop_toTopOf="parent" />
@@ -125,6 +129,17 @@
         android:gravity="center"
         android:text="@string/cache"
         app:layout_constraintStart_toEndOf="@id/menu_catalogue"
+        app:layout_constraintEnd_toEndOf="@id/menu_setting"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/menu_setting"
+        android:layout_width="0dp"
+        android:layout_height="46dp"
+        android:background="@color/white"
+        android:gravity="center"
+        android:text="@string/setting"
+        app:layout_constraintStart_toEndOf="@id/menu_cache"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 

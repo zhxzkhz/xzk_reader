@@ -8,16 +8,19 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhhz.reader.adapter.CatalogueAdapter;
 import com.zhhz.reader.databinding.FragmentBookMenuBinding;
+import com.zhhz.reader.databinding.FragmentDetailedBinding;
 import com.zhhz.reader.view.RecycleViewDivider;
 
 import java.util.Arrays;
@@ -60,16 +63,21 @@ public class BookMenuFragment extends Fragment {
         binding.menuCatalogueList.addItemDecoration(new RecycleViewDivider(this.getContext(), 1));
         binding.menuCatalogueList.setAdapter(catalogueAdapter);
 
-        binding.menuBack.setOnClickListener((view) -> requireActivity().finish());
+
         binding.menuTitle.setClickable(true);
+
+        binding.menuBack.setOnClickListener((view) -> requireActivity().finish());
+
         if (mViewModel.isComic()){
-            binding.menuRefresh.setVisibility(View.VISIBLE);
+            binding.menuRefresh.setVisibility(View.GONE);
         } else {
             binding.menuRefresh.setOnClickListener(view -> mViewModel.clearCurrentCache());
         }
-        binding.menuNextPage.setClickable(true);
-        binding.menuSource.setClickable(true);
-        binding.menuPreviousPage.setClickable(true);
+
+        binding.menuSetting.setOnClickListener(v -> {
+            SettingDialogFragment.getInstance().show(requireActivity().getSupportFragmentManager(), "SettingDialogFragment");
+        });
+
         binding.menuCatalogue.setOnClickListener(view -> {
             if (binding.menuCatalogueList.getVisibility() == View.GONE) {
                 binding.menuCatalogueList.setVisibility(View.VISIBLE);
