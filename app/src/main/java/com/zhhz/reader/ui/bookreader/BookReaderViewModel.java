@@ -9,11 +9,13 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
+import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.NotificationUtil;
 import com.zhhz.reader.util.StringUtil;
+import com.zhhz.reader.view.ReadTextView;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -39,6 +41,7 @@ public class BookReaderViewModel extends ViewModel {
     private final MutableLiveData<HashMap<String, Object>> data_content;
     private final MutableLiveData<String> chapters;
     private final MutableLiveData<String> font_setting;
+    private final MutableLiveData<JSONObject> font_setting_text;
     private final ArrayList<GlideUrl> comic_list;
     //章节页数表，用于无限滑动记录章节页数
     public final ArrayList<Integer> comic_chapters;
@@ -64,9 +67,15 @@ public class BookReaderViewModel extends ViewModel {
         this.data_content = new MutableLiveData<>();
         this.chapters = new MutableLiveData<>();
         this.font_setting = new MutableLiveData<>();
+        this.font_setting_text = new MutableLiveData<>();
         this.catalogue = new ArrayList<>();
         this.comic_list = new ArrayList<>();
         this.comic_chapters = new ArrayList<>();
+        init();
+    }
+
+    private void init(){
+        font_setting_text.setValue(readSetting());
     }
 
     public ArrayList<String> getCatalogue() {
@@ -488,7 +497,28 @@ public class BookReaderViewModel extends ViewModel {
         font_setting.postValue(s);
     }
 
-    public MutableLiveData<String> getFont_setting() {
+    public MutableLiveData<String> getFontSetting() {
         return font_setting;
     }
+
+    public MutableLiveData<JSONObject> getFontSettingText() {
+        return font_setting_text;
+    }
+
+    public void saveSetting(ReadTextView readTextView){
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("textSize",readTextView.getTextSize());
+        jsonObject.put("marginSpacing",readTextView.getMarginSpacing());
+        jsonObject.put("lineHeight",readTextView.getLineHeight());
+        jsonObject.put("fontSpacing",readTextView.getFontSpacing());
+        jsonObject.put("lineHeightRatio",readTextView.getLineHeightRatio());
+        SQLiteUtil.SaveSetting("read_text_setting",jsonObject.toString());
+        font_setting_text.postValue(jsonObject);
+    }
+
+    public JSONObject readSetting(){
+        String s = SQLiteUtil.readSetting("read_text_setting");
+        return JSONObject.parseObject(s);
+    }
+
 }

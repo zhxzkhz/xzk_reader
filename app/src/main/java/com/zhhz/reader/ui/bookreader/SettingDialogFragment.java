@@ -15,6 +15,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.R;
 import com.zhhz.reader.databinding.FragmentBookReaderSettingBinding;
 
@@ -56,6 +57,33 @@ public class SettingDialogFragment extends DialogFragment {
         binding.fontLineSpacingSub.setOnClickListener(click);
 
         return root;
+    }
+
+    private void setting(JSONObject s){
+        binding.fontSize.setText(s.getString("textSize"));
+        binding.fontMargin.setText(String.valueOf(s.getIntValue("marginSpacing")));
+        binding.fontFieldSpacing.setText(String.valueOf(s.getIntValue("lineHeight")));
+        binding.fontSpacing.setText(s.getString("fontSpacing"));
+        binding.fontLineSpacing.setText(s.getString("lineHeightRatio"));
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mViewModel.getFontSettingText().observe(getViewLifecycleOwner(), s -> {
+            binding.fontSizeAdd.setEnabled(s.getIntValue("textSize") < 46);
+            binding.fontSizeSub.setEnabled(s.getIntValue("textSize") > 12);
+            binding.fontMarginAdd.setEnabled(s.getIntValue("marginSpacing") < 80);
+            binding.fontMarginSub.setEnabled(s.getIntValue("marginSpacing") > 28);
+            binding.fontFieldSpacingAdd.setEnabled(s.getIntValue("lineHeight") < 24);
+            binding.fontFieldSpacingSub.setEnabled(s.getIntValue("lineHeight") > 0);
+            binding.fontSpacingAdd.setEnabled(s.getIntValue("fontSpacing") < 32);
+            binding.fontSpacingSub.setEnabled(s.getIntValue("fontSpacing") > 0);
+            binding.fontLineSpacingAdd.setEnabled(s.getFloatValue("lineHeightRatio") < 2);
+            binding.fontLineSpacingSub.setEnabled(s.getFloatValue("lineHeightRatio") > 1);
+
+            setting(s);
+        });
     }
 
     @Override
