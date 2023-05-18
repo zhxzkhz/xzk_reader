@@ -36,24 +36,19 @@ import com.zhhz.reader.activity.SearchActivity;
 import com.zhhz.reader.adapter.BookAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookrackBinding;
+import com.zhhz.reader.util.BookUtil;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileSizeUtil;
 import com.zhhz.reader.util.FileUtil;
-import com.zhhz.reader.util.GlideGetPath;
-import com.zhhz.reader.util.StringUtil;
-import com.zhhz.reader.util.XluaTask;
+import com.zhhz.reader.util.NotificationUtil;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class BookRackFragment extends Fragment {
@@ -68,6 +63,7 @@ public class BookRackFragment extends Fragment {
     private ActivityResultLauncher<String> import_launcher;
 
     private AlertDialog alertDialog;
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -155,8 +151,15 @@ public class BookRackFragment extends Fragment {
                 } else if (tracker.getSelection().size() == 0 && item_menu.getVisibility() == View.VISIBLE) {
                     item_menu.setVisibility(View.GONE);
                 }
-                item_menu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
-                item_menu.getChildAt(1).setEnabled(tracker.getSelection().size() == 1);
+                //item_menu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
+                item_menu.getChildAt(1).setEnabled(false);
+                if (tracker.getSelection().size() == 1) {
+                    for (BookBean itemDatum : bookAdapter.getItemData()) {
+                        if (itemDatum.getBook_id().equals(tracker.getSelection().iterator().next()) && itemDatum.isComic()) {
+                            item_menu.getChildAt(1).setEnabled(tracker.getSelection().size() == 1);
+                        }
+                    }
+                }
             }
         });
 
@@ -193,13 +196,45 @@ public class BookRackFragment extends Fragment {
 
         final TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
                 com.google.android.material.R.attr.alertDialogStyle, 0);
-        ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)","清除章节和图片缓存"));
+        ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)", "清除章节和图片缓存"));
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), arr_list);
         a.recycle();
 
         //长按多选事件
         bookrackViewModel.getOperation().observe(getViewLifecycleOwner(), integer -> {
             if (integer == 1) {
+                AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                        .setView(R.layout.progress_dialog)
+                        .setCancelable(false)
+                        .setOnCancelListener(dialog1 -> BookUtil.cancel())
+                        .create();
+                dialog.show();
+
+                String name = tracker.getSelection().iterator().next();
+
+                for (BookBean itemDatum : bookAdapter.getItemData()) {
+                    if (name.equals(itemDatum.getBook_id())) {
+                        BookUtil.GetCacheSize(itemDatum, (atomicLong, fileList, deficiencyList) -> requireActivity().runOnUiThread(() -> {
+                            dialog.cancel();
+                            new AlertDialog.Builder(requireContext())
+                                    .setTitle("打包方式")
+                                    .setMessage("已缓存 " + fileList.size() + "张图片(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + "),缺失 " + deficiencyList.size() + " 张图片\n提示：导出全部图片会自动下载未缓存图片，开始后无法取消")
+                                    //.setCancelable(false)
+                                    .setOnCancelListener(dialog1 -> BookUtil.cancel())
+                                    .setPositiveButton("导出已缓存图片", (dialog2, which) -> {
+                                        NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包中");
+                                        BookUtil.imageToZip(itemDatum, false, status -> NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包完成"));
+                                    })
+                                    .setNegativeButton("导出全部图片", (dialog22, which) -> {
+                                        NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包中");
+                                        BookUtil.imageToZip(itemDatum, true, status -> NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包完成"));
+                                    })
+                                    .show();
+                        }));
+                        break;
+                    }
+                }
+
 
             } else if (integer == 2) {
                 String[] ss = new String[tracker.getSelection().size()];
@@ -207,7 +242,7 @@ public class BookRackFragment extends Fragment {
                 for (String s : tracker.getSelection()) {
                     ss[index++] = s;
                 }
-                CopyOnWriteArrayList<String> fileList = new CopyOnWriteArrayList<>();
+                ArrayList<String> fileList = new ArrayList<>();
                 arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:计算中)");
                 AlertDialog dialog = new AlertDialog.Builder(requireContext())
                         .setTitle("删除提示")
@@ -234,82 +269,29 @@ public class BookRackFragment extends Fragment {
                         })
                         .setOnCancelListener(DialogInterface::dismiss)
                         .setNeutralButton("取消", null)
-                        .setOnCancelListener(dialog1 -> XluaTask.getThreadPool().shutdown())
+                        .setOnCancelListener(dialog1 -> BookUtil.cancel())
                         .create();
                 dialog.show();
 
+                ArrayList<BookBean> beans = new ArrayList<>();
 
-                CompletableFuture.runAsync(() -> {
-                    AtomicLong count_size = new AtomicLong();
-                    AtomicInteger list_index = new AtomicInteger(0);
-                    ArrayList<File> paths = new ArrayList<>();
-                    List<CompletableFuture<Integer>> list = new ArrayList<>();
-                    CopyOnWriteArrayList<String> copyOnWriteArrayList = new CopyOnWriteArrayList<>();
-
-                    for (String s : ss) {
-                        BookBean bean = null;
-                        for (BookBean itemDatum : bookAdapter.getItemData()) {
-                            if (s.equals(itemDatum.getBook_id())) {
-                                bean = itemDatum;
-                                break;
-                            }
-                        }
-                        if (bean == null) break;
-                        String path = DiskCache.path + File.separator + "book" + File.separator + s;
-                        count_size.addAndGet((long) FileSizeUtil.getFileOrFilesSize(path, FileSizeUtil.SIZE_TYPE_B));
-                        if (bean.getBook_id().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))) {
-                            File file = new File(path + File.separator + "book_chapter");
-                            if (file.isDirectory()) {
-                                paths.add(file);
-                            }
+                for (String s : ss) {
+                    for (BookBean itemDatum : bookAdapter.getItemData()) {
+                        if (itemDatum.getBook_id().equals(s)) {
+                            beans.add(itemDatum);
+                            break;
                         }
                     }
+                }
 
-                    for (int x = 0; x < (Math.min(paths.size(), 4)); x++) {
-                        list.add(CompletableFuture.supplyAsync(() -> {
-                            int length;
-                            while ((length = list_index.getAndIncrement()) < paths.size()) {
-                                File path = paths.get(length);
-                                for (File listFile : Objects.requireNonNull(path.listFiles())) {
-                                    try {
-                                        FileReader fileReader = new FileReader(listFile);
-                                        BufferedReader bufferedReader = new BufferedReader(fileReader);
-                                        bufferedReader.lines().forEach(copyOnWriteArrayList::add);
-                                        bufferedReader.close();
-                                        fileReader.close();
-                                    } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
-                            }
-                            return null;
-                        }, XluaTask.getThreadPool()));
-                    }
-
-                    CompletableFuture.allOf(list.toArray(new CompletableFuture[0])).join();
-                    list.clear();
-                    list_index.set(0);
-
-                    for (int x = 0; x < (Math.min(copyOnWriteArrayList.size(), 4)); x++) {
-                        list.add(CompletableFuture.supplyAsync(() -> {
-                            int length;
-                            while ((length = list_index.getAndIncrement()) < copyOnWriteArrayList.size()) {
-                                String path = GlideGetPath.getCacheFileKey(copyOnWriteArrayList.get(length));
-                                long len = (long) FileSizeUtil.getFileOrFilesSize(path, FileSizeUtil.SIZE_TYPE_B);
-                                count_size.addAndGet(len);
-                                if (len > 0) fileList.add(path);
-                            }
-                            return null;
-                        }, XluaTask.getThreadPool()));
-                    }
-
-                    CompletableFuture.allOf(list.toArray(new CompletableFuture[0])).thenRunAsync(() -> requireActivity().runOnUiThread(() -> {
-                        arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(count_size.get()) + ")");
-                        adapter.notifyDataSetChanged();
-                    }));
+                BookUtil.GetCacheSize(beans, (atomicLong, fileList1, deficiencyList) -> requireActivity().runOnUiThread(() -> {
+                    fileList.addAll(fileList1);
+                    arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + ")");
+                    adapter.notifyDataSetChanged();
+                }));
 
 
-                }, XluaTask.getThreadPool());
+
             }
         });
 

@@ -71,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
         //binding.itemMenu.getChildAt(0).setOnClickListener(view -> bookrackViewModel.operationBooks(0));
 
         //导出书本,只支持单本导出(等待更新)
-        binding.itemMenu.getChildAt(1).setEnabled(false);
-        //binding.itemMenu.getChildAt(1).setOnClickListener(view -> bookrackViewModel.operationBooks(1));
+        binding.itemMenu.getChildAt(1).setEnabled(true);
+        binding.itemMenu.getChildAt(1).setOnClickListener(view -> bookrackViewModel.operationBooks(1));
 
         //删除
         binding.itemMenu.getChildAt(2).setOnClickListener(view -> bookrackViewModel.operationBooks(2));
