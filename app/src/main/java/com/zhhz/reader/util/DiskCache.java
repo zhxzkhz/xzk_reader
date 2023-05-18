@@ -127,7 +127,7 @@ public class DiskCache {
 
     }
 
-    private static String encrypt(String dataStr) {
+    public static String encrypt(String dataStr) {
         try {
             MessageDigest m = MessageDigest.getInstance("MD5");
             m.update(dataStr.getBytes(StandardCharsets.UTF_8));
@@ -167,7 +167,7 @@ public class DiskCache {
     }
 
 
-    private static File urlToFile(HttpUrl call, String pt) {
+    public static File urlToFile(HttpUrl call, String pt) {
         String paths = call.encodedPath().substring(1).replace("/", "_");
         pt = pt == null ? MyApplication.context.getExternalCacheDir().getAbsolutePath() : pt;
         String url = pt + File.separator + "Disk_Cache" + File.separator;

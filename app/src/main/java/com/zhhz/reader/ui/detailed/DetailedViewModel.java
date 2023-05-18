@@ -42,8 +42,8 @@ public class DetailedViewModel extends ViewModel {
             if (data.getCover() == null || data.getCover().isEmpty()) {
                 data.setCover(bean.getCover());
             }
-            data.setBook_id(StringUtil.getMD5(data.getTitle() + "▶☀" + RuleAnalysis.analyses_map.get(bean.getSource().get(index)).isComic() + "☀◀" + ((BookBean) data).getAuthor()));
-            DetailedViewModel.this.data.postValue((BookBean) data);
+            data.setBook_id(StringUtil.getMD5(data.getTitle() + "▶☀" + Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).isComic() + "☀◀" + data.getAuthor()));
+            DetailedViewModel.this.data.postValue(data);
         });
     }
 

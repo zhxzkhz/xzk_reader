@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import cn.hutool.core.thread.ThreadFactoryBuilder;
 
 public class XluaTask {
-    private static final ExecutorService executorService;
+    private static final ThreadPoolExecutor executorService;
 
     static {
         final ThreadFactory threadFactory = new ThreadFactoryBuilder().setNamePrefix("Xlua-Thread-").setDaemon(true).build();
@@ -22,7 +22,7 @@ public class XluaTask {
                 queue,threadFactory);
     }
 
-    public static ExecutorService getThreadPool(){
+    public static ThreadPoolExecutor getThreadPool(){
         return executorService;
     }
 }

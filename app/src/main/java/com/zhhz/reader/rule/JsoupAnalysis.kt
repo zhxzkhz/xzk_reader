@@ -37,6 +37,7 @@ class JsoupAnalysis : Analysis {
     }
 
     private val mailPattern = Pattern.compile("([^-]*)->(.*)")
+    private val mailPattern1 = Pattern.compile("(.*)->(.*)")
 
     private fun parseJsoup(s1: Any, reg1: String): String {
         var value = s1
@@ -77,9 +78,16 @@ class JsoupAnalysis : Analysis {
                 }
 
                 "replace" -> {
-                    val m = mailPattern.matcher(v)
+                    val m = mailPattern1.matcher(v)
                     if (m.find()) {
                         value = value.toString().replace(m.group(1).orEmpty(), m.group(2).orEmpty())
+                    }
+                }
+
+                "replaceAll" -> {
+                    val m = mailPattern1.matcher(v)
+                    if (m.find()) {
+                        value = value.toString().replace(m.group(1).orEmpty().toRegex(), m.group(2).orEmpty())
                     }
                 }
 

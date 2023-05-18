@@ -21,6 +21,7 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
+import javax.net.ssl.HostnameVerifier
 import javax.script.SimpleBindings
 
 @GlideModule
@@ -43,6 +44,10 @@ class XluaGlideModule : AppGlideModule(),JsExtensionClass{
 
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
         val builder = OkHttpClient.Builder()
+
+        //忽略ssl证书错误
+        builder.sslSocketFactory(SSLSocketClient.getSSLSocketFactory(),SSLSocketClient.getTrustManager())
+        builder.hostnameVerifier { _, _ -> true }
         val al = ArrayList<Protocol>()
         al.add(Protocol.HTTP_1_1)
         al.add(Protocol.HTTP_2)

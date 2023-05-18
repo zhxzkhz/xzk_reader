@@ -19,6 +19,8 @@ import android.widget.Toast;
 import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
 
+import com.alibaba.fastjson.JSONObject;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -205,6 +207,15 @@ public class ReadTextView extends View {
             AnalyseTextLine();
         }
         invalidate();
+    }
+
+    public void setting(JSONObject jsonObject){
+        if (jsonObject.size() == 0) return;
+        this.setTextSize(jsonObject.getIntValue("textSize"));
+        this.marginSpacing = jsonObject.getFloat("marginSpacing");
+        this.lineHeight = jsonObject.getFloat("lineHeight");
+        this.fontSpacing = jsonObject.getFloat("fontSpacing");
+        this.lineHeightRatio = jsonObject.getFloat("lineHeightRatio");
     }
 
     public boolean isIndentation() {

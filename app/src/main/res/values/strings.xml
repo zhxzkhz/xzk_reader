@@ -44,6 +44,7 @@
     <string name="font_style">系统字体</string>
     <string name="font_size_title">字号</string>
     <string name="font_margin_title">边距</string>
+    <string name="progress_tip">加载中,请耐心等待</string>
 
 
 </resources>

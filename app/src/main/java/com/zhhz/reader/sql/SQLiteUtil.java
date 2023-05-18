@@ -20,7 +20,7 @@ public class SQLiteUtil {
     public static void saveBook(BookBean book) {
         helper = new BookSqliteHelper(MyApplication.context, "bookrack.db", null, 1);
         SQLiteDatabase database = helper.getWritableDatabase();
-        database.execSQL("replace into bookrack (book_id,title,author,cover,chapter_update,catalogue,latestChapter,status,update_time,intro) values(?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getUpdate(), book.getCatalogue(), book.getLastChapter(), book.getStatus() ? 1 : 0, book.getUpdateTime(), book.getIntro()});
+        database.execSQL("replace into bookrack (book_id,title,author,cover,chapter_update,catalogue,latestChapter,status,update_time,intro,comic) values(?,?,?,?,?,?,?,?,?,?,?)", new Object[]{book.getBook_id(), book.getTitle(), book.getAuthor(), book.getCover(), book.getUpdate(), book.getCatalogue(), book.getLastChapter(), book.getStatus() ? 1 : 0, book.getUpdateTime(), book.getIntro(),book.isComic()});
         database.close();
     }
 
@@ -44,6 +44,7 @@ public class SQLiteUtil {
             bookBean.setStatus(query.getInt(7) == 1);
             bookBean.setUpdateTime(query.getString(8));
             bookBean.setIntro(query.getString(9));
+            bookBean.setComic(query.getInt(10)==1);
             list.add(bookBean);
         }
         query.close();
@@ -68,6 +69,7 @@ public class SQLiteUtil {
         bookBean.setStatus(query.getInt(7) == 0);
         bookBean.setUpdateTime(query.getString(8));
         bookBean.setIntro(query.getString(9));
+        bookBean.setComic(query.getInt(10)==1);
         query.close();
         database.close();
         return bookBean;
@@ -145,6 +147,28 @@ public class SQLiteUtil {
         for (String id : ids) {
             database.delete("bookrule", "id=?", new String[]{id});
         }
+    }
+
+    public static String readSetting(String name) {
+        helper = new SettingSqliteHelper(MyApplication.context, "setting.db", null, 1);
+        SQLiteDatabase database = helper.getWritableDatabase();
+        Cursor query = database.rawQuery("select * from setting where name=?", new String[]{name});
+        StringBuilder s = new StringBuilder();
+        if (query.moveToNext()) {
+            s.append(query.getString(1));
+        } else {
+            s.append("{}");
+        }
+        query.close();
+        database.close();
+        return s.toString();
+    }
+
+    public static void SaveSetting(String name,String value) {
+        helper = new SettingSqliteHelper(MyApplication.context, "setting.db", null, 1);
+        SQLiteDatabase database = helper.getWritableDatabase();
+        database.execSQL("replace into setting (name,value) values(?,?)", new Object[]{name,value});
+        database.close();
     }
 
 }

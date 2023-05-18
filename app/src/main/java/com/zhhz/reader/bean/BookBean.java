@@ -1,6 +1,8 @@
 package com.zhhz.reader.bean;
 
 
+import androidx.annotation.NonNull;
+
 import java.io.Serializable;
 
 public class BookBean implements Serializable {
@@ -16,6 +18,8 @@ public class BookBean implements Serializable {
     private String intro;
     //是否完结
     private boolean status;
+
+    private boolean comic;
 
     public String getBook_id() {
         return book_id;
@@ -97,6 +101,7 @@ public class BookBean implements Serializable {
         this.status = status;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "BookBean{" +
@@ -111,5 +116,14 @@ public class BookBean implements Serializable {
                 ", intro='" + intro + '\'' +
                 ", status=" + status +
                 '}';
+    }
+
+    public boolean isComic() {
+        return comic;
+    }
+
+    public BookBean setComic(boolean comic) {
+        this.comic = comic;
+        return this;
     }
 }
