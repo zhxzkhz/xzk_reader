@@ -1,22 +1,27 @@
 package com.zhhz.reader.util;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
+import static org.apache.commons.compress.archivers.zip.ZipArchiveEntryRequest.createZipArchiveEntryRequest;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.graphics.Bitmap;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alibaba.fastjson.util.ParameterizedTypeImpl;
-import com.bumptech.glide.request.target.CustomTarget;
-import com.bumptech.glide.request.transition.Transition;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
+import com.bumptech.glide.request.FutureTarget;
 import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.ZipParameters;
+import org.apache.commons.compress.archivers.zip.DefaultBackingStoreSupplier;
+import org.apache.commons.compress.archivers.zip.ScatterZipOutputStream;
+import org.apache.commons.compress.archivers.zip.StreamCompressor;
+import org.apache.commons.compress.archivers.zip.UnixStat;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntryRequest;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.parallel.ScatterGatherBackingStore;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -35,10 +40,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.Deflater;
+
+import cn.hutool.core.util.ObjectUtil;
 
 public class BookUtil {
 
@@ -88,6 +95,7 @@ public class BookUtil {
             AtomicInteger list_index = new AtomicInteger(0);
             AtomicInteger deficiency = new AtomicInteger(0);
             List<CompletableFuture<Integer>> list = new ArrayList<>();
+            //图片地址列表
             CopyOnWriteArrayList<String> copyOnWriteArrayList = new CopyOnWriteArrayList<>();
             //文件列表
             CopyOnWriteArrayList<String> fileList = new CopyOnWriteArrayList<>();
@@ -144,7 +152,8 @@ public class BookUtil {
         }, XluaTask.getThreadPool());
     }
 
-    public static void imageToZip(BookBean bean,boolean all,ImageToZip$Callback callback) {
+    public static void imageToZip(BookBean bean, boolean all, ImageToZip$Callback callback) {
+        callback.accept(false,"开始打包",0,1);
         futures.add(CompletableFuture.runAsync(() -> {
             LinkedHashMap<String, String> chapter;
             try {
@@ -155,100 +164,177 @@ public class BookUtil {
                 throw new RuntimeException(e);
             }
 
-
-            ZipFile zipFile = new ZipFile(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "aaaa.zip");
-            zipFile.setRunInThread(true);
-
-            //添加一个标记，用于防止死循环
-            boolean bool = true;
-            AtomicInteger count = new AtomicInteger(0);
+            //用于判断是否完成
+            AtomicInteger sign = new AtomicInteger(0);
             RuleAnalysis rule;
+            LazyHeaders headers;
             try {
-                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "rule",false);
+                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "rule", false);
+                LazyHeaders.Builder header = new LazyHeaders.Builder();
+                if (rule.getAnalysis().getJson().getImgHeader() != null) {
+                    if (ObjectUtil.isNotEmpty(rule.getAnalysis().getJson().getImgHeader().getHeader())) {
+                        JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getImgHeader().getHeader());
+                        for (Map.Entry<String, Object> entry1 : header_x.entrySet()) {
+                            header.addHeader(entry1.getKey(), (String) entry1.getValue());
+                        }
+                        header_x.clear();
+                    }
+                    if (rule.getAnalysis().getJson().getImgHeader().getReuse()) {
+                        JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getHeader());
+                        for (Map.Entry<String, Object> entry1 : header_x.entrySet()) {
+                            header.addHeader(entry1.getKey(), (String) entry1.getValue());
+                        }
+                        header_x.clear();
+                    }
+                }
+                headers = header.build();
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
             }
             //章节顺序
-            AtomicInteger i = new AtomicInteger(1);
+            AtomicInteger i = new AtomicInteger(0);
+            //章节名字
+            ArrayList<String> chapterList = new ArrayList<>();
+            //图片地址
+            ArrayList<ArrayList<String>> imageList = new ArrayList<>();
 
+            AtomicInteger count = new AtomicInteger();
+
+            callback.accept(false,"读取目录中（" + i.get() + "/" + chapter.size() +"）",0,chapter.size());
             for (Map.Entry<String, String> entry : chapter.entrySet()) {
-                //图片顺序
-                AtomicInteger index = new AtomicInteger(1);
-                File file =new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(entry.getValue()));
-                if (!(file.isFile() || all)) continue;
-                rule.bookChapters(bean, entry.getValue(), (data, tag) -> {
-                    String[] c = data.getData().split("\n");
-                    for (String s : c) {
-                        String path1 = GlideGetPath.getCacheFileKey(s);
-                        assert path1 != null;
-                        if (new File(path1).isFile()) {
-                            try {
-                                ZipParameters zipParameters = new ZipParameters();
-                                zipParameters.setFileNameInZip(i.get() + "-" + entry.getKey() + "/" + index.getAndIncrement() + ".png");
-                                InputStream is = Files.newInputStream(Paths.get(path1));
-                                zipFile.addStream(is, zipParameters);
-                                is.close();
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
+                File file = new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(entry.getValue()));
+                if (!(file.isFile() || all)) {
+                    i.getAndIncrement();
+                    callback.accept(false,"读取目录中（" + i.get() + "/" + chapter.size() +"）",i.get(),chapter.size());
+                    chapterList.add(null);
+                    imageList.add(null);
+                    continue;
+                }
+                try {
+                    sign.addAndGet(1);
+                    rule.bookChapters(bean, entry.getValue(), (data, tag) -> {
+                        i.getAndIncrement();
+                        callback.accept(false,"读取目录中（" + i.get() + "/" + chapter.size() +"）",i.get(),chapter.size());
+                        ArrayList<String> imageList_c = new ArrayList<>();
+                        String[] c = data.getData().split("\n");
+                        for (String s : c) {
+                            if (s.startsWith("http")) {
+                                imageList_c.add(s);
+                                count.getAndIncrement();
                             }
-                        } else if (all){
-                            count.addAndGet(1);
-                            ZipParameters zipParameters = new ZipParameters();
-                            zipParameters.setFileNameInZip(i.get() + "-" + entry.getKey() + "/" + index.getAndIncrement() + ".png");
-                            GlideApp.with(MyApplication.context).asBitmap().load(s).into(new CustomTarget<Bitmap>() {
-                                @Override
-                                public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                                    resource.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                                    try {
-                                        ByteArrayInputStream b = new ByteArrayInputStream(outputStream.toByteArray());
-                                        zipFile.addStream(b, zipParameters);
-                                        outputStream.close();
-                                        resource.recycle();
-                                        b.close();
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    } finally {
-                                        count.addAndGet(-1);
-                                    }
-                                }
-                                @Override
-                                public void onLoadCleared(@Nullable Drawable placeholder) {
-
-                                }
-
-                                @Override
-                                public void onLoadFailed(@Nullable Drawable errorDrawable) {
-                                    count.addAndGet(-1);
-                                }
-                            });
                         }
-                    }
-                },entry.getKey());
-                i.addAndGet(1);
+                        chapterList.add(entry.getKey());
+                        imageList.add(imageList_c);
+                        sign.addAndGet(-1);
+                    }, entry.getKey());
+                } catch (Exception e) {
+                    sign.addAndGet(-1);
+                    e.printStackTrace();
+                }
+                i.getAndIncrement();
             }
 
-            while (count.get() != 0) {
+            while (sign.get() != 0) {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    callback.accept(false,"目录读取失败",0,1);
+                    e.printStackTrace();
+                    return;
                 }
             }
-            callback.accept(true);
+
+            AtomicInteger list_index = new AtomicInteger(0);
+            i.set(0);
+
+            callback.accept(false,"读取目录完成，开始加载图片",1,1);
+
+            DefaultBackingStoreSupplier sb = new DefaultBackingStoreSupplier(null);
             try {
-                zipFile.close();
-            } catch (IOException e) {
+                ZipArchiveOutputStream zipArchive = new ZipArchiveOutputStream(new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "aaaa.zip"));
+                zipArchive.setEncoding("UTF-8");
+
+                int length;
+                while ((length = list_index.getAndIncrement()) < chapterList.size()) {
+                    String chapterName = chapterList.get(length);
+                    if (chapterName == null) continue;
+                    ArrayList<String> chapter_temp = imageList.get(length);
+                    int index = 1;
+                    for (String path1 : chapter_temp) {
+                        String p = GlideGetPath.getCacheFileKey(path1);
+                        if (p != null && new File(p).isFile()) {
+                            try {
+                                i.getAndIncrement();
+                                ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry( length + "-" + chapterName + "/" + (index++) + ".png");
+                                zipArchiveEntry.setMethod(ZipArchiveEntry.DEFLATED);
+                                InputStream is = Files.newInputStream(Paths.get(p));
+                                zipArchiveEntry.setSize(is.available());
+                                zipArchiveEntry.setUnixMode(UnixStat.FILE_FLAG | 436);
+                                final ZipArchiveEntryRequest zipArchiveEntryRequest = createZipArchiveEntryRequest(zipArchiveEntry,  () -> is);
+                                final ScatterGatherBackingStore bs = sb.get();
+                                final StreamCompressor sc = StreamCompressor.create(Deflater.DEFAULT_COMPRESSION, bs);
+                                ScatterZipOutputStream scatterZipOutputStream = new ScatterZipOutputStream(bs, sc);
+                                scatterZipOutputStream.addArchiveEntry(zipArchiveEntryRequest);
+                                scatterZipOutputStream.writeTo(zipArchive);
+                                is.close();
+                                scatterZipOutputStream.close();
+                                callback.accept(false,chapterName + " - " + i.get() + "图片加载中",i.get(),count.get());
+                            } catch (Exception e) {
+                                callback.accept(false,chapterName + " - " + i.get() + "图片加载失败",i.get(),count.get());
+                                e.printStackTrace();
+                                LogUtil.error(e);
+                            }
+                        } else if (all) {
+                            ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry( length + "-" + chapterName + "/" + (index++) + ".png");
+                            zipArchiveEntry.setMethod(ZipArchiveEntry.DEFLATED);
+                            zipArchiveEntry.setUnixMode(UnixStat.FILE_FLAG | 436);
+
+                            try {
+                                i.getAndIncrement();
+                                FutureTarget<Bitmap> temp = GlideApp.with(MyApplication.context).asBitmap().load(new GlideUrl(path1, headers)).submit();
+                                Bitmap resource = temp.get();
+                                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                                resource.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                                ByteArrayInputStream b = new ByteArrayInputStream(outputStream.toByteArray());
+                                zipArchiveEntry.setSize(b.available());
+                                final ZipArchiveEntryRequest zipArchiveEntryRequest = createZipArchiveEntryRequest(zipArchiveEntry,  () -> b);
+                                final ScatterGatherBackingStore bs = sb.get();
+                                final StreamCompressor sc = StreamCompressor.create(Deflater.DEFAULT_COMPRESSION, bs);
+                                ScatterZipOutputStream scatterZipOutputStream = new ScatterZipOutputStream(bs, sc);
+                                scatterZipOutputStream.addArchiveEntry(zipArchiveEntryRequest);
+                                scatterZipOutputStream.zipEntryWriter().writeNextZipEntry(zipArchive);
+                                resource.recycle();
+                                outputStream.close();
+                                b.close();
+                                scatterZipOutputStream.close();
+                                callback.accept(false,chapterName + " - " + i.get() + "图片加载中",i.get(),count.get());
+                            } catch (Exception e) {
+                                callback.accept(false,chapterName + " - " + i.get() + "图片加载失败",i.get(),count.get());
+                                e.printStackTrace();
+                                LogUtil.error(e);
+                            }
+                        } else  {
+                            i.getAndIncrement();
+                        }
+                    }
+
+                }
+                zipArchive.close();
+                callback.accept(true,"打包成功",i.get(),count.get());
+            } catch (Exception e) {
+                callback.accept(true,"打包失败",0,1);
                 e.printStackTrace();
             }
+
         }, XluaTask.getThreadPool()));
 
     }
 
     public interface ImageToZip$Callback {
-        void accept(boolean status);
+        void accept(boolean status,String msg,int progress,int max);
     }
+
     public interface GetCacheSize$Callback {
         void accept(AtomicLong atomicLong, CopyOnWriteArrayList<String> fileList, CopyOnWriteArrayList<String> deficiencyList);
     }

@@ -5,7 +5,7 @@
 #### 基础功能
 - [x] 自定义书源
 - [x] 本地TXT阅读
-- [x] 小说阅读支持~~自定义字体~~、~~颜色~~、~~背景~~、字体大小，边距、字距、行距、段距
+- [x] 小说阅读支持~~_自定义字体_~~、~~_颜色_~~、~~_背景_~~、字体大小，边距、字距、行距、段距
 - [ ] 书架自定义切换列表、网格风格
 - [ ] 日夜模式切换
 - [ ] 自定义主题
@@ -21,6 +21,6 @@
 > * <a herf="https://github.com/scwang90/SmartRefreshLayout/">SmartRefreshLayout</a>
 > * <a herf="https://github.com/gedoor/rhino-android/">rhino-android</a>
 > * <a herf="https://github.com/square/okhttp">okhttp3</a>
-> * <a herf="https://github.com/srikanth-lingala/zip4j">zip4j</a>>
-> * * <a herf="">hutool-crypto</a>
+> * <a herf="https://github.com/srikanth-lingala/zip4j">zip4j</a>
+> * <a herf="">hutool-crypto</a>
 > * <a herf="">androidx系列</a>

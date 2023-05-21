@@ -211,6 +211,7 @@ public class BookRackFragment extends Fragment {
                 dialog.show();
 
                 String name = tracker.getSelection().iterator().next();
+                final long[] time = {System.currentTimeMillis()};
 
                 for (BookBean itemDatum : bookAdapter.getItemData()) {
                     if (name.equals(itemDatum.getBook_id())) {
@@ -221,14 +222,16 @@ public class BookRackFragment extends Fragment {
                                     .setMessage("已缓存 " + fileList.size() + "张图片(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + "),缺失 " + deficiencyList.size() + " 张图片\n提示：导出全部图片会自动下载未缓存图片，开始后无法取消")
                                     //.setCancelable(false)
                                     .setOnCancelListener(dialog1 -> BookUtil.cancel())
-                                    .setPositiveButton("导出已缓存图片", (dialog2, which) -> {
-                                        NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包中");
-                                        BookUtil.imageToZip(itemDatum, false, status -> NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包完成"));
-                                    })
-                                    .setNegativeButton("导出全部图片", (dialog22, which) -> {
-                                        NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包中");
-                                        BookUtil.imageToZip(itemDatum, true, status -> NotificationUtil.sendMessage("《" + itemDatum.getTitle() + "》打包完成"));
-                                    })
+                                    .setPositiveButton("导出已缓存图片", (dialog2, which) -> BookUtil.imageToZip(itemDatum, false, (status, msg, progress, max) -> {
+                                        if (System.currentTimeMillis() - time[0] < 100 && !status) return;
+                                        time[0] = System.currentTimeMillis();
+                                        NotificationUtil.sendProgressMessage(itemDatum.getTitle(),msg,progress,max);
+                                    }))
+                                    .setNegativeButton("导出全部图片", (dialog22, which) -> BookUtil.imageToZip(itemDatum, true, (status, msg, progress, max) -> {
+                                        if (System.currentTimeMillis() - time[0] < 100 && !status) return;
+                                        time[0] = System.currentTimeMillis();
+                                        NotificationUtil.sendProgressMessage(itemDatum.getTitle(),msg,progress,max);
+                                    }))
                                     .show();
                         }));
                         break;
