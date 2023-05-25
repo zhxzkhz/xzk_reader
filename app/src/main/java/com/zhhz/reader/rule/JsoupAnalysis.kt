@@ -18,7 +18,6 @@ import javax.script.ScriptException
 import javax.script.SimpleBindings
 
 class JsoupAnalysis : Analysis {
-    constructor(path: String) : super(path)
     constructor(ruleJsonBean: RuleJsonBean) : super(ruleJsonBean)
 
     //规则分割
@@ -119,7 +118,7 @@ class JsoupAnalysis : Analysis {
             val al: MutableList<SearchResultBean> = ArrayList()
 
             if (!result.isStatus) {
-                callback.run(al)
+                callback.accept(al)
                 return@Http
             }
 
@@ -148,7 +147,7 @@ class JsoupAnalysis : Analysis {
                 }
                 al.add(searchResultBean)
             }
-            callback.run(al)
+            callback.accept(al)
         }
     }
 
@@ -157,7 +156,7 @@ class JsoupAnalysis : Analysis {
             val book = BookBean()
 
             if (!result.isStatus) {
-                callback.run(book)
+                callback.accept(book)
                 return@Http
             }
 
@@ -205,7 +204,7 @@ class JsoupAnalysis : Analysis {
                 }
                 resultJs = jsToJavaObject(simpleBindings["result"] ?: resultJs)
                 if (ObjectUtil.isEmpty(resultJs)) {
-                    callback.run(null)
+                    callback.accept(null)
                     return@Http
                 }
                 book.catalogue = resultJs.toString()
@@ -218,7 +217,7 @@ class JsoupAnalysis : Analysis {
 
             //加入 isComic 用于区分出来相同名字的小说和漫画
             book.book_id = StringUtil.getMD5(book.title + "▶☀" + isComic + "☀◀" + book.author)
-            callback.run(book)
+            callback.accept(book)
         }
     }
 
@@ -226,7 +225,7 @@ class JsoupAnalysis : Analysis {
         Http(url) { result ->
             val lhm: LinkedHashMap<String, String>
             if (!result.isStatus) {
-                callback.run(LinkedHashMap(), url)
+                callback.accept(LinkedHashMap(), url)
                 return@Http
             }
             val element = Jsoup.parse(result.data)
@@ -251,16 +250,16 @@ class JsoupAnalysis : Analysis {
                     bookDirectory(page) { it, urlTemp ->
                         if (it.isNotEmpty()) {
                             lhm.putAll(it)
-                            callback.run(lhm, urlTemp)
+                            callback.accept(lhm, urlTemp)
                         } else {
-                            callback.run(LinkedHashMap(), urlTemp)
+                            callback.accept(LinkedHashMap(), urlTemp)
                         }
                     }
                 } else {
-                    callback.run(lhm, url)
+                    callback.accept(lhm, url)
                 }
             } else {
-                callback.run(lhm, url)
+                callback.accept(lhm, url)
             }
         }
     }
@@ -373,7 +372,7 @@ class JsoupAnalysis : Analysis {
     override fun bookContent(url: String, callback: AnalysisCallBack.ContentCallBack, label: Any) {
         Http(url) { result ->
             if (!result.isStatus) {
-                callback.run(result, label)
+                callback.accept(result, label)
                 return@Http
             }
             val data: Document = Jsoup.parse(result.data)
@@ -466,13 +465,13 @@ class JsoupAnalysis : Analysis {
                         if (dataA.isStatus) {
                             dataA.data = str + dataA.data
                         }
-                        callback.run(dataA, labelA)
+                        callback.accept(dataA, labelA)
                     }, label)
                 } else {
-                    callback.run(httpResponseBean, label)
+                    callback.accept(httpResponseBean, label)
                 }
             } else {
-                callback.run(httpResponseBean, label)
+                callback.accept(httpResponseBean, label)
             }
         }
     }

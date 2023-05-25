@@ -2,8 +2,6 @@ package com.zhhz.reader.rule
 
 import cn.hutool.core.util.ObjectUtil
 import com.alibaba.fastjson.JSON
-import com.alibaba.fastjson.JSONArray
-import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson.JSONPath
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
@@ -17,7 +15,6 @@ import javax.script.SimpleBindings
 
 
 class JsonAnalysis : Analysis{
-    constructor(path: String) : super(path)
 
     constructor(jsonObject: RuleJsonBean) : super(jsonObject)
 
@@ -38,14 +35,6 @@ class JsonAnalysis : Analysis{
         return arrayOf(v1, v2)
     }
 
-    private fun parse(json: Any?, reg: String): Any = json.let {
-        when (it) {
-            is JSONObject -> return it[reg] ?: ""
-            is JSONArray -> return it[reg.toInt()] ?: ""
-            else -> return (json ?: "").toString()
-        }
-    }
-
     private fun parseRule(data: Any, reg: String, bindings: SimpleBindings): Any {
         if (reg.isEmpty()) return data
         var dataTemp: Any = data
@@ -62,9 +51,8 @@ class JsonAnalysis : Analysis{
         val i = regs[0].indexOf("\$")
         dataTemp = if (i > 0) {
             regs[0].substring(0, i) + JSONPath.eval(dataTemp, regs[0].substring(i))
-        } else if (i == 0 ){
-            val s = JSONPath.eval(dataTemp, regs[0].substring(i))
-            return s
+        } else if (i == 0 ) {
+            return JSONPath.eval(dataTemp, regs[0].substring(i))
         } else {
             regs[0]
         }
@@ -168,7 +156,7 @@ class JsonAnalysis : Analysis{
         Http(url) { result ->
             val al: MutableList<SearchResultBean> = ArrayList()
             if (!result.isStatus) {
-                callback.run(al)
+                callback.accept(al)
                 return@Http
             }
 
@@ -194,7 +182,7 @@ class JsonAnalysis : Analysis{
                     }
                 }
             }
-            callback.run(al)
+            callback.accept(al)
             bindings.clear()
         }
 
@@ -209,7 +197,7 @@ class JsonAnalysis : Analysis{
             val book = BookBean()
             if (!result.isStatus) {
                 log(result.error)
-                callback.run(book)
+                callback.accept(book)
                 return@Http
             }
 
@@ -247,7 +235,7 @@ class JsonAnalysis : Analysis{
                 }
                 resultJs = resultJs ?: SCRIPT_ENGINE["result"]
                 if (resultJs == null) {
-                    callback.run(null)
+                    callback.accept(null)
                     return@Http
                 }
                 book.catalogue = resultJs.toString()
@@ -255,7 +243,7 @@ class JsonAnalysis : Analysis{
                 book.catalogue = toAbsoluteUrl(parseRule(data, json.detail.catalog, bindings).toString(), url)
             }
 
-            callback.run(book)
+            callback.accept(book)
         }
 
     }
@@ -269,7 +257,7 @@ class JsonAnalysis : Analysis{
             val lhm: LinkedHashMap<String, String> = LinkedHashMap()
             if (!result.isStatus) {
                 log(result.error)
-                callback.run(lhm,url)
+                callback.accept(lhm,url)
                 return@Http
             }
 
@@ -299,7 +287,7 @@ class JsonAnalysis : Analysis{
                 }
             }
 
-            callback.run(lhm,url)
+            callback.accept(lhm,url)
 
         }
     }
@@ -316,7 +304,7 @@ class JsonAnalysis : Analysis{
         Http(url) { result ->
             var s = ""
             if (!result.isStatus) {
-                callback.run(result, label)
+                callback.accept(result, label)
                 return@Http
             }
 
@@ -343,7 +331,7 @@ class JsonAnalysis : Analysis{
                 }
             }
             httpResponseBean.data = s
-            callback.run(httpResponseBean, label)
+            callback.accept(httpResponseBean, label)
 
         }
     }

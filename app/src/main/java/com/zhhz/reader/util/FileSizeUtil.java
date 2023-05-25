@@ -36,8 +36,6 @@ public class FileSizeUtil {
             }
         } catch (Exception e) {
             return blockSize;
-            //e.printStackTrace();
-            //Log.e(TAG, "获取文件大小失败!");
         }
         return ConvertFileSize(blockSize, sizeType);
     }
@@ -57,9 +55,7 @@ public class FileSizeUtil {
             } else {
                 blockSize = getFileSize(file);
             }
-        } catch (Exception e) {
-            //e.printStackTrace();
-            //Log.e(TAG, "获取文件大小失败!");
+        } catch (Exception ignored) {
         }
         return ConvertFileSize(blockSize);
     }

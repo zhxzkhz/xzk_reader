@@ -25,6 +25,7 @@ import com.zhhz.reader.R;
 import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * 漫画阅读适配器
@@ -38,16 +39,13 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
     private final RequestListener<Bitmap> requestListener = new RequestListener<Bitmap>() {
         @Override
         public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-            /*
-            AppCompatButton button = new AppCompatButton(context);
-            button.setText("重新加载");
-            button.setOnClickListener(v -> {
+            AppCompatTextView tv = ((AppCompatTextView)((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).getChildAt(1));
+            tv.setText("加载失败\n点击重新加载");
+            tv.setOnClickListener(v -> {
                 Objects.requireNonNull(target.getRequest()).begin();
-                ((FrameLayout) v.getParent()).removeView(v);
+                tv.setText("加载中");
+                tv.setOnClickListener(null);
             });
-            ((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).addView(button, layout_params);
-            */
-            ((AppCompatTextView)((FrameLayout) ((BitmapImageViewTarget) target).getView().getParent()).getChildAt(1)).setText("加载失败");
             return false;
         }
 
@@ -85,7 +83,6 @@ public class ComicAdapter extends RecyclerView.Adapter<ComicAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        //String book = itemData.get(position);
         holder.title.setText("加载中");
         ((FrameLayout)holder.imageView.getParent()).setMinimumHeight(1080);
         GlideApp.with(context)

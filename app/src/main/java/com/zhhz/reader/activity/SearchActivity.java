@@ -30,11 +30,6 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivitySearchBinding.inflate(LayoutInflater.from(this));
         setContentView(binding.getRoot());
-        if (savedInstanceState == null) {
-/*            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.search_fragment, SearchFragment.newInstance())
-                    .commitNow();*/
-        }
 
         SearchViewModel mViewModel = new ViewModelProvider(this).get(SearchViewModel.class);
         binding.searchClear.setOnClickListener(view -> finish());

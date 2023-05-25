@@ -21,7 +21,6 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
-import javax.net.ssl.HostnameVerifier
 import javax.script.SimpleBindings
 
 @GlideModule

@@ -21,7 +21,6 @@ import com.zhhz.reader.util.ManifestUtil;
 
 public class SettingFragment extends Fragment {
 
-    private SettingViewModel settingViewModelViewModel;
     private FragmentSettingBinding binding;
     private ActivityResultLauncher<Intent> launcher;
 
@@ -43,8 +42,7 @@ public class SettingFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        settingViewModelViewModel =
-                new ViewModelProvider(this).get(SettingViewModel.class);
+        SettingViewModel settingViewModelViewModel = new ViewModelProvider(this).get(SettingViewModel.class);
 
         binding = FragmentSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();

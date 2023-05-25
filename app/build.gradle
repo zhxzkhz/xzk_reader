@@ -30,10 +30,13 @@ android {
     buildFeatures {
         viewBinding true
     }
-
     packagingOptions {
-        exclude 'META-INF/INDEX.LIST'
+        resources {
+            excludes += ['META-INF/INDEX.LIST']
+        }
     }
+
+    namespace 'com.zhhz.reader'
 
 }
 

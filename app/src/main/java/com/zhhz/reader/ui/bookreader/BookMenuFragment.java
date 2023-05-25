@@ -4,26 +4,21 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.zhhz.reader.adapter.CatalogueAdapter;
 import com.zhhz.reader.databinding.FragmentBookMenuBinding;
-import com.zhhz.reader.databinding.FragmentDetailedBinding;
 import com.zhhz.reader.view.RecycleViewDivider;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 public class BookMenuFragment extends Fragment {
@@ -74,9 +69,7 @@ public class BookMenuFragment extends Fragment {
             binding.menuRefresh.setOnClickListener(view -> mViewModel.clearCurrentCache());
         }
 
-        binding.menuSetting.setOnClickListener(v -> {
-            SettingDialogFragment.getInstance().show(requireActivity().getSupportFragmentManager(), "SettingDialogFragment");
-        });
+        binding.menuSetting.setOnClickListener(v -> SettingDialogFragment.getInstance().show(requireActivity().getSupportFragmentManager(), "SettingDialogFragment"));
 
         binding.menuCatalogue.setOnClickListener(view -> {
             if (binding.menuCatalogueList.getVisibility() == View.GONE) {
@@ -164,9 +157,7 @@ public class BookMenuFragment extends Fragment {
             catalogueAdapter.notifyDataSetChanged();
         });
 
-        mViewModel.getChapters().observe(getViewLifecycleOwner(), s -> {
-            onHiddenChanged(false);
-        });
+        mViewModel.getChapters().observe(getViewLifecycleOwner(), s -> onHiddenChanged(false));
     }
 
     @Override

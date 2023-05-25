@@ -410,7 +410,7 @@ public class ReadTextView extends View {
                 if (textStart >= text.length()) {
                     int y = maxLine % pageMaxLine;
                     y = y == 0 ? pageMaxLine : y;
-                    textStart = map.get(maxLine - y + 1);
+                        textStart = map.get(maxLine - y + 1);
                 }
 
                 invalidate();
@@ -574,20 +574,12 @@ public class ReadTextView extends View {
                         wordSpaceMap.put(lineIndex, (widthPixels - (minWidth - font_width)) / font_width / (fontIndex - 1));
                     }
                     fontIndex--;
-                    indentation_a = false;
                     break;
                 }
 
                 if (textStr.equals("\n")) {
                     minWidth = widthPixels;
                     indentation_a = indentation;
-                    /*if (tmp_index + fontIndex + 1 <= text.length() && text.substring(tmp_index + fontIndex, tmp_index + fontIndex + 1).equals("\n")) {
-                        fontIndex++;
-                        font_x[tmp_index + fontIndex - 1] = minWidth;
-                    } else {
-                        minWidth = widthPixels;
-                        indentation_a = indentation;
-                    }*/
                 }
 
             }
@@ -625,11 +617,6 @@ public class ReadTextView extends View {
             tmp_index = tmp_index + fontNumber;
 
             if (skip) {
-                /*
-                StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-                for (StackTraceElement stackTraceElement : stackTrace) {
-                    System.out.println(stackTraceElement.getClassName() + "--->" + stackTraceElement.getMethodName() + "--->" + stackTraceElement.getLineNumber() + "\n");
-                }*/
                 Log.i("计算时间", String.valueOf(System.currentTimeMillis() - times));
                 break;
             }
@@ -762,8 +749,6 @@ public class ReadTextView extends View {
                         canvas.drawText(tmp_s, marginSpacing + line_font[s], finalHeight * (indexLine + 1) - topSpacing + lineSpacing + topSpace + statusBar, textPaint);
                     }
                 }
-                // canvas.drawTextOnPath(text.substring(tts, tts + index),path,0,0,textPaint);
-                // path.reset();
             }
 
             indexLine++;

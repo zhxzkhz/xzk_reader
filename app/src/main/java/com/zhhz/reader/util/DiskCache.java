@@ -29,8 +29,6 @@ public class DiskCache {
     private static final long cache_time = 1000 * 60 * 5;
     //用于执行JS
     public static final ScriptEngine SCRIPT_ENGINE = new RhinoScriptEngine();
-    //public static final ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("JavaScript");
-    //public static ScriptEngine SCRIPT_ENGINE = new ScriptEngineManager().getEngineByName("rhino");
     public static String path = "/storage/emulated/0/星☆空";
     //缓存删除时间标记
     public static boolean cache_delete_tag = true;

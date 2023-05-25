@@ -14,9 +14,6 @@ import com.zhhz.reader.databinding.FragmentSearchBinding;
 
 public class SearchFragment extends Fragment {
 
-    private SearchViewModel mViewModel;
-    private FragmentSearchBinding binding;
-
     public static SearchFragment newInstance() {
         return new SearchFragment();
     }
@@ -24,14 +21,14 @@ public class SearchFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
+        SearchViewModel mViewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        binding = FragmentSearchBinding.inflate(inflater, container, false);
+        com.zhhz.reader.databinding.FragmentSearchBinding binding = FragmentSearchBinding.inflate(inflater, container, false);
 
 
         return binding.getRoot();

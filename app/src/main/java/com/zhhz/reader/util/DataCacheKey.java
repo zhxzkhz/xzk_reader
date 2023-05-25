@@ -16,10 +16,6 @@ public class DataCacheKey implements Key {
         this.signature = signature;
     }
 
-    public Key getSourceKey() {
-        return sourceKey;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o instanceof DataCacheKey) {

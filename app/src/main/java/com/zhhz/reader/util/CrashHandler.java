@@ -82,17 +82,7 @@ public class CrashHandler implements UncaughtExceptionHandler {
         if (!handleException(ex) && mDefaultHandler != null) {
             //如果用户没有处理则让系统默认的异常处理器来处理
             mDefaultHandler.uncaughtException(thread, ex);
-        }  /*try
-			{
-				Thread.sleep(3000);
-			}
-			catch (InterruptedException e)
-			{
-				Log.e(TAG, "error : ", e);
-			}
-			//退出程序
-			android.os.Process.killProcess(android.os.Process.myPid());
-			System.exit(0);*/
+        }
     }
 
     /**
@@ -105,15 +95,6 @@ public class CrashHandler implements UncaughtExceptionHandler {
             return false;
         }
         //使用Toast来显示异常信息
-		/*new Thread() {
-			@Override
-			public void run()
-			{
-				Looper.prepare();
-				Toast.makeText(mContext, "很抱歉,程序出现异常,即将退出.", Toast.LENGTH_LONG).show();
-				Looper.loop();
-			}
-		}.start();*/
         //收集设备参数信息
         collectDeviceInfo(mContext);
         //保存日志文件(弹窗不显示，问题未知)

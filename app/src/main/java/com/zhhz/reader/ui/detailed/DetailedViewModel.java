@@ -48,7 +48,7 @@ public class DetailedViewModel extends ViewModel {
     }
 
     public void queryCatalogue(String url, SearchResultBean bean, int index) {
-        Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).bookDirectory(url, (data, label) -> DetailedViewModel.this.data_catalogue.postValue((LinkedHashMap<String, String>) data));
+        Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).bookDirectory(url, (data, label) -> DetailedViewModel.this.data_catalogue.postValue(data));
     }
 
     public void saveProgress(String id, int progress) {

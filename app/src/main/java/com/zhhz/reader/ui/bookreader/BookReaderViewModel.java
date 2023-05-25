@@ -107,14 +107,14 @@ public class BookReaderViewModel extends ViewModel {
             if (ObjectUtil.isNotEmpty(rule.getAnalysis().getJson().getImgHeader().getHeader())) {
                 JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getImgHeader().getHeader());
                 for (Map.Entry<String, Object> entry : header_x.entrySet()) {
-                    header.addHeader(entry.getKey(), (String) entry.getValue());
+                    header.addHeader(entry.getKey(), entry.getValue().toString());
                 }
                 header_x.clear();
             }
             if (rule.getAnalysis().getJson().getImgHeader().getReuse()) {
                 JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getHeader());
                 for (Map.Entry<String, Object> entry : header_x.entrySet()) {
-                    header.addHeader(entry.getKey(), (String) entry.getValue());
+                    header.addHeader(entry.getKey(), entry.getValue().toString());
                 }
                 header_x.clear();
             }

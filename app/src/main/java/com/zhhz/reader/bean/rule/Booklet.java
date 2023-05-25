@@ -1,5 +1,7 @@
 package com.zhhz.reader.bean.rule;
 
+import androidx.annotation.NonNull;
+
 import com.alibaba.fastjson2.annotation.JSONType;
 
 @JSONType(orders={"list","name"})
@@ -21,6 +23,7 @@ public class Booklet {
          return name;
      }
 
+    @NonNull
     @Override
     public String toString() {
         return "Booklet{" +

@@ -22,6 +22,9 @@ public class NotificationUtil {
     private static final int messageId = 100;
 
     public static void sendMessage(String msg) {
+        if (ActivityCompat.checkSelfPermission(MyApplication.context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         NotificationManagerCompat notificationManger = NotificationManagerCompat.from(MyApplication.context);
         notificationManger.createNotificationChannel(new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH));
         NotificationCompat.Builder builder = new NotificationCompat.Builder(MyApplication.context, channelId);
@@ -34,10 +37,13 @@ public class NotificationUtil {
     }
 
 
-    public static void sendProgressMessage(String title,String msg,int progress,int max){
+    public static void sendProgressMessage(String title, String msg, int progress, int max) {
+        if (ActivityCompat.checkSelfPermission(MyApplication.context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         NotificationManagerCompat notificationManger = NotificationManagerCompat.from(MyApplication.context);
-        notificationManger.createNotificationChannel(new NotificationChannel(channelId,channelDownloadName, NotificationManager.IMPORTANCE_HIGH));
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(MyApplication.context,channelId)
+        notificationManger.createNotificationChannel(new NotificationChannel(channelId, channelDownloadName, NotificationManager.IMPORTANCE_HIGH));
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(MyApplication.context, channelId)
                 .setSmallIcon(R.drawable.search_icon)
                 .setContentTitle(title)
                 .setContentText(msg)
@@ -46,7 +52,6 @@ public class NotificationUtil {
                 .setAutoCancel(true);
 
         builder.setProgress(max, progress, false);
-
         notificationManger.notify(1, builder.build());
 
     }

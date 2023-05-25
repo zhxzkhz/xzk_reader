@@ -10,23 +10,23 @@ import java.util.List;
 public class AnalysisCallBack {
 
     public interface CallBack {
-        void run(HttpResponseBean httpResponseBean);
+        void accept(HttpResponseBean httpResponseBean);
     }
 
     public interface SearchCallBack {
-        void run(List<SearchResultBean> list);
+        void accept(List<SearchResultBean> list);
     }
 
     public interface DetailCallBack {
-        void run(BookBean bookBean);
+        void accept(BookBean bookBean);
     }
 
     public interface DirectoryCallBack {
-        void run(LinkedHashMap<String, String> map,String url);
+        void accept(LinkedHashMap<String, String> map, String url);
     }
 
     public interface ContentCallBack {
-        void run(HttpResponseBean data, Object tag);
+        void accept(HttpResponseBean data, Object tag);
     }
 
     public interface LogError {

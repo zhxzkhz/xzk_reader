@@ -1,5 +1,7 @@
 package com.zhhz.reader.bean;
 
+import androidx.annotation.NonNull;
+
 public class RuleBean {
     private String id;
     private String name;
@@ -47,6 +49,7 @@ public class RuleBean {
         this.file = file;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "RuleBean{" +

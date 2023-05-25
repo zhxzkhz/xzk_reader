@@ -167,7 +167,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
         if (!Objects.requireNonNull(file.parentFile).isDirectory) {
             if (!file.parentFile?.mkdirs()!!) {
-                callback.run(null, label)
+                callback.accept(null, label)
             }
         }
         if (file.isFile) {
@@ -179,7 +179,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                         val h = HttpResponseBean()
                         h.isStatus = true
                         h.data = String(bytes)
-                        callback.run(h, label)
+                        callback.accept(h, label)
                         return
                     }
                 }
@@ -189,7 +189,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         }
         bookContent(url, AnalysisCallBack.ContentCallBack { data: HttpResponseBean, tag: Any ->
             if (!data.isStatus) {
-                callback.run(data, tag)
+                callback.accept(data, tag)
                 return@ContentCallBack
             }
             try {
@@ -197,7 +197,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             } catch (e: IOException) {
                 e.printStackTrace()
             }
-            callback.run(data, tag)
+            callback.accept(data, tag)
         }, label)
     }
 
@@ -208,7 +208,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         if (url.equals("skip", ignoreCase = true)) {
             val httpResponseBean = HttpResponseBean()
             httpResponseBean.isStatus = true
-            callBack.run(httpResponseBean)
+            callBack.accept(httpResponseBean)
             return
         }
         if (url.contains("@post->")) {
@@ -302,7 +302,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             override fun onFailure(call: Call, e: IOException) {
                 httpResponseBean.isStatus = false
                 httpResponseBean.error = e.message.toString()
-                callback.run(httpResponseBean)
+                callback.accept(httpResponseBean)
             }
             override fun onResponse(call: Call, response: Response) {
                 httpResponseBean.isStatus = response.code == 200
@@ -327,7 +327,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                     e.printStackTrace()
                 }
                 httpResponseBean.data = s
-                callback.run(httpResponseBean)
+                callback.accept(httpResponseBean)
                 response.close()
             }
         })

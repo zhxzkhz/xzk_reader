@@ -39,11 +39,6 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         this.itemData = new ArrayList<>();
     }
 
-    public BookAdapter(Context context, ArrayList<BookBean> data) {
-        this.context = context;
-        this.itemData = data;
-    }
-
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
     }
@@ -97,6 +92,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
                     .asBitmap()
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
                     .centerCrop()
+                    .error(R.drawable.no_cover)
                     .load(book.getCover())
                     .into(holder.imageView);
         } else {

@@ -1,5 +1,7 @@
 package com.zhhz.reader.bean.rule;
 
+import androidx.annotation.NonNull;
+
 import com.alibaba.fastjson2.annotation.JSONType;
 
 import cn.hutool.core.util.ObjectUtil;
@@ -167,6 +169,7 @@ public class RuleJsonBean {
         return chapter;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "{\n" +

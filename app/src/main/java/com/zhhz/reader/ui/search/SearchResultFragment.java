@@ -53,8 +53,6 @@ public class SearchResultFragment extends Fragment {
             } else {
                 searchResultAdapter.getItemData().addAll(list);
                 searchResultAdapter.notifyItemRangeInserted(size, list.size());
-                //DiffUtil.DiffResult result = DiffUtil.calculateDiff(new SearchResultDiffCallback(searchResultAdapter.getItemData(),list));
-                //result.dispatchUpdatesTo(searchResultAdapter);
             }
         });
     }
