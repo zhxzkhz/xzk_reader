@@ -3,6 +3,7 @@ package com.zhhz.reader.rule;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.HttpResponseBean;
 import com.zhhz.reader.bean.SearchResultBean;
+import com.zhhz.reader.util.OrderlyMap;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,7 +23,7 @@ public class AnalysisCallBack {
     }
 
     public interface DirectoryCallBack {
-        void accept(LinkedHashMap<String, String> map, String url);
+        void accept(OrderlyMap map, String url);
     }
 
     public interface ContentCallBack {

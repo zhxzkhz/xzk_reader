@@ -7,6 +7,7 @@ import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
+import com.zhhz.reader.util.OrderlyMap
 import com.zhhz.reader.util.StringUtil
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -223,9 +224,9 @@ class JsoupAnalysis : Analysis {
 
     override fun bookDirectory(url: String, callback: AnalysisCallBack.DirectoryCallBack) {
         Http(url) { result ->
-            val lhm: LinkedHashMap<String, String>
+            val lhm: OrderlyMap
             if (!result.isStatus) {
-                callback.accept(LinkedHashMap(), url)
+                callback.accept(OrderlyMap(), url)
                 return@Http
             }
             val element = Jsoup.parse(result.data)
@@ -248,11 +249,11 @@ class JsoupAnalysis : Analysis {
                     toAbsoluteUrl(parseJsoup(element.select(tmp[0]), tmp[1].ifEmpty { "attr->href" }), url)
                 if (page.isNotEmpty() && page != url) {
                     bookDirectory(page) { it, urlTemp ->
-                        if (it.isNotEmpty()) {
+                        if (it.isNotEmpty) {
                             lhm.putAll(it)
                             callback.accept(lhm, urlTemp)
                         } else {
-                            callback.accept(LinkedHashMap(), urlTemp)
+                            callback.accept(OrderlyMap(), urlTemp)
                         }
                     }
                 } else {
@@ -273,8 +274,8 @@ class JsoupAnalysis : Analysis {
         return bindings
     }
 
-    private fun catalogAnalysis(url: String?, data: Element): LinkedHashMap<String, String> {
-        val lhm = LinkedHashMap<String, String>()
+    private fun catalogAnalysis(url: String?, data: Element): OrderlyMap {
+        val lhm = OrderlyMap()
         var bookletName: Array<String>? = null
         val list: Elements
         val catalog = json.catalog

@@ -9,6 +9,7 @@ import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
+import com.zhhz.reader.util.OrderlyMap
 import java.util.regex.Pattern
 import javax.script.ScriptException
 import javax.script.SimpleBindings
@@ -204,7 +205,7 @@ class JsonAnalysis : Analysis{
             val data = responseParse(result, bindings)
 
             book.title = parseRule(data, json.detail.name, bindings).toString()
-
+            book.setComic(json.comic)
             if (ObjectUtil.isNotEmpty(json.detail.author))
                 book.author = parseRule(data, json.detail.author, bindings).toString()
 
@@ -254,7 +255,7 @@ class JsonAnalysis : Analysis{
         bindings["url"] = url
         bindings["callback"] = callback
         Http(url) { result ->
-            val lhm: LinkedHashMap<String, String> = LinkedHashMap()
+            val lhm: OrderlyMap = OrderlyMap()
             if (!result.isStatus) {
                 log(result.error)
                 callback.accept(lhm,url)
