@@ -2,7 +2,40 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="AnalysisTest">
+        <State />
+      </entry>
+      <entry key="AnalysisTest.bookChapters (1)">
+        <State />
+      </entry>
       <entry key="app">
+        <State>
+          <runningDeviceTargetSelectedWithDropDown>
+            <Target>
+              <type value="RUNNING_DEVICE_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="SERIAL_NUMBER" />
+                  <value value="cf54ca5a" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </runningDeviceTargetSelectedWithDropDown>
+          <timeTargetWasSelectedWithDropDown value="2023-05-28T14:25:21.581886500Z" />
+          <runningDeviceTargetsSelectedWithDialog>
+            <Target>
+              <type value="RUNNING_DEVICE_TARGET" />
+              <deviceKey>
+                <Key>
+                  <type value="SERIAL_NUMBER" />
+                  <value value="cf54ca5a" />
+                </Key>
+              </deviceKey>
+            </Target>
+          </runningDeviceTargetsSelectedWithDialog>
+        </State>
+      </entry>
+      <entry key="reader">
         <State />
       </entry>
     </value>

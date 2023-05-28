@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.zhhz.reader.util.OrderlyMap;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,12 +26,12 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
     private final ArrayList<String> title;
     private final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -2);
     //private final ArrayList<String> url;
-    private LinkedHashMap<String, String> itemData;
+    private OrderlyMap itemData;
     private int pos = -1;
     private View.OnClickListener onClickListener;
 
     public CatalogueAdapter() {
-        itemData = new LinkedHashMap<>();
+        itemData = new OrderlyMap();
         title = new ArrayList<>();
         //url = new ArrayList<>();
     }
@@ -38,12 +40,10 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
         this.onClickListener = onClickListener;
     }
 
-    public void setItemData(LinkedHashMap<String, String> mData) {
+    public void setItemData(OrderlyMap mData) {
         this.itemData = mData;
-        for (Map.Entry<String, String> entry : mData.entrySet()) {
-            title.add(entry.getKey());
-            //url.add(entry.getValue());
-        }
+        //url.add(entry.getValue());
+        title.addAll(mData.keySet());
     }
 
     public int getPos() {

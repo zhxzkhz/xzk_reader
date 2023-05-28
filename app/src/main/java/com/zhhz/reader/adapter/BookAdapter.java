@@ -90,8 +90,9 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         if (book.getCover() != null) {
             GlideApp.with(context)
                     .asBitmap()
-                    .diskCacheStrategy(DiskCacheStrategy.DATA)
+                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
                     .centerCrop()
+                    .placeholder(R.drawable.no_cover)
                     .error(R.drawable.no_cover)
                     .load(book.getCover())
                     .into(holder.imageView);
