@@ -1,11 +1,13 @@
 package com.zhhz.reader.bean;
 
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
 
-public class BookBean implements Serializable {
+public class BookBean implements Serializable, Parcelable {
 
     private String book_id;
     private String title;
@@ -20,6 +22,33 @@ public class BookBean implements Serializable {
     private boolean status;
 
     private boolean comic;
+
+    public BookBean(){}
+    protected BookBean(Parcel in) {
+        book_id = in.readString();
+        title = in.readString();
+        author = in.readString();
+        cover = in.readString();
+        catalogue = in.readString();
+        lastChapter = in.readString();
+        update = in.readByte() != 0;
+        updateTime = in.readString();
+        intro = in.readString();
+        status = in.readByte() != 0;
+        comic = in.readByte() != 0;
+    }
+
+    public static final Creator<BookBean> CREATOR = new Creator<BookBean>() {
+        @Override
+        public BookBean createFromParcel(Parcel in) {
+            return new BookBean(in);
+        }
+
+        @Override
+        public BookBean[] newArray(int size) {
+            return new BookBean[size];
+        }
+    };
 
     public String getBook_id() {
         return book_id;
@@ -101,7 +130,6 @@ public class BookBean implements Serializable {
         this.status = status;
     }
 
-    @NonNull
     @Override
     public String toString() {
         return "BookBean{" +
@@ -109,12 +137,13 @@ public class BookBean implements Serializable {
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
                 ", cover='" + cover + '\'' +
-                ", update='" + update + '\'' +
                 ", catalogue='" + catalogue + '\'' +
-                ", latestChapter='" + lastChapter + '\'' +
-                ", update_time='" + updateTime + '\'' +
+                ", lastChapter='" + lastChapter + '\'' +
+                ", update=" + update +
+                ", updateTime='" + updateTime + '\'' +
                 ", intro='" + intro + '\'' +
                 ", status=" + status +
+                ", comic=" + comic +
                 '}';
     }
 
@@ -125,5 +154,26 @@ public class BookBean implements Serializable {
     public BookBean setComic(boolean comic) {
         this.comic = comic;
         return this;
+    }
+
+    @Override
+    public int describeContents() {
+        System.out.println("\"describeContents\" = " + "describeContents");
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        dest.writeString(book_id);
+        dest.writeString(title);
+        dest.writeString(author);
+        dest.writeString(cover);
+        dest.writeString(catalogue);
+        dest.writeString(lastChapter);
+        dest.writeByte((byte) (update?1:0));
+        dest.writeString(updateTime);
+        dest.writeString(intro);
+        dest.writeByte((byte) (status?1:0));
+        dest.writeByte((byte) (comic?1:0));
     }
 }

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -129,7 +130,7 @@ public class BookRackFragment extends Fragment {
                     bookAdapter.getItemData().get(position).setUpdate(false);
                     bookrackViewModel.updateBook(bookAdapter.getItemData().get(position));
                     bookAdapter.notifyItemChanged(position);
-                    intent.putExtra("book", bookAdapter.getItemData().get(position));
+                    intent.putExtra("book",(Parcelable) bookAdapter.getItemData().get(position));
                     //startActivity(intent);
                     launcher.launch(intent);
                     tracker.clearSelection();
@@ -171,6 +172,9 @@ public class BookRackFragment extends Fragment {
 
         //获取本地书架回调事件
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
+            if (list.isEmpty()) {
+                list.addAll(savedInstanceState.getParcelableArrayList("list"));
+            }
             lists.clear();
             for (BookBean bookBean : list) {
                 lists.add(bookBean.getBook_id());
@@ -314,8 +318,9 @@ public class BookRackFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
         tracker.onSaveInstanceState(outState);
+        outState.putParcelableArrayList("list", (ArrayList<? extends Parcelable>) bookAdapter.getItemData().clone());
+        super.onSaveInstanceState(outState);
     }
 
     public static class StringItemKeyProvider extends ItemKeyProvider<String> {

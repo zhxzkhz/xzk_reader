@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.adapter.CatalogueAdapter;
 import com.zhhz.reader.bean.BookBean;
@@ -71,6 +73,7 @@ public class DetailedFragment extends Fragment {
                 GlideApp.with(this)
                         .asBitmap()
                         .load(bean.getCover())
+                        .placeholder(R.drawable.no_cover)
                         .centerCrop()
                         .diskCacheStrategy(DiskCacheStrategy.DATA)
                         .into(binding.detailedLayout.itemImage);
@@ -108,7 +111,7 @@ public class DetailedFragment extends Fragment {
                         mViewModel.saveDirectory(bookBean.getBook_id());
                         mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
                         Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
-                        intent.putExtra("book", bookBean);
+                        intent.putExtra("book", (Parcelable)bookBean);
                         DetailedFragment.this.startActivity(intent);
                         DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     });
@@ -170,7 +173,7 @@ public class DetailedFragment extends Fragment {
             mViewModel.saveDirectory(bookBean.getBook_id());
             mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
             mViewModel.saveProgress(bookBean.getBook_id(), position);
-            intent.putExtra("book", bookBean);
+            intent.putExtra("book", (Parcelable)bookBean);
             startActivity(intent);
             DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });

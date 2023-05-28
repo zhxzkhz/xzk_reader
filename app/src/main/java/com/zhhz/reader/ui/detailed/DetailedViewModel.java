@@ -9,6 +9,7 @@ import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.OrderlyMap;
 import com.zhhz.reader.util.StringUtil;
 
 import java.io.BufferedReader;
@@ -24,7 +25,7 @@ public class DetailedViewModel extends ViewModel {
 
     private final MutableLiveData<BookBean> data;
 
-    private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
+    private final MutableLiveData<OrderlyMap> data_catalogue;
 
     public DetailedViewModel() {
         data = new MutableLiveData<>();
@@ -101,7 +102,7 @@ public class DetailedViewModel extends ViewModel {
         return data;
     }
 
-    public LiveData<LinkedHashMap<String, String>> getDataCatalogue() {
+    public LiveData<OrderlyMap> getDataCatalogue() {
         return data_catalogue;
     }
 

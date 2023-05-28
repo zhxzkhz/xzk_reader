@@ -15,6 +15,7 @@ import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.LocalBookUtil;
+import com.zhhz.reader.util.OrderlyMap;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -43,6 +44,7 @@ public class BookRackViewModel extends ViewModel {
         operation = new SingleLiveEvent<>();
         callback = new SingleLiveEvent<>();
         data.setValue(SQLiteUtil.readBooks());
+        System.out.println("书本数据获取》》》》》》》》》》》》》》");
     }
 
     public void updateBooks() {
@@ -106,10 +108,9 @@ public class BookRackViewModel extends ViewModel {
 
                     //读取书本目录章节
                     File file = new File(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "chapter");
-                    LinkedHashMap<String, String> old_map;
+                    OrderlyMap old_map;
                     try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
-                        old_map = JSONObject.parseObject(bufferedWriter.readLine(), new TypeReference<LinkedHashMap<String, String>>() {
-                        }.getType());
+                        old_map = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
                     } catch (IOException ignored) {
                         catalogue.postValue(null);
                         return;
@@ -122,7 +123,7 @@ public class BookRackViewModel extends ViewModel {
                         key = iterator.next();
                     }
 
-                    if (!old_map.containsKey(key)) {
+                    if (key != null && !old_map.containsKey(key)) {
                         old_map.putAll(data);
                         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
                             bufferedWriter.write(JSON.toJSONString(old_map));

@@ -14,6 +14,7 @@ import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.NotificationUtil;
+import com.zhhz.reader.util.OrderlyMap;
 import com.zhhz.reader.util.StringUtil;
 import com.zhhz.reader.view.ReadTextView;
 
@@ -37,7 +38,7 @@ import cn.hutool.core.util.ObjectUtil;
 public class BookReaderViewModel extends ViewModel {
 
     public final ArrayList<String> catalogue;
-    private final MutableLiveData<LinkedHashMap<String, String>> data_catalogue;
+    private final MutableLiveData<OrderlyMap> data_catalogue;
     private final MutableLiveData<HashMap<String, Object>> data_content;
     private final MutableLiveData<String> chapters;
     private final MutableLiveData<String> font_setting;
@@ -128,8 +129,7 @@ public class BookReaderViewModel extends ViewModel {
     public void queryCatalogue() {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "chapter");
         try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
-            LinkedHashMap<String, String> map = JSONObject.parseObject(bufferedWriter.readLine(), new TypeReference<LinkedHashMap<String, String>>() {
-            }.getType());
+            OrderlyMap map = JSONObject.parseObject(bufferedWriter.readLine(),OrderlyMap.class);
             catalogue.addAll(map.keySet());
             data_catalogue.setValue(map);
         } catch (IOException ignored) {
@@ -481,7 +481,7 @@ public class BookReaderViewModel extends ViewModel {
         return rule != null && rule.getAnalysis().isComic();
     }
 
-    public MutableLiveData<LinkedHashMap<String, String>> getDataCatalogue() {
+    public MutableLiveData<OrderlyMap> getDataCatalogue() {
         return data_catalogue;
     }
 
