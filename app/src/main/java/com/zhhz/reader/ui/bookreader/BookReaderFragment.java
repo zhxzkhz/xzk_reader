@@ -160,6 +160,7 @@ public class BookReaderFragment extends Fragment {
                     mViewModel.setStart(String.valueOf(map.get("content")).length()-1);
                 }
                 binding.readerText.setText(String.valueOf(map.get("content")), mViewModel.getStart());
+                mViewModel.saveProgress(mViewModel.getProgress(), binding.readerText.getTextStart());
             }
         });
 

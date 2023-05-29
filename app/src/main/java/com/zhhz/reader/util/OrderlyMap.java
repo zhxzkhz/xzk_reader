@@ -299,7 +299,7 @@ public class OrderlyMap implements Map<String, String>, Cloneable, Serializable 
             current = next = null;
             index = 0;
             if (index < size) {
-                next = keys[index + 1];
+                next = keys[index];
             }
         }
 
@@ -344,7 +344,7 @@ public class OrderlyMap implements Map<String, String>, Cloneable, Serializable 
             current = next = null;
             index = 0;
             if (index < size) {
-                next = keys[index + 1];
+                next = keys[index];
             }
         }
 
@@ -393,8 +393,7 @@ public class OrderlyMap implements Map<String, String>, Cloneable, Serializable 
                 }
             }
             index = 0;
-            current = table[index];
-            next = current.next;
+            next = table[index];
         }
 
         public final boolean hasNext() {
