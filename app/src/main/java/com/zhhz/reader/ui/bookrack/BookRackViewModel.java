@@ -44,7 +44,6 @@ public class BookRackViewModel extends ViewModel {
         operation = new SingleLiveEvent<>();
         callback = new SingleLiveEvent<>();
         data.setValue(SQLiteUtil.readBooks());
-        System.out.println("书本数据获取》》》》》》》》》》》》》》");
     }
 
     public void updateBooks() {

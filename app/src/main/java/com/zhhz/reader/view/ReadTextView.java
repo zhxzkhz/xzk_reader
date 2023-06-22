@@ -70,8 +70,8 @@ public class ReadTextView extends View {
     private float fontSpacingRatio = 1.05f;
     //上下边缘间距
     private float lineSpacing = 15f;
-    //行高
-    private float lineHeight = 10f;
+    //段间距
+    private float segmentSpacing = 10f;
     //行高，倍率
     private float lineHeightRatio = 1.2f;
     //是否首行缩进
@@ -213,7 +213,7 @@ public class ReadTextView extends View {
         if (jsonObject.size() == 0) return;
         this.setTextSize(jsonObject.getIntValue("textSize"));
         this.marginSpacing = jsonObject.getFloat("marginSpacing");
-        this.lineHeight = jsonObject.getFloat("lineHeight");
+        this.segmentSpacing = jsonObject.getFloat("segmentSpacing");
         this.fontSpacing = jsonObject.getFloat("fontSpacing");
         this.lineHeightRatio = jsonObject.getFloat("lineHeightRatio");
     }
@@ -356,12 +356,12 @@ public class ReadTextView extends View {
         invalidate();
     }
 
-    public float getLineHeight() {
-        return lineHeight;
+    public float getSegmentSpacing() {
+        return segmentSpacing;
     }
 
-    public void setLineHeight(float lineHeight) {
-        this.lineHeight = lineHeight;
+    public void setSegmentSpacing(float segmentSpacing) {
+        this.segmentSpacing = segmentSpacing;
         if (text.length() == 0) return;
         invalidate();
     }
@@ -642,7 +642,7 @@ public class ReadTextView extends View {
 
         // 字体高度 * 倍数 = 字体行间隔距离
         // 字体行间隔距离 + 行间隔 = 最终行间隔距离
-        float finalHeight = fontHeight * lineHeightRatio + lineHeight;
+        float finalHeight = fontHeight * lineHeightRatio + segmentSpacing;
 
         float heightPixels = getHeight() - lineSpacing * 2 - topSpace - bottomSpace - statusBar;
         // 画布高度 ÷ 最终行间隔距离 = 实际行数
@@ -677,7 +677,7 @@ public class ReadTextView extends View {
 
         // 字体高度 * 倍数 = 字体行间隔距离
         // 字体行间隔距离 + 行间隔 = 最终行间隔距离
-        float finalHeight = fontHeight * lineHeightRatio + lineHeight;
+        float finalHeight = fontHeight * lineHeightRatio + segmentSpacing;
         // 画布高度 ÷ 最终行间隔距离 = 实际行数
         pageMaxLine = (int) ((heightPixels) / (finalHeight));
 
@@ -709,7 +709,7 @@ public class ReadTextView extends View {
 
         //行数索引采用的一，所以行数减一
         //行间距平摊高度
-        float lineHeights = (heightPixels - pageMaxLine * finalHeight + lineHeight + fontHeight * (lineHeightRatio - 1)) / (pageMaxLine - 1);
+        float lineHeights = (heightPixels - pageMaxLine * finalHeight + segmentSpacing + fontHeight * (lineHeightRatio - 1)) / (pageMaxLine - 1);
 
         // 字体高度 + 行间距平摊高度 = 字体绘制高度
         finalHeight = finalHeight + lineHeights;

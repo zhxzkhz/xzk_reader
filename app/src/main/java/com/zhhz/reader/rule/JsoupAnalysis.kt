@@ -377,7 +377,7 @@ class JsoupAnalysis : Analysis {
                 return@Http
             }
             val data: Document = Jsoup.parse(result.data)
-            data.outputSettings().prettyPrint(false)
+            //data.outputSettings().prettyPrint(false)
             val chapter = json.chapter
             val element = data as Element
             var str = ""
@@ -405,27 +405,29 @@ class JsoupAnalysis : Analysis {
                     }
                 }
                 if (isComic) {
-                    sb.append(content.html())
+                    if (ObjectUtil.isEmpty(contentX[1])) {
+                        sb.append(content.html())
+                    } else {
+                        str = parseJsoup(content, contentX[1])
+                    }
+                    str = sb.toString()
                 } else {
                     for (textNode in content.textNodes()) {
                         sb.append("\n")
                         sb.append(textNode.text().trim { it <= ' ' })
                     }
-                }
-                str = sb.toString()
-                if (!isComic) {
+                    str = sb.toString()
+                    str = parseJsoup(str, contentX[1])
                     for ((key, value) in replace_map) {
                         str = str.replace(key, value)
                     }
-                }
-
-                //屏蔽规则
-                if (ObjectUtil.isNotEmpty(chapter.purify)) {
-                    for (purify in chapter.purify) {
-                        str = str.replace(purify, "")
+                    //屏蔽规则
+                    if (ObjectUtil.isNotEmpty(chapter.purify)) {
+                        for (purify in chapter.purify) {
+                            str = str.replace(purify.toRegex(), "")
+                        }
                     }
                 }
-                str = parseJsoup(str, contentX[1])
                 str = str.replace("^\n*|\n*$".toRegex(), "")
             }
 

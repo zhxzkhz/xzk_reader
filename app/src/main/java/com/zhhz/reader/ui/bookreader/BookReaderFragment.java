@@ -117,11 +117,11 @@ public class BookReaderFragment extends Fragment {
                     break;
                 }
                 case "font_field_spacing_sub": {
-                    binding.readerText.setLineHeight(binding.readerText.getLineHeight() - 1f);
+                    binding.readerText.setSegmentSpacing(binding.readerText.getSegmentSpacing() - 1f);
                     break;
                 }
                 case "font_field_spacing_add": {
-                    binding.readerText.setLineHeight(binding.readerText.getLineHeight() + 1f);
+                    binding.readerText.setSegmentSpacing(binding.readerText.getSegmentSpacing() + 1f);
                     break;
                 }
                 case "font_spacing_sub": {

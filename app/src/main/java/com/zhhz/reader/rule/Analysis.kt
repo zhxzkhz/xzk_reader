@@ -10,6 +10,7 @@ import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache
 import com.zhhz.reader.util.JsExtensionClass
 import com.zhhz.reader.util.StringUtil
+import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -22,6 +23,7 @@ import java.nio.charset.Charset
 import java.util.*
 import javax.script.ScriptException
 import javax.script.SimpleBindings
+import kotlin.concurrent.thread
 
 abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
@@ -204,17 +206,19 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
     abstract fun bookContent(url: String, callback: AnalysisCallBack.ContentCallBack, label: Any)
 
     fun Http(url: String, callBack: AnalysisCallBack.CallBack) {
+        thread  {
         //url等于skip跳过请求
         if (url.equals("skip", ignoreCase = true)) {
             val httpResponseBean = HttpResponseBean()
             httpResponseBean.isStatus = true
             callBack.accept(httpResponseBean)
-            return
+            return@thread
         }
         if (url.contains("@post->")) {
             Http_Post(url, callBack)
         } else {
             Http_Get(url, callBack)
+        }
         }
     }
 

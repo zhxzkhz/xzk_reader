@@ -42,14 +42,14 @@ public class DiskCache {
             HttpUrl beforeUrl = request.url();
             Response response = chain.proceed(request);
             HttpUrl afterUrl = response.request().url();
-            response.close();
             //根据url判断是否是重定向
             if(!beforeUrl.equals(afterUrl)) {
                 //重新请求
                 Request newRequest = request.newBuilder().url(response.request().url()).build();
+                response.close();
                 return chain.proceed(newRequest);
             } else {
-                return chain.proceed(chain.request());
+                return response;
             }
         }
         File file = DiskCache.urlToFile(chain.request().url(), path);

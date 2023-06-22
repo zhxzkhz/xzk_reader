@@ -4,7 +4,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.zhhz.reader.bean.BookBean;
@@ -28,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -509,7 +507,7 @@ public class BookReaderViewModel extends ViewModel {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("textSize",readTextView.getTextSize());
         jsonObject.put("marginSpacing",readTextView.getMarginSpacing());
-        jsonObject.put("lineHeight",readTextView.getLineHeight());
+        jsonObject.put("segmentSpacing",readTextView.getSegmentSpacing());
         jsonObject.put("fontSpacing",readTextView.getFontSpacing());
         jsonObject.put("lineHeightRatio",readTextView.getLineHeightRatio());
         SQLiteUtil.SaveSetting("read_text_setting",jsonObject.toString());
