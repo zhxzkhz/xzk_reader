@@ -61,12 +61,24 @@ class JsoupAnalysis : Analysis {
             var v = matcher.group(2)
             if (v == null) v = ""
             if (k == null) return value.toString()
-            if (k != "attr" && value !is String) {
+            if (k != "attr" && k != "attrs" && value !is String) {
                 value = (value as Elements).text()
             }
             when (k) {
                 "attr" -> {
                     value = (value as Elements).attr(v)
+                }
+
+                "attrs" -> {
+                    if ((value as Elements).size == 1) {
+                        value = value.attr(v)
+                    } else {
+                        var tmp = ""
+                        value.forEach {
+                            tmp = tmp + "\n" + it.attr(v)
+                        }
+                        value = tmp.substring(1)
+                    }
                 }
 
                 "match" -> {
@@ -408,7 +420,7 @@ class JsoupAnalysis : Analysis {
                     if (ObjectUtil.isEmpty(contentX[1])) {
                         sb.append(content.html())
                     } else {
-                        str = parseJsoup(content, contentX[1])
+                        sb.append(parseJsoup(content, contentX[1]))
                     }
                     str = sb.toString()
                 } else {

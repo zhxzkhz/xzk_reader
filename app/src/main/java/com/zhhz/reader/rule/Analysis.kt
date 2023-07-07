@@ -234,7 +234,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             data = arr[1]
         }
         val mt: MediaType? = if (data.startsWith("{")) {
-            "application/json".toMediaTypeOrNull()
+            "application/json; charset=$charset".toMediaTypeOrNull()
         } else {
             "application/x-www-form-urlencoded;charset=$charset".toMediaTypeOrNull()
         }
@@ -246,7 +246,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                 builder.addHeader(key, value.toString())
             }
         }
-        initHeader(builder)
+        initHeader(builder,arr[0])
         newCall(builder.build(), callback)
     }
 
@@ -265,7 +265,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             header = ar[1]
         }
         val builder: Request.Builder = Request.Builder().url(urlTemp)
-        initHeader(builder)
+        initHeader(builder,url)
         if (header != null) {
             val jsonObject = JSONObject.parseObject(header)
             for ((key, value) in jsonObject) {
@@ -275,7 +275,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         newCall(builder.build(), callback)
     }
 
-    private fun initHeader(builder: Request.Builder) {
+    private fun initHeader(builder: Request.Builder,url: String) {
         if (json.header != null) {
             var h = json.header
             if (h.indexOf("js@") == 0) {
@@ -283,6 +283,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                     val bindings = SimpleBindings()
                     bindings["xlua_rule"] = this
                     bindings["logError"] = logError
+                    bindings["url"] = url
                     h = jsToJavaObject(DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(h.substring(3)), bindings))
                 } catch (e: ScriptException) {
                     e.printStackTrace()
@@ -350,7 +351,8 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             for (o in value) {
                 stringBuilder.append(o).append("\n")
             }
-            stringBuilder.delete(stringBuilder.length - 1, stringBuilder.length)
+            if (stringBuilder.isNotEmpty())
+                stringBuilder.delete(stringBuilder.length - 1, stringBuilder.length)
             stringBuilder.toString()
         } else if (value.javaClass == NativeJavaObject::class.java) {
             (value as NativeJavaObject).unwrap().toString()

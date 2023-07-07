@@ -93,7 +93,7 @@ public class ComicReaderFragment extends Fragment {
         };
 
         ViewPreloadSizeProvider<GlideUrl> sizeProvider = new ViewPreloadSizeProvider<>();
-        RecyclerViewPreloader<GlideUrl> preloaded = new RecyclerViewPreloader<>(GlideApp.with(binding.readerComic),
+        RecyclerViewPreloader<GlideUrl> preloaded = new RecyclerViewPreloader<>(GlideApp.with(this),
                 preloadModelProvider, sizeProvider, 10);
         binding.readerComic.addOnScrollListener(preloaded);
 

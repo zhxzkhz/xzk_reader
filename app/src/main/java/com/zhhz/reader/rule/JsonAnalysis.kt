@@ -53,7 +53,7 @@ class JsonAnalysis : Analysis{
         dataTemp = if (i > 0) {
             regs[0].substring(0, i) + JSONPath.eval(dataTemp, regs[0].substring(i))
         } else if (i == 0 ) {
-            return JSONPath.eval(dataTemp, regs[0].substring(i))
+            JSONPath.eval(dataTemp, regs[0].substring(i))
         } else {
             regs[0]
         }
@@ -99,6 +99,13 @@ class JsonAnalysis : Analysis{
                     val m = mailPattern.matcher(v)
                     if (m.find()) {
                         value = (value.toString()).replace(m.group(1).orEmpty(), m.group(2).orEmpty())
+                    }
+                }
+
+                "replaceAll" -> {
+                    val m = mailPattern.matcher(v)
+                    if (m.find()) {
+                        value = (value.toString()).replace(m.group(1).orEmpty().toRegex(), m.group(2).orEmpty())
                     }
                 }
 
