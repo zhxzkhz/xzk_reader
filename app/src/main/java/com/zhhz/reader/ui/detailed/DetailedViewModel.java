@@ -4,8 +4,6 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
@@ -20,8 +18,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 import java.util.Objects;
+
+import cn.hutool.core.util.ObjectUtil;
 
 public class DetailedViewModel extends ViewModel {
 

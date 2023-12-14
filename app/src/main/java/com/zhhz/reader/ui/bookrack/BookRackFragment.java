@@ -31,7 +31,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
@@ -45,9 +44,14 @@ import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.NotificationUtil;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import cn.hutool.core.util.ObjectUtil;
 
 public class BookRackFragment extends Fragment {
 

@@ -9,7 +9,6 @@ import android.os.Parcelable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -33,8 +32,6 @@ import com.zhhz.reader.databinding.FragmentDetailedBinding;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.GlideApp;
 import com.zhhz.reader.view.RecycleViewDivider;
-
-import java.util.Arrays;
 
 import cn.hutool.core.util.ObjectUtil;
 

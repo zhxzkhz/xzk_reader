@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProvider;
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.R;
 import com.zhhz.reader.databinding.FragmentBookReaderSettingBinding;
-import com.zhhz.reader.sql.SQLiteUtil;
 
 import java.util.Objects;
 

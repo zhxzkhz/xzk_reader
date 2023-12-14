@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.livedata.SingleLiveEvent;
 import com.zhhz.reader.rule.RuleAnalysis;
@@ -25,7 +24,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Objects;
 
 public class BookRackViewModel extends ViewModel {

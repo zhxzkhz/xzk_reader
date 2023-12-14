@@ -1,10 +1,11 @@
 package com.zhhz.reader.ui.bookreader;
 
 import android.content.SharedPreferences;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
 import androidx.preference.PreferenceManager;
+
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.load.model.GlideUrl;
@@ -13,7 +14,6 @@ import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
-import com.zhhz.reader.ui.book.Config;
 import com.zhhz.reader.ui.book.ReadBookConfig;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
@@ -31,7 +31,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import cn.hutool.core.util.ObjectUtil;
 
