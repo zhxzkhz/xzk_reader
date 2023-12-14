@@ -1,14 +1,20 @@
 package com.zhhz.reader.ui.bookreader;
 
+import android.content.SharedPreferences;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import androidx.preference.PreferenceManager;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
+import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
+import com.zhhz.reader.ui.book.Config;
+import com.zhhz.reader.ui.book.ReadBookConfig;
 import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.LogUtil;
@@ -25,11 +31,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import cn.hutool.core.util.ObjectUtil;
 
@@ -73,8 +75,8 @@ public class BookReaderViewModel extends ViewModel {
         init();
     }
 
-    private void init(){
-        font_setting_text.setValue(readSetting());
+    private void init() {
+        font_setting_text.postValue(readSetting());
     }
 
     public ArrayList<String> getCatalogue() {
@@ -97,7 +99,7 @@ public class BookReaderViewModel extends ViewModel {
             return;
         }
         try {
-            rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule",false);
+            rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule", false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -127,7 +129,7 @@ public class BookReaderViewModel extends ViewModel {
     public void queryCatalogue() {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "chapter");
         try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
-            OrderlyMap map = JSONObject.parseObject(bufferedWriter.readLine(),OrderlyMap.class);
+            OrderlyMap map = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
             catalogue.addAll(map.keySet());
             data_catalogue.setValue(map);
         } catch (IOException ignored) {
@@ -177,7 +179,7 @@ public class BookReaderViewModel extends ViewModel {
             rule.bookChapters(book, url, (data, label) -> {
                 loading = false;
                 if (uuid.equals(label)) {
-                    if (data.isStatus()){
+                    if (data.isStatus()) {
                         map.put("content", data.getData());
                         //自动缓存下一章
                         if (isHaveNextChapters()) {
@@ -192,13 +194,15 @@ public class BookReaderViewModel extends ViewModel {
             }, uuid);
         }
     }
-
+    public void getContentComic(boolean bool) {
+        getContentComic(bool,false);
+    }
     /**
      * 获取内容
      *
      * @param bool 是否加载历史记录位置
      */
-    public void getContentComic(boolean bool) {
+    public void getContentComic(boolean bool,boolean isLoadDownPage) {
         comic_list.clear();
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
@@ -215,14 +219,23 @@ public class BookReaderViewModel extends ViewModel {
             loading = false;
             map.put("end", bool);
             if (uuid.equals(label)) {
-                if (data.isStatus()){
+                if (data.isStatus()) {
                     String[] arr = data.getData().split("\n");
-                    for (String s : arr) {
-                        comic_list.add(new GlideUrl(s, headers));
+                    if (ObjectUtil.isEmpty(arr)) {
+                        map.put("error", "获取图片链接为空");
+                    } else {
+                        for (String s : arr) {
+                            if (ObjectUtil.isNotEmpty(s)) {
+                                comic_list.add(new GlideUrl(s, headers));
+                            }
+                        }
+                        comic_chapters.add(comic_list.size());
+                        map.put("content", comic_list);
                     }
-                    comic_chapters.add(comic_list.size());
-                    map.put("content", comic_list);
                 } else {
+                    if (isLoadDownPage){
+                        progress--;
+                    }
                     map.put("error", data.getError());
                 }
                 data_content.postValue(map);
@@ -233,12 +246,18 @@ public class BookReaderViewModel extends ViewModel {
     /**
      * 清除当前章节缓存，重新加载
      */
-    public void clearCurrentCache(){
+    public void clearCurrentCache() {
         DiskCache.delete_cache(true);
-        String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
+        String url;
+        if (isComic()){
+            int[] a = current_progress_page(start);
+            url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(a[0]));
+        } else {
+            url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
+        }
+
         if (url != null) {
             try {
-                //Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1)));
                 Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(url)));
             } catch (IOException e) {
                 LogUtil.error(e);
@@ -327,7 +346,7 @@ public class BookReaderViewModel extends ViewModel {
         int finalProgress = progress;
         if (url == null) return;
         rule.bookChapters(book, url, (data, label) -> {
-            if (!data.isStatus()){
+            if (!data.isStatus()) {
                 cache_error++;
                 //失败三次取消缓存
                 if (cache_error < 3) {
@@ -405,7 +424,7 @@ public class BookReaderViewModel extends ViewModel {
     public void loadNextChapters() {
         progress = _haveNextChapters(progress);
         if (isComic()) {
-            getContentComic(false);
+            getContentComic(false,true);
         } else {
             getContent();
         }
@@ -465,7 +484,7 @@ public class BookReaderViewModel extends ViewModel {
             }
         }
         //最开始位置 + 卷 + 章节 = 实际位置
-        pages[0] = (progress - Math.max(comic_chapters.size(),1) + 1) + index + temp;
+        pages[0] = (progress - Math.max(comic_chapters.size(), 1) + 1) + index + temp;
 
         pages[1] = current_page - 1;
         return pages;
@@ -491,7 +510,7 @@ public class BookReaderViewModel extends ViewModel {
         return chapters;
     }
 
-    public void setFont_setting(String s){
+    public void setFont_setting(String s) {
         font_setting.postValue(s);
     }
 
@@ -503,19 +522,34 @@ public class BookReaderViewModel extends ViewModel {
         return font_setting_text;
     }
 
-    public void saveSetting(ReadTextView readTextView){
+    public void saveSetting(ReadTextView readTextView) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("textSize",readTextView.getTextSize());
-        jsonObject.put("marginSpacing",readTextView.getMarginSpacing());
-        jsonObject.put("segmentSpacing",readTextView.getSegmentSpacing());
-        jsonObject.put("fontSpacing",readTextView.getFontSpacing());
-        jsonObject.put("lineHeightRatio",readTextView.getLineHeightRatio());
-        SQLiteUtil.SaveSetting("read_text_setting",jsonObject.toString());
+        jsonObject.put("textSize", readTextView.getTextSize());
+        jsonObject.put("marginSpacing", readTextView.getMarginSpacing());
+        jsonObject.put("segmentSpacing", readTextView.getSegmentSpacing());
+        jsonObject.put("fontSpacing", readTextView.getFontSpacing());
+        jsonObject.put("lineHeightRatio", readTextView.getLineHeightRatio());
+        SQLiteUtil.SaveSetting("read_text_setting", jsonObject.toString());
         font_setting_text.postValue(jsonObject);
     }
 
-    public JSONObject readSetting(){
-        String s = SQLiteUtil.readSetting("read_text_setting");
+    public void saveSetting() {
+        SQLiteUtil.SaveSetting("read_text_x_setting", JSON.toJSONString(ReadBookConfig.INSTANCE.getCurConfig()));
+        //适配以前的逻辑
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("textSize", ReadBookConfig.INSTANCE.getTextSize());
+        jsonObject.put("marginSpacing", ReadBookConfig.INSTANCE.getMarginSpacing());
+        jsonObject.put("segmentSpacing", ReadBookConfig.INSTANCE.getParagraphSpacing());
+        jsonObject.put("fontSpacing", ReadBookConfig.INSTANCE.getFontSpacing());
+        jsonObject.put("lineHeightRatio", ReadBookConfig.INSTANCE.getLineHeightRatio());
+        font_setting_text.postValue(jsonObject);
+    }
+
+    public JSONObject readSetting() {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(MyApplication.context);
+        //是否开启日志悬浮窗
+        boolean bool = sharedPrefs.getBoolean("test_read",false);
+        String s = SQLiteUtil.readSetting(bool? "read_text_x_setting" : "read_text_setting");
         return JSONObject.parseObject(s);
     }
 

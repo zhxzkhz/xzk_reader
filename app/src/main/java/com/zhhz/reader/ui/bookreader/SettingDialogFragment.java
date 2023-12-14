@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.alibaba.fastjson.JSONObject;
 import com.zhhz.reader.R;
 import com.zhhz.reader.databinding.FragmentBookReaderSettingBinding;
+import com.zhhz.reader.sql.SQLiteUtil;
 
 import java.util.Objects;
 
@@ -80,9 +81,9 @@ public class SettingDialogFragment extends DialogFragment {
             binding.fontSpacingSub.setEnabled(s.getIntValue("fontSpacing") > 0);
             binding.fontLineSpacingAdd.setEnabled(s.getFloatValue("lineHeightRatio") < 2);
             binding.fontLineSpacingSub.setEnabled(s.getFloatValue("lineHeightRatio") > 1);
-
             setting(s);
         });
+        setting(mViewModel.readSetting());
     }
 
     @Override

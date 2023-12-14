@@ -6,10 +6,7 @@ import com.alibaba.fastjson.JSONObject
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
-import com.zhhz.reader.util.AutoBase64
-import com.zhhz.reader.util.DiskCache
-import com.zhhz.reader.util.JsExtensionClass
-import com.zhhz.reader.util.StringUtil
+import com.zhhz.reader.util.*
 import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -21,6 +18,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.TimeUnit
 import javax.script.ScriptException
 import javax.script.SimpleBindings
 import kotlin.concurrent.thread
@@ -78,7 +76,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             charset = json.charset
         }
         if (charset.isEmpty()) charset = "utf8"
-        val builder = OkHttpClient.Builder()
+        val builder = OkHttpClient.Builder().connectTimeout(30,TimeUnit.SECONDS).readTimeout(30,TimeUnit.SECONDS).writeTimeout(30,TimeUnit.SECONDS)
         if (json.cache) {
             builder.addInterceptor(DiskCache.interceptor)
         }
@@ -105,6 +103,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             val bindings = SimpleBindings()
             bindings["builder"] = builder
             bindings["xlua_rule"] = this
+            bindings["java"] = this
             client = try {
                 val obj = DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.init), bindings)
                 if (obj is OkHttpClient.Builder) {
@@ -206,19 +205,24 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
     abstract fun bookContent(url: String, callback: AnalysisCallBack.ContentCallBack, label: Any)
 
     fun Http(url: String, callBack: AnalysisCallBack.CallBack) {
-        thread  {
+        Coroutine.async {
         //url等于skip跳过请求
         if (url.equals("skip", ignoreCase = true)) {
             val httpResponseBean = HttpResponseBean()
             httpResponseBean.isStatus = true
             callBack.accept(httpResponseBean)
-            return@thread
+            return@async
         }
         if (url.contains("@post->")) {
             Http_Post(url, callBack)
         } else {
             Http_Get(url, callBack)
         }
+        }.onError {
+            it.printStackTrace()
+            val httpResponseBean = HttpResponseBean()
+            httpResponseBean.isStatus = false
+            callBack.accept(httpResponseBean)
         }
     }
 
@@ -275,16 +279,23 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         newCall(builder.build(), callback)
     }
 
-    private fun initHeader(builder: Request.Builder,url: String) {
+    private fun initHeader(builder: Request.Builder,httpUrl: String) {
         if (json.header != null) {
             var h = json.header
-            if (h.indexOf("js@") == 0) {
+            if (h.contains("^js@|@js:".toRegex())) {
                 try {
                     val bindings = SimpleBindings()
                     bindings["xlua_rule"] = this
+                    bindings["java"] = this
                     bindings["logError"] = logError
-                    bindings["url"] = url
-                    h = jsToJavaObject(DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(h.substring(3)), bindings))
+                    bindings["url"] = httpUrl
+
+                    h = jsToJavaObject(
+                        DiskCache.SCRIPT_ENGINE.eval(
+                            AutoBase64.decodeToString(h.split("js@|@js:".toRegex())[1]),
+                            bindings
+                        )
+                    )
                 } catch (e: ScriptException) {
                     e.printStackTrace()
                     h = "{}"
@@ -347,13 +358,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
     fun jsToJavaObject (value: Any?): String {
         if (value == null) return ""
         val str: String = if (value is NativeArray) {
-            val stringBuilder = StringBuilder()
-            for (o in value) {
-                stringBuilder.append(o).append("\n")
-            }
-            if (stringBuilder.isNotEmpty())
-                stringBuilder.delete(stringBuilder.length - 1, stringBuilder.length)
-            stringBuilder.toString()
+            value.joinToString("\n")
         } else if (value.javaClass == NativeJavaObject::class.java) {
             (value as NativeJavaObject).unwrap().toString()
         } else {
@@ -364,7 +369,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
 
     companion object {
-        var share_client: OkHttpClient = OkHttpClient.Builder().addInterceptor(DiskCache.interceptor).build()
+        var share_client: OkHttpClient = OkHttpClient.Builder().addInterceptor(DiskCache.interceptor).connectTimeout(30,TimeUnit.SECONDS).readTimeout(30,TimeUnit.SECONDS).writeTimeout(30,TimeUnit.SECONDS).build()
         private var logError: AnalysisCallBack.LogError? = null
         @JvmStatic
         fun setLogError(error: AnalysisCallBack.LogError) {

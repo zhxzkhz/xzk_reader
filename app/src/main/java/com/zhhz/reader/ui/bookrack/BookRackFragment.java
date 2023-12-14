@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.activity.SearchActivity;
@@ -44,11 +45,9 @@ import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.NotificationUtil;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class BookRackFragment extends Fragment {
 
@@ -145,12 +144,12 @@ public class BookRackFragment extends Fragment {
             public void onItemStateChanged(@NonNull String key, boolean selected) {
                 super.onItemStateChanged(key, selected);
                 LinearLayoutCompat item_menu = requireActivity().findViewById(R.id.item_menu);
-                if (tracker.getSelection().size() > 0 && item_menu.getVisibility() == View.GONE) {
+                if (!tracker.getSelection().isEmpty() && item_menu.getVisibility() == View.GONE) {
                     item_menu.setVisibility(View.VISIBLE);
-                } else if (tracker.getSelection().size() == 0 && item_menu.getVisibility() == View.VISIBLE) {
+                } else if (tracker.getSelection().isEmpty() && item_menu.getVisibility() == View.VISIBLE) {
                     item_menu.setVisibility(View.GONE);
                 }
-                //item_menu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
+                item_menu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
                 item_menu.getChildAt(1).setEnabled(false);
                 if (tracker.getSelection().size() == 1) {
                     for (BookBean itemDatum : bookAdapter.getItemData()) {
@@ -172,8 +171,8 @@ public class BookRackFragment extends Fragment {
 
         //获取本地书架回调事件
         bookrackViewModel.getData().observe(getViewLifecycleOwner(), list -> {
-            if (list.isEmpty()) {
-                list.addAll(savedInstanceState.getParcelableArrayList("list"));
+            if (list.isEmpty() && ObjectUtil.isNotEmpty(savedInstanceState)) {
+                list.addAll(Objects.requireNonNull(savedInstanceState.getParcelableArrayList("list")));
             }
             lists.clear();
             for (BookBean bookBean : list) {
@@ -196,15 +195,38 @@ public class BookRackFragment extends Fragment {
             binding.refreshLayout.finishRefresh();
         });
 
-        final TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
+        ArrayList<String> arr_list;
+        ArrayAdapter<String> adapter;
+        TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
                 com.google.android.material.R.attr.alertDialogStyle, 0);
-        ArrayList<String> arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)", "清除章节和图片缓存"));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), arr_list);
+        arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)", "清除章节和图片缓存"));
+        adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), arr_list);
         a.recycle();
 
         //长按多选事件
         bookrackViewModel.getOperation().observe(getViewLifecycleOwner(), integer -> {
-            if (integer == 1) {
+
+            if (integer == 0) {
+                String name = tracker.getSelection().iterator().next();
+                String[] lists = {"缓存后面10章","缓存后面30章","缓存后面50章","缓存后面100章","缓存后面200章","缓存后面全章","缓存所有章"};
+                int[] num = {10,30,50,100,200,Integer.MAX_VALUE,-1};
+                AtomicInteger index = new AtomicInteger();
+                AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                        .setTitle("章节缓存")
+                        .setSingleChoiceItems(lists, 0, (dialog12, which) -> {
+                            index.set(which);
+                        })
+                        .setPositiveButton("确定", (dialog13, which) -> {
+                            for (BookBean itemDatum : bookAdapter.getItemData()) {
+                                if (name.equals(itemDatum.getBook_id())) {
+                                    BookUtil.CacheBook(itemDatum,num[index.get()]);
+                                    break;
+                                }
+                            }
+                        })
+                        .create();
+                dialog.show();
+            }else if (integer == 1) {
                 AlertDialog dialog = new AlertDialog.Builder(requireContext())
                         .setView(R.layout.progress_dialog)
                         .setCancelable(false)

@@ -1,6 +1,9 @@
 package com.zhhz.reader.ui.bookreader;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -63,11 +67,7 @@ public class BookMenuFragment extends Fragment {
 
         binding.menuBack.setOnClickListener((view) -> requireActivity().finish());
 
-        if (mViewModel.isComic()){
-            binding.menuRefresh.setVisibility(View.GONE);
-        } else {
-            binding.menuRefresh.setOnClickListener(view -> mViewModel.clearCurrentCache());
-        }
+        binding.menuRefresh.setOnClickListener(view -> mViewModel.clearCurrentCache());
 
         binding.menuSetting.setOnClickListener(v -> SettingDialogFragment.getInstance().show(requireActivity().getSupportFragmentManager(), "SettingDialogFragment"));
 
@@ -125,6 +125,18 @@ public class BookMenuFragment extends Fragment {
             }
         });
 
+        binding.menuSource.setOnLongClickListener(v -> {
+            String url = Objects.requireNonNull(mViewModel.getDataCatalogue().getValue()).get(binding.menuSource.getText().toString());
+            // 复制文本到剪贴板
+            ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText("text", url);
+            if (clipboard != null) {
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(requireContext(), "URL地址已复制到剪贴板", Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        });
+
         return root;
     }
 
@@ -149,8 +161,6 @@ public class BookMenuFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        int height = requireActivity().getResources().getDisplayMetrics().heightPixels;
 
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
             catalogueAdapter.setItemData(map);

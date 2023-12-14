@@ -57,8 +57,8 @@ public class MainActivity extends AppCompatActivity {
         bookrackViewModel = new ViewModelProvider(this).get(BookRackViewModel.class);
 
         //缓存，只支持单本缓存(等待更新)
-        binding.itemMenu.getChildAt(0).setEnabled(false);
-        //binding.itemMenu.getChildAt(0).setOnClickListener(view -> bookrackViewModel.operationBooks(0));
+        binding.itemMenu.getChildAt(0).setEnabled(true);
+        binding.itemMenu.getChildAt(0).setOnClickListener(view -> bookrackViewModel.operationBooks(0));
 
         //导出书本,只支持单本导出(等待更新)
         binding.itemMenu.getChildAt(1).setEnabled(true);

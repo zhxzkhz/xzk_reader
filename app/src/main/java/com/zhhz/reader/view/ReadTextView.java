@@ -8,6 +8,7 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.icu.text.DecimalFormat;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
@@ -29,7 +31,7 @@ import java.util.Map;
 
 public class ReadTextView extends View {
 
-    private final Handler hd = new Handler();
+    private final Handler hd = new Handler(Looper.myLooper());
     //每页索引
     @SuppressLint("UseSparseArrays")
     private final LinkedHashMap<Integer, Integer> map = new LinkedHashMap<>();
@@ -94,12 +96,12 @@ public class ReadTextView extends View {
     private final Runnable run = ReadTextView.this::AnalyseTextLine;
     private final GestureDetector gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
         @Override
-        public boolean onDown(MotionEvent e) {
+        public boolean onDown(@NonNull MotionEvent e) {
             return true;
         }
 
         @Override
-        public boolean onSingleTapUp(MotionEvent event) {
+        public boolean onSingleTapUp(@NonNull MotionEvent event) {
             if (event.getX() > getWidth() / 3f * 2 && downOnClick != null) {
                 if (down_page()) return true;
             } else if (event.getX() < getWidth() / 3f && upOnClick != null) {
@@ -210,12 +212,12 @@ public class ReadTextView extends View {
     }
 
     public void setting(JSONObject jsonObject){
-        if (jsonObject.size() == 0) return;
+        if (jsonObject.isEmpty()) return;
         this.setTextSize(jsonObject.getIntValue("textSize"));
-        this.marginSpacing = jsonObject.getFloat("marginSpacing");
-        this.segmentSpacing = jsonObject.getFloat("segmentSpacing");
-        this.fontSpacing = jsonObject.getFloat("fontSpacing");
-        this.lineHeightRatio = jsonObject.getFloat("lineHeightRatio");
+        this.marginSpacing = jsonObject.getFloatValue("marginSpacing");
+        this.segmentSpacing = jsonObject.getFloatValue("segmentSpacing");
+        this.fontSpacing = jsonObject.getFloatValue("fontSpacing");
+        this.lineHeightRatio = jsonObject.getFloatValue("lineHeightRatio");
     }
 
     public boolean isIndentation() {
@@ -232,7 +234,7 @@ public class ReadTextView extends View {
 
     public void setStatusBar(int statusBar) {
         this.statusBar = statusBar;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -242,7 +244,7 @@ public class ReadTextView extends View {
 
     public void setWidthAlign(boolean widthAlign) {
         this.widthAlign = widthAlign;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         AnalyseTextLine();
         invalidate();
     }
@@ -253,7 +255,7 @@ public class ReadTextView extends View {
 
     public void setSpaceRatio(float spaceRatio) {
         this.spaceRatio = spaceRatio;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         hd.removeCallbacks(run);
         run.run();
         invalidate();
@@ -265,7 +267,7 @@ public class ReadTextView extends View {
 
     public void setTest(boolean test) {
         Test = test;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -287,7 +289,7 @@ public class ReadTextView extends View {
 
     public void setFontSpacingRatio(float fontSpacingRatio) {
         this.fontSpacingRatio = fontSpacingRatio;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
         invalidate();
@@ -302,7 +304,7 @@ public class ReadTextView extends View {
             this.fontSpacing = 0;
         } else {
             this.fontSpacing = fontSpacing;
-            if (text.length() == 0) return;
+            if (text.isEmpty()) return;
             hd.removeCallbacks(run);
             AnalyseTextLine();
             invalidate();
@@ -315,7 +317,7 @@ public class ReadTextView extends View {
 
     public void setLineSpacing(float lineSpacing) {
         this.lineSpacing = lineSpacing;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -325,7 +327,7 @@ public class ReadTextView extends View {
 
     public void setTitle(String title) {
         this.title = title;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -337,7 +339,7 @@ public class ReadTextView extends View {
         this.textSize = textSize;
         textPaint.setTextSize(textSize * density);
         ttPaint.setTextSize((float) (Math.sqrt(Math.pow(textSize * density, 2) / 2f) - textSize * density / 12f));
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
         invalidate();
@@ -350,7 +352,7 @@ public class ReadTextView extends View {
     //左右边缘间距
     public void setMarginSpacing(float marginSpacing) {
         this.marginSpacing = marginSpacing;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         hd.removeCallbacks(run);
         AnalyseTextLine();
         invalidate();
@@ -362,7 +364,7 @@ public class ReadTextView extends View {
 
     public void setSegmentSpacing(float segmentSpacing) {
         this.segmentSpacing = segmentSpacing;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -372,7 +374,7 @@ public class ReadTextView extends View {
 
     public void setLineHeightRatio(float lineHeightRatio) {
         this.lineHeightRatio = lineHeightRatio;
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -385,7 +387,7 @@ public class ReadTextView extends View {
     }
 
     public void setText(@Nullable String text, int progress) {
-        if (text == null || text.length() == 0) {
+        if (text == null || text.isEmpty()) {
             this.text = "";
             textStart = 0;
             invalidate();
@@ -440,7 +442,7 @@ public class ReadTextView extends View {
         Typeface tf = Typeface.createFromFile(path);
         textPaint.setTypeface(tf);
         ttPaint.setTypeface(tf);
-        if (text.length() == 0) return true;
+        if (text.isEmpty()) return true;
         hd.removeCallbacks(run);
         hd.post(run);
         return true;
@@ -453,7 +455,7 @@ public class ReadTextView extends View {
     public void setColor(@ColorInt int color) {
         this.color = color;
         textPaint.setColor(color);
-        if (text.length() == 0) return;
+        if (text.isEmpty()) return;
         invalidate();
     }
 
@@ -485,7 +487,7 @@ public class ReadTextView extends View {
 
     //用于测量一章有多少行
     public void AnalyseTextLine() {
-        if (text.length() < 1) {
+        if (text.isEmpty()) {
             return;
         }
 
@@ -664,7 +666,7 @@ public class ReadTextView extends View {
 
         canvas.drawText(title, marginSpacing * 1.8f, fontHeight1 * 1.2f + statusBar, ttPaint);
 
-        if (textStart >= text.length() || text.length() == 0 || font_x == null) return;
+        if (textStart >= text.length() || text.isEmpty() || font_x == null) return;
 
         //使用控件高
         float heightPixels = getHeight() - lineSpacing * 2 - topSpace - bottomSpace - statusBar;

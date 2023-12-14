@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.zhhz.reader.util.OrderlyMap;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * 目录适配器
@@ -23,7 +21,7 @@ import java.util.Map;
 // ① 创建Adapter
 public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.ViewHolder> {
 
-    private final ArrayList<String> title;
+    private final ArrayList<String> titleList;
     private final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-1, -2);
     //private final ArrayList<String> url;
     private OrderlyMap itemData;
@@ -32,7 +30,7 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
 
     public CatalogueAdapter() {
         itemData = new OrderlyMap();
-        title = new ArrayList<>();
+        titleList = new ArrayList<>();
         //url = new ArrayList<>();
     }
 
@@ -43,7 +41,7 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
     public void setItemData(OrderlyMap mData) {
         this.itemData = mData;
         //url.add(entry.getValue());
-        title.addAll(mData.keySet());
+        titleList.addAll(mData.keySet());
     }
 
     public int getPos() {
@@ -54,8 +52,8 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
         this.pos = pos;
     }
 
-    public ArrayList<String> getTitle() {
-        return title;
+    public ArrayList<String> getTitleList() {
+        return titleList;
     }
 
     //③ 在Adapter中实现3个方法
@@ -74,7 +72,7 @@ public class CatalogueAdapter extends RecyclerView.Adapter<CatalogueAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.textView.setText(title.get(position));
+        holder.textView.setText(titleList.get(position));
         if (position == pos) {
             holder.textView.setTextColor(Color.BLUE);
         } else {

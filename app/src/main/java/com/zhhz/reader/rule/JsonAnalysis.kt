@@ -156,10 +156,11 @@ class JsonAnalysis : Analysis{
     override fun bookSearch(keyWord: String, callback: AnalysisCallBack.SearchCallBack, label: String) {
         val bindings = SimpleBindings()
         bindings["xlua_rule"] = this
-        bindings["url"] = url
+        bindings["keyWord"] = keyWord
         bindings["callback"] = callback
         val search = json.search
         val url = search.url.replace("\${key}", keyWord)
+        bindings["url"] = url
 
         Http(url) { result ->
             val al: MutableList<SearchResultBean> = ArrayList()

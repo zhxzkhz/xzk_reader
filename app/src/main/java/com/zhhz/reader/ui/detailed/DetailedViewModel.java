@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.SearchResultBean;
@@ -33,6 +35,12 @@ public class DetailedViewModel extends ViewModel {
     }
 
     public void queryDetailed(SearchResultBean bean, int index) {
+
+        if (ObjectUtil.isEmpty(bean.getUrl()) || !(bean.getUrl().startsWith("http") || bean.getUrl().equals("skip"))){
+            DetailedViewModel.this.data.setValue(null);
+            return;
+        }
+
         Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).bookDetail(bean.getUrl(), (data) -> {
             if (data.getTitle() == null || data.getTitle().isEmpty()) {
                 data.setTitle(bean.getTitle());

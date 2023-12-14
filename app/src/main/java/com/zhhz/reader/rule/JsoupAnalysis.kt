@@ -177,6 +177,7 @@ class JsoupAnalysis : Analysis {
 
             val title = parseArray(json.detail.name)
             book.title = parseJsoup(element.select(title[0]), title[1])
+            book.setComic(json.comic)
             if (ObjectUtil.isNotEmpty(json.detail.author)) {
                 val obj = parseArray(json.detail.author)
                 book.author = parseJsoup(element.select(obj[0]), obj[1])
@@ -478,7 +479,11 @@ class JsoupAnalysis : Analysis {
                 if (page.isNotEmpty() && page != url) {
                     bookContent(page, { dataA: HttpResponseBean, labelA: Any ->
                         if (dataA.isStatus) {
-                            dataA.data = str + dataA.data
+                            if (isComic) {
+                                dataA.data = str + '\n' + dataA.data
+                            } else {
+                                dataA.data = str + dataA.data
+                            }
                         }
                         callback.accept(dataA, labelA)
                     }, label)

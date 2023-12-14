@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatButton;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -176,7 +177,10 @@ public class ComicReaderFragment extends Fragment {
 
         error_btn = new AppCompatButton(requireContext());
         error_btn.setText("重新加载");
-        error_btn.setOnClickListener(view -> mViewModel.getContentComic(true));
+        error_btn.setOnClickListener(view -> {
+            error_btn.setVisibility(View.INVISIBLE);
+            mViewModel.getContentComic(true);
+        });
         return root;
     }
 
@@ -190,8 +194,17 @@ public class ComicReaderFragment extends Fragment {
                 new AlertDialog.Builder(requireContext()).setTitle("错误提示")
                         .setMessage((CharSequence) map.get("error"))
                         .show();
-                if (comicAdapter.getItemData().size() == 0)
-                    binding.bookReader.addView(error_btn, binding.progress.getLayoutParams());
+                if (comicAdapter.getItemData().isEmpty()) {
+                    if (binding.bookReader.getViewById(error_btn.getId()) == null) {
+                        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(binding.progress.getLayoutParams());
+                        layoutParams.bottomToBottom = binding.progress.getId();
+                        layoutParams.topToTop = binding.progress.getId();
+                        layoutParams.leftToLeft = binding.progress.getId();
+                        layoutParams.rightToRight = binding.progress.getId();
+                        binding.bookReader.addView(error_btn, layoutParams);
+                    }
+                    error_btn.setVisibility(View.VISIBLE);
+                }
             } else {
                 int length = comicAdapter.getItemData().size();
                 if ("true".equals(String.valueOf(map.get("end")))) {
@@ -210,7 +223,10 @@ public class ComicReaderFragment extends Fragment {
         });
 
         mViewModel.getChapters().observe(getViewLifecycleOwner(), title -> {
-            if (mViewModel.getStart() == 0) binding.progress.show();
+            if (mViewModel.getStart() == 0) {
+                binding.progress.show();
+                error_btn.setVisibility(View.INVISIBLE);
+            }
         });
 
         mViewModel.queryCatalogue();

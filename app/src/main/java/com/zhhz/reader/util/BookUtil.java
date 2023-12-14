@@ -1,6 +1,7 @@
 package com.zhhz.reader.util;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
@@ -19,22 +20,11 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.parallel.ScatterGatherBackingStore;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -54,6 +44,182 @@ public class BookUtil {
         for (CompletableFuture<?> future : futures) {
             future.cancel(true);
         }
+    }
+
+    public static int cache_error = 0;
+    /**
+     * 缓存书本
+     * @param bean 书本对象
+     * @param num 缓存章节数量
+     */
+    public static void CacheBook(BookBean bean,int num){
+        cache_error = 0;
+        String path = DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id();
+        File file = new File(path + File.separator + "chapter");
+        OrderlyMap chapters;
+        ArrayList<String> list;
+        RuleAnalysis ruleAnalysis;
+        int progress;
+        try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
+            chapters = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
+            list = new ArrayList<>(chapters.values());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        if (num == -1){
+            progress = 0;
+            num = Integer.MAX_VALUE;
+        } else {
+            file = new File(path + File.separator + "progress");
+            try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
+                String[] s = bufferedReader.readLine().split(",");
+                bufferedReader.close();
+                progress = Integer.parseInt(s[0]);
+                if (num != Integer.MAX_VALUE) num += progress;
+            } catch (IOException | NumberFormatException e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+
+        try {
+             ruleAnalysis = new RuleAnalysis(path + File.separator + "rule",false);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        if (bean.isComic()) {
+            ArrayList<String> urls = new ArrayList<>();
+            for (int i = progress; i < Math.min(num, list.size()); i++) {
+                urls.add(list.get(i));
+            }
+            cacheComic(urls,bean,ruleAnalysis);
+        } else {
+            cacheBook(list,bean,ruleAnalysis,progress,progress + num);
+        }
+    }
+
+
+    private static void cacheComic(ArrayList<String> list,BookBean bean,RuleAnalysis rule){
+        LazyHeaders headers;
+        LazyHeaders.Builder header = new LazyHeaders.Builder();
+        if (rule.getAnalysis().getJson().getImgHeader() != null) {
+            if (ObjectUtil.isNotEmpty(rule.getAnalysis().getJson().getImgHeader().getHeader())) {
+                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getImgHeader().getHeader());
+                for (Map.Entry<String, Object> entry1 : header_x.entrySet()) {
+                    header.setHeader(entry1.getKey(),String.valueOf(entry1.getValue()));
+                }
+                header_x.clear();
+            }
+            if (rule.getAnalysis().getJson().getImgHeader().getReuse()) {
+                JSONObject header_x = JSONObject.parseObject(rule.getAnalysis().getJson().getHeader());
+                for (Map.Entry<String, Object> entry1 : header_x.entrySet()) {
+                    header.setHeader(entry1.getKey(), String.valueOf(entry1.getValue()));
+                }
+                header_x.clear();
+            }
+        }
+        headers = header.build();
+
+        futures.add(CompletableFuture.runAsync(() -> {
+            //图片地址
+            ArrayList<String> imageList = new ArrayList<>();
+
+            //缓存进度
+            AtomicInteger index = new AtomicInteger(0);
+
+            //失败三次跳过
+            AtomicInteger error = new AtomicInteger();
+
+            ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
+                if (list.size() <= index.get()) {
+                    NotificationUtil.sendMessage("《" + bean.getTitle() + "》" + list.size() + "章缓存完成");
+                    throw new CancellationException();
+                }
+
+                CountDownLatch countDownLatch = new CountDownLatch(1);
+
+                NotificationUtil.sendMessage("获取后面第" + index.get() +"章节");
+                rule.bookChapters(bean, list.get(index.get()), (data, tag) -> {
+                    String[] c = data.getData().split("\n");
+                    for (String s : c) {
+                        if (s.startsWith("http")) {
+                            imageList.add(s);
+                        }
+                    }
+                    countDownLatch.countDown();
+                }, bean);
+                try {
+                    if (!countDownLatch.await(1, TimeUnit.MINUTES)) {
+                        System.out.println("请求超时");
+                        if (error.incrementAndGet() > 3) {
+                            error.set(0);
+                            imageList.remove(0);
+                        }
+                        return;
+                    }
+                    index.incrementAndGet();
+                } catch (InterruptedException ignored) {
+                }
+
+                error.set(0);
+                int count = 1;
+                while (imageList.size() != 0) {
+                    String url = imageList.get(0);
+                    String p = GlideGetPath.getCacheFileKey(url);
+                    if (p == null || !new File(p).isFile()) {
+                        try {
+                            GlideApp.with(MyApplication.context).asBitmap().load(new GlideUrl(url, headers)).submit().get().recycle();
+                            imageList.remove(0);
+                            NotificationUtil.sendMessage("缓存后面第" + index.get() +"章第" + ++count +"张图片成功");
+                            error.set(0);
+                        } catch (ExecutionException | InterruptedException i) {
+                            //i.printStackTrace();
+                            if (error.incrementAndGet() > 3) {
+                                error.set(0);
+                                imageList.remove(0);
+                            }
+                        }
+                    } else {
+                        imageList.remove(0);
+                    }
+                }
+
+            }, 0, 1, TimeUnit.SECONDS);
+
+
+            try {
+                future.get();
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }));
+
+
+    }
+
+    private static void cacheBook(ArrayList<String> list,BookBean book,RuleAnalysis rule,int progress, int num) {
+        String url = list.get(progress);
+        if (url == null) return;
+        rule.bookChapters(book, url, (data, label) -> {
+            if (!data.isStatus()) {
+                cache_error++;
+                //失败三次取消缓存
+                if (cache_error < 3) {
+                    cacheBook(list,book,rule,progress, num);
+                } else {
+                    cache_error = 0;
+                }
+            } else if (progress < num && list.size() > progress + 1) {
+                cacheBook(list,book,rule,progress + 1, num);
+            } else {
+                //全部缓存完成事件
+                NotificationUtil.sendMessage("《" + book.getTitle() + "》缓存完成");
+            }
+        }, progress);
     }
 
     public static void GetCacheSize(BookBean bean, GetCacheSize$Callback callback) {
@@ -132,8 +298,12 @@ public class BookUtil {
                 list.add(CompletableFuture.supplyAsync(() -> {
                     int length;
                     while ((length = list_index.getAndIncrement()) < copyOnWriteArrayList.size()) {
-                        String path1 = GlideGetPath.getCacheFileKey(copyOnWriteArrayList.get(length));
-                        long len = (long) FileSizeUtil.getFileOrFilesSize(path1, FileSizeUtil.SIZE_TYPE_B);
+                        long len = 0;
+                        String path1 = null;
+                        if (!TextUtils.isEmpty(copyOnWriteArrayList.get(length))) {
+                            path1 = GlideGetPath.getCacheFileKey(copyOnWriteArrayList.get(length));
+                            len = (long) FileSizeUtil.getFileOrFilesSize(path1, FileSizeUtil.SIZE_TYPE_B);
+                        }
                         count_size.addAndGet(len);
                         if (len > 0) {
                             fileList.add(path1);

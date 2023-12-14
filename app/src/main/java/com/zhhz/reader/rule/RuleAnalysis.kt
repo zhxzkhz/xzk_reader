@@ -18,11 +18,17 @@ class RuleAnalysis(jsonObject: RuleJsonBean, bool: Boolean) {
 
     init {
         val type = jsonObject.type
-        // 0 为 jsoup ， 1 为 json
-        if (type == 0) {
-            analysis = JsoupAnalysis(jsonObject)
-        } else if (type == 1) {
-            analysis = JsonAnalysis(jsonObject)
+        // 0 为 jsoup ， 1 为 json , 2 为自动识别
+        when (type) {
+            0 -> {
+                analysis = JsoupAnalysis(jsonObject)
+            }
+            1 -> {
+                analysis = JsonAnalysis(jsonObject)
+            }
+            2 -> {
+                analysis = XKAnalysis(jsonObject)
+            }
         }
         if (bool) {
             analyses_map[StringUtil.getMD5(analysis.name)] = analysis

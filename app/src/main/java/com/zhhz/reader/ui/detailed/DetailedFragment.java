@@ -10,6 +10,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -30,6 +34,8 @@ import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.GlideApp;
 import com.zhhz.reader.view.RecycleViewDivider;
 
+import java.util.Arrays;
+
 import cn.hutool.core.util.ObjectUtil;
 
 public class DetailedFragment extends Fragment {
@@ -44,6 +50,9 @@ public class DetailedFragment extends Fragment {
 
     private BookBean bookBean;
 
+    private ActivityResultLauncher<Intent> launcher;
+
+
     public static DetailedFragment newInstance() {
         return new DetailedFragment();
     }
@@ -51,6 +60,9 @@ public class DetailedFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            readCheck();
+        });
         mViewModel = new ViewModelProvider(this).get(DetailedViewModel.class);
     }
 
@@ -59,8 +71,14 @@ public class DetailedFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mViewModel.getData().observe(getViewLifecycleOwner(), bean -> {
-            bookBean = bean;
+            if (bean == null){
+                binding.detailedTitle.setText("请求失败");
+                binding.detailedLayout.itemTitle.setText("详情界面请求URL为空");
+                Toast.makeText(requireContext(),"详情界面请求URL为空",Toast.LENGTH_LONG).show();
+                return;
+            }
 
+            bookBean = bean;
             if (bean.getTitle() != null && !bean.getTitle().isEmpty()) {
                 binding.detailedTitle.setText(bean.getTitle());
                 binding.detailedLayout.itemTitle.setText(bean.getTitle());
@@ -97,13 +115,8 @@ public class DetailedFragment extends Fragment {
             } else {
                 catalogueAdapter.setItemData(map);
                 catalogueAdapter.notifyDataSetChanged();
-                int[] pro = mViewModel.readProgress(bookBean.getBook_id());
-                if (pro[0] + pro[1] > 0 && catalogueAdapter.getTitle().size() > pro[0]) {
-                    binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitle().get(pro[0]) + ")");
-                } else {
-                    binding.startRead.setText("开始阅读");
-                }
-                if (map.size() > 0) {
+                readCheck();
+                if (!map.isEmpty()) {
                     binding.startRead.setTextColor(Color.BLACK);
                     binding.startRead.setClickable(true);
                     binding.startRead.setOnClickListener(view1 -> {
@@ -112,7 +125,8 @@ public class DetailedFragment extends Fragment {
                         mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
                         Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
                         intent.putExtra("book", (Parcelable)bookBean);
-                        DetailedFragment.this.startActivity(intent);
+                        //DetailedFragment.this.startActivity(intent);
+                        launcher.launch(intent);
                         DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                     });
                 } else {
@@ -121,6 +135,16 @@ public class DetailedFragment extends Fragment {
             }
         });
         mViewModel.queryDetailed(searchResultBean, 0);
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void readCheck() {
+        int[] pro = mViewModel.readProgress(bookBean.getBook_id());
+        if (pro[0] + pro[1] > 0 && catalogueAdapter.getTitleList().size() > pro[0]) {
+            binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitleList().get(pro[0]) + ")");
+        } else {
+            binding.startRead.setText("开始阅读");
+        }
     }
 
     @Nullable
@@ -174,7 +198,8 @@ public class DetailedFragment extends Fragment {
             mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
             mViewModel.saveProgress(bookBean.getBook_id(), position);
             intent.putExtra("book", (Parcelable)bookBean);
-            startActivity(intent);
+            //startActivity(intent);
+            launcher.launch(intent);
             DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
