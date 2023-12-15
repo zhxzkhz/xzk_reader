@@ -5,7 +5,6 @@ import com.zhhz.reader.bean.HttpResponseBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.OrderlyMap;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 
 public class AnalysisCallBack {

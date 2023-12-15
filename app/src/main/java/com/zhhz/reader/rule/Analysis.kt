@@ -7,7 +7,6 @@ import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.*
-import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -21,7 +20,6 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.script.ScriptException
 import javax.script.SimpleBindings
-import kotlin.concurrent.thread
 
 abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 

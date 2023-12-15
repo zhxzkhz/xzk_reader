@@ -2,8 +2,6 @@ package com.zhhz.reader.rule
 
 import cn.hutool.core.util.ObjectUtil
 import com.alibaba.fastjson.JSON
-import com.alibaba.fastjson.JSONArray
-import com.alibaba.fastjson.JSONObject
 import com.alibaba.fastjson2.JSONPath
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
@@ -26,7 +24,32 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
     private val headRegex = """(?<!\{\{)(?:@(?:js|json|css):|\$\.)""".toRegex(RegexOption.IGNORE_CASE)
 
     //private val analysisPattern = """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:[^@]|@(?!js|json|css)|\$\.)+)""".toRegex(RegexOption.IGNORE_CASE)
-    private val analysisPattern = """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:(?!@js:|@json:|@css:|\$\.).)+)""".toRegex(RegexOption.IGNORE_CASE)
+    private val analysisPattern = """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:(?!@js:|@json:|@css:|\$\.|\{\{).)+)""".toRegex(RegexOption.IGNORE_CASE)
+
+    //防重复次数标记
+    private var count =0;
+
+    private fun split(str: String): Array<String>{
+        val list = ArrayList<String>()
+        val arr = str.toCharArray()
+        var flag = 0
+        var last = 0.toChar()
+        var lastIndex = 0
+        for ((index, c) in arr.withIndex()) {
+            if (c == '{' && last == '{'){
+                flag++
+            } else if (c == '}' && last == '}'){
+                flag--
+            } else if (c == '#' && last == '#' && flag < 1){
+                flag = 0
+                list.add(str.substring(lastIndex,index-1))
+                lastIndex = index+1
+            }
+            last = c
+        }
+        list.add(str.substring(lastIndex))
+        return list.toArray(arrayOf())
+    }
 
     private fun parse(
         obj: Any,
@@ -38,9 +61,9 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
     ): Any {
         var dataTemp = obj
         var originalRule = ""
-        var ruleTemp = rule
-        val tmpArrayTemp = rule.split("##")
-        val tmpArray = tmpArrayTemp[0].split(headRegex, 2)
+        val tmpArrayTemp = split(rule)
+        var ruleTemp = tmpArrayTemp[0]
+        val tmpArray = ruleTemp.split(headRegex, 2)
 
         if (tmpArray[0].isNotBlank()) {
             originalRule = tmpArray[0]
@@ -51,8 +74,6 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 } else if (!originalRule.contains("\\{\\{.+?\\}\\}".toRegex())) {
                     return originalRule
                 }
-            } else {
-                ruleTemp = tmpArrayTemp[0]
             }
         }
 
@@ -239,7 +260,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             obj.forEach {
                 tmp += if (it is Element) {
                     if (absoluteUrl.isNotEmpty()) {
-                        toAbsoluteUrl(extendRules(it.attr("src"), rules), absoluteUrl) + "\n"
+                        toAbsoluteUrl(extendRules(it.attr(attr), rules), absoluteUrl) + "\n"
                     } else {
                         extendRules(it.text(), rules) + "\n"
                     }
@@ -461,6 +482,9 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         bindings["java"] = this
         bindings["url"] = url
         bindings["callback"] = callback
+        if (count++>100){
+            return callback.accept(OrderlyMap(),url)
+        }
         Http(url) { result ->
             val lhm = OrderlyMap()
             if (!result.isStatus) {
@@ -507,6 +531,11 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         val httpResponseBean = HttpResponseBean()
         httpResponseBean.isStatus = true
         bindings["CallBackData"] = httpResponseBean
+        if (count++>100){
+            httpResponseBean.isStatus = false
+            httpResponseBean.error = "循环获取已超过100次，请检查规则是否有误"
+            return callback.accept(httpResponseBean, label)
+        }
         Http(url) { result ->
             var s = ""
             if (!result.isStatus) {
@@ -561,7 +590,25 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 }
             }
             httpResponseBean.data = s
-            callback.accept(httpResponseBean, label)
+            if (ObjectUtil.isNotEmpty(json.chapter.page)) {
+                val page = parse(data, json.chapter.page, bindings, url, "href").toString()
+                if (page.isNotEmpty() && page != url) {
+                    bookContent(page, { dataA: HttpResponseBean, labelA: Any ->
+                        if (dataA.isStatus) {
+                            if (isComic) {
+                                dataA.data = s + '\n' + dataA.data
+                            } else {
+                                dataA.data = s + dataA.data
+                            }
+                        }
+                        callback.accept(dataA, labelA)
+                    }, label)
+                } else {
+                    callback.accept(httpResponseBean, label)
+                }
+            } else {
+                callback.accept(httpResponseBean, label)
+            }
 
         }
     }
