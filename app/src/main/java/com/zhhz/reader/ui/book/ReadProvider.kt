@@ -1,6 +1,7 @@
 package com.zhhz.reader.ui.book
 
 import android.graphics.Typeface
+import android.os.Build
 import android.text.StaticLayout
 import android.text.TextPaint
 import com.zhhz.reader.ui.book.entities.TextChapter
@@ -11,6 +12,9 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 object ReadProvider {
+
+    private const val indentChar = "　"
+
     @JvmStatic
     var viewWidth = 0
         private set
@@ -72,7 +76,12 @@ object ReadProvider {
     var textPaint: TextPaint = TextPaint()
 
     @JvmStatic
+    var indentCharWidth = 0f
+        private set
+
+    @JvmStatic
     var density = 2.625f
+
 
     init {
         updateStyle()
@@ -93,17 +102,22 @@ object ReadProvider {
                 contents.add("　　$paragraph")
             }
         }
+
         val textPages = arrayListOf<TextPage>()
         textPages.add(TextPage())
         var x = marginLeft
         var y = 0f
         val stringBuilder = StringBuilder()
+
         contents.forEach { content ->
+
             textParse(x, y, content, textPages, textPaint, stringBuilder).let {
                 x = it.first
                 y = it.second
             }
+
         }
+
         textPages.last().text = stringBuilder.toString()
         textPages.forEachIndexed { index, item ->
             item.index = index
@@ -114,7 +128,8 @@ object ReadProvider {
         return TextChapter(title, pos, textPages)
     }
 
-    private suspend fun textParse(
+
+    private fun textParse(
         x: Int,
         y: Float,
         text: String,
@@ -123,9 +138,27 @@ object ReadProvider {
         sb: StringBuilder,
         isTitle: Boolean = false,
     ): Pair<Int, Float> {
-        val layout = ZhLayout(text, textPaint, visibleWidth)
+
+        val widthsArray = FloatArray(text.length)
+        textPaint.getTextWidths(text, widthsArray)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            if (widthsArray.isNotEmpty()) {
+                val letterSpacing = textPaint.letterSpacing * textPaint.textSize
+                val letterSpacingHalf = letterSpacing * 0.5f
+                widthsArray[0] += letterSpacingHalf
+                widthsArray[widthsArray.lastIndex] += letterSpacingHalf
+            }
+        }
+
+        val layout = if (ReadBookConfig.useZhLayout) {
+            val (words, widths) = measureTextSplit(text, widthsArray)
+            ZhLayout(text, textPaint, visibleWidth, words, widths)
+        } else {
+            StaticLayout. Builder.obtain(text, 0, text.length, textPaint, visibleWidth).build()
+        }
         var curX = x
         var curY = y
+
         for (lineIndex in 0 until layout.lineCount) {
             val textLine = TextLine(isTitle = isTitle)
             if (curY + textPaint.textHeight > visibleHeight) {
@@ -137,104 +170,142 @@ object ReadProvider {
                 curX = marginLeft
                 curY = 0f
             }
-            val words =
-                text.substring(layout.getLineStart(lineIndex), layout.getLineEnd(lineIndex))
-            val desiredWidth = layout.getLineWidth(lineIndex)
+
+            val lineStart = layout.getLineStart(lineIndex)
+            val lineEnd = layout.getLineEnd(lineIndex)
+            val lineText = text.substring(lineStart, lineEnd)
+            val (words, widths) = measureTextSplit(lineText, widthsArray, lineStart)
+            val desiredWidth = widths.sum()
 
             when {
                 //第一行并且不是标题
                 lineIndex == 0 && layout.lineCount > 1 && !isTitle -> {
-                    textLine.text = words
-                    addTextToLineFirst(textLine, curX, words.toStringArray(), textPaint, desiredWidth)
+                    textLine.text = lineText
+                    addTextToLineFirst(textLine, curX, words, desiredWidth, widths)
                 }
 
                 lineIndex == layout.lineCount - 1 -> {
+
                     //最后一行
-                    textLine.text = words
+                    textLine.text = lineText
                     textLine.isParagraphEnd = true
-                    addCharsToLineNatural(
+                    addTextToLineNatural(
                         textLine,
                         curX,
-                        words.toStringArray(),
-                        textPaint,
+                        words,
                         0f,
-                        !isTitle && lineIndex == 0
+                        !isTitle && lineIndex == 0,
+                        widths
                     )
+
                 }
 
                 else -> {
                     //中间行
-                    textLine.text = words
+
+                    textLine.text = lineText
                     addTextToLineMiddle(
-                        textLine, curX, words.toStringArray(),
-                        textPaint, desiredWidth, 0f
+                        textLine, curX, words,
+                        desiredWidth, 0f, widths
                     )
+
                 }
             }
-            sb.append(words)
-            if (textLine.isParagraphEnd) {
-                sb.append("\n")
-            }
+            sb.append(lineText)
             textPages.last().addLine(textLine)
             textLine.updateTopBottom(curY, textPaint)
             curY += textPaint.textHeight * lineHeightRatio
             textPages.last().height = curY
+
         }
+
         curY += textPaint.textHeight * 0.3f + paragraphSpacing
+
+
         return Pair(curX, curY)
     }
 
+
     //首行缩进,两端对齐
-    private suspend fun addTextToLineFirst(
+    private fun addTextToLineFirst(
         textLine: TextLine,
-        x: Int,
-        words: Array<String>,
-        textPaint: TextPaint,
+        absStartX: Int,
+        words: List<String>,
         desiredWidth: Float,
+        textWidths: List<Float>,
     ) {
-        var x1 = 0f
+        var x = 0f
         val bodyIndent = "　　"
-        val icw = StaticLayout.getDesiredWidth(bodyIndent, textPaint) / bodyIndent.length
-        for (char in bodyIndent.toStringArray()) {
-            val x2 = x1 + icw
+        for (i in bodyIndent.indices) {
+            val x1 = x + indentCharWidth
             textLine.addColumn(
                 TextColumn(
-                    charData = char,
-                    start = x + x1,
-                    end = x + x2
+                    charData = indentChar,
+                    start = absStartX + x,
+                    end = absStartX + x1
                 )
             )
-            x1 = x2
-            textLine.indentWidth = x1
+            x = x1
+            textLine.indentWidth = x
         }
         if (words.size > bodyIndent.length) {
-            val words1 = words.copyOfRange(bodyIndent.length, words.size)
-            addTextToLineMiddle(textLine, x, words1, textPaint, desiredWidth, x1)
+            val text1 = words.subList(bodyIndent.length, words.size)
+            val textWidths1 = textWidths.subList(bodyIndent.length, textWidths.size)
+            addTextToLineMiddle(
+                textLine, absStartX, text1,
+                desiredWidth, x, textWidths1
+            )
         }
+
     }
 
     //无缩进,两端对齐
-    private suspend fun addTextToLineMiddle(
+    private fun addTextToLineMiddle(
         textLine: TextLine,
-        x: Int,
-        words: Array<String>,
-        textPaint: TextPaint,
+        absStartX: Int,
+        words: List<String>,
         desiredWidth: Float,
         /**起始x坐标**/
         startX: Float,
+        textWidths: List<Float>,
     ) {
-        //获取剩余宽度
+
         val residualWidth = visibleWidth - desiredWidth
-        val gapCount: Int = words.lastIndex
-        val spacingWidth = residualWidth / gapCount
-        var x1 = startX
-        words.forEachIndexed { index, char ->
-            val cw = StaticLayout.getDesiredWidth(char, textPaint)
-            val x2 = if (index != words.lastIndex) (x1 + cw + spacingWidth) else (x1 + cw)
-            addTextToLine(textLine, x, char, x1, x2, index + 1 == words.size)
-            x1 = x2
+        val spaceSize = words.count { it == " " }
+        if (spaceSize > 1) {
+            val d = residualWidth / spaceSize
+            var x = startX
+            for (index in words.indices) {
+                val char = words[index]
+                val cw = textWidths[index]
+                val x1 = if (char == " ") {
+                    if (index != words.lastIndex) (x + cw + d) else (x + cw)
+                } else {
+                    (x + cw)
+                }
+                addTextToLine(
+                    textLine, absStartX, char,
+                    x, x1, index + 1 == words.size
+                )
+                x = x1
+            }
+        } else {
+            val gapCount: Int = words.lastIndex
+            val d = residualWidth / gapCount
+            var x = startX
+            for (index in words.indices) {
+                val char = words[index]
+                val cw = textWidths[index]
+                val x1 = if (index != words.lastIndex) (x + cw + d) else (x + cw)
+                addTextToLine(
+                    textLine, absStartX, char,
+                    x, x1, index + 1 == words.size
+                )
+                x = x1
+            }
         }
-        exceed(x, textLine, words)
+        exceed(absStartX, textLine, words)
+
     }
 
     /**
@@ -260,33 +331,35 @@ object ReadProvider {
     /**
      * 自然排列
      */
-    private suspend fun addCharsToLineNatural(
+    private fun addTextToLineNatural(
         textLine: TextLine,
-        x: Int,
-        words: Array<String>,
-        textPaint: TextPaint,
+        absStartX: Int,
+        words: List<String>,
         startX: Float,
-        hasIndent: Boolean
+        hasIndent: Boolean,
+        textWidths: List<Float>,
     ) {
         val indentLength = "　　".length
-        var x1 = startX
-        words.forEachIndexed { index, char ->
-            val cw = StaticLayout.getDesiredWidth(char, textPaint)
-            val x2 = x1 + cw
-            addTextToLine(textLine, x, char, x1, x2, index + 1 == words.size)
-            x1 = x2
+        var x = startX
+        for (index in words.indices) {
+            val char = words[index]
+            val cw = textWidths[index]
+            val x1 = x + cw
+            addTextToLine(textLine, absStartX, char, x, x1, index + 1 == words.size)
+            x = x1
             if (hasIndent && index == indentLength - 1) {
-                textLine.indentWidth = x1
+                textLine.indentWidth = x
             }
         }
-        exceed(x, textLine, words)
+        exceed(absStartX, textLine, words)
+
     }
 
 
     /**
      * 超出边界处理
      */
-    private fun exceed(x: Int, textLine: TextLine, words: Array<String>) {
+    private fun exceed(x: Int, textLine: TextLine, words: List<String>) {
         val visibleEnd = x + visibleWidth
         val endX = textLine.columns.lastOrNull()?.end ?: return
         if (endX > visibleEnd) {
@@ -294,11 +367,62 @@ object ReadProvider {
             for (i in 0..words.lastIndex) {
                 textLine.getColumnReverseAt(i).let {
                     val py = cc * (words.size - i)
-                    it.start = it.start - py
-                    it.end = it.end - py
+                    it.start -= py
+                    it.end -= py
                 }
             }
         }
+    }
+
+    private fun measureTextSplit(
+        text: String,
+        widthsArray: FloatArray,
+        start: Int = 0
+    ): Pair<ArrayList<String>, ArrayList<Float>> {
+        val length = text.length
+        var clusterCount = 0
+        for (i in start..<start + length) {
+            if (widthsArray[i] > 0) clusterCount++
+        }
+        val widths = ArrayList<Float>(clusterCount)
+        val stringList = ArrayList<String>(clusterCount)
+        var i = 0
+        while (i < length) {
+            val clusterBaseIndex = i++
+            widths.add(widthsArray[start + clusterBaseIndex])
+            while (i < length && widthsArray[start + i] == 0f && !isZeroWidthChar(text[i])) {
+                i++
+            }
+            stringList.add(text.substring(clusterBaseIndex, i))
+        }
+        return stringList to widths
+    }
+
+    private fun measureTextSplit(
+        text: String,
+        paint: TextPaint
+    ): Pair<ArrayList<String>, ArrayList<Float>> {
+        val length = text.length
+        val widthsArray = FloatArray(length)
+        paint.getTextWidths(text, widthsArray)
+        val clusterCount = widthsArray.count { it > 0f }
+        val widths = ArrayList<Float>(clusterCount)
+        val stringList = ArrayList<String>(clusterCount)
+        var i = 0
+        while (i < length) {
+            val clusterBaseIndex = i++
+            widths.add(widthsArray[clusterBaseIndex])
+            while (i < length && widthsArray[i] == 0f) {
+                i++
+            }
+            stringList.add(text.substring(clusterBaseIndex, i))
+        }
+        return stringList to widths
+    }
+
+    private fun isZeroWidthChar(char: Char): Boolean {
+        val code = char.code
+        return code == 8203 || code == 8204 || code == 8288
     }
 
     /**
@@ -317,13 +441,18 @@ object ReadProvider {
         titlePaint.color = ReadBookConfig.textColor
         titlePaint.isSubpixelText = true
         titlePaint.isAntiAlias = true
-
         lineHeightRatio = ReadBookConfig.lineHeightRatio
         paragraphSpacing = ReadBookConfig.paragraphSpacing
         marginLeft = ReadBookConfig.marginSpacing.toInt()
         marginRight = ReadBookConfig.marginSpacing.toInt()
         marginTop = (titlePaint.textHeight * 1.5f).toInt()
         marginBottom = (titlePaint.textHeight * 1.5f).toInt()
+        val bodyIndent = "　　"
+        var indentWidth = StaticLayout.getDesiredWidth(bodyIndent, textPaint)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            indentWidth += textPaint.letterSpacing * textPaint.textSize
+        }
+        indentCharWidth = indentWidth / bodyIndent.length
         updateLayout()
     }
 

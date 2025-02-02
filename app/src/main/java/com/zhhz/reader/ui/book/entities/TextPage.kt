@@ -23,6 +23,7 @@ data class TextPage(
      * 更新每行位置，保持底部对齐
      */
     fun updateLinesPosition() {
+        if (textLines.size <= 1) return
         ReadProvider.run {
             val lastLine = textLines[lineSize - 1]
             val lastLineHeight = with(lastLine) { lineBottom - lineTop }
@@ -35,9 +36,9 @@ data class TextPage(
             val tj = surplus / (lineSize - 1)
             for (i in 1 until lineSize) {
                 val line = textLines[i]
-                line.lineTop = line.lineTop + tj * i
-                line.lineBase = line.lineBase + tj * i
-                line.lineBottom = line.lineBottom + tj * i
+                line.lineTop += tj * i
+                line.lineBase += tj * i
+                line.lineBottom += tj * i
             }
         }
     }

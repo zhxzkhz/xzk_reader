@@ -138,19 +138,19 @@ public class ComicReaderFragment extends Fragment {
                     comicAdapter.setItemData(new ArrayList<>(mViewModel.getComicList()));
                     comicAdapter.notifyDataSetChanged();
                     @NonNull LinearLayoutManager layout_manager = (LinearLayoutManager) Objects.requireNonNull(binding.readerComic.getLayoutManager());
-                    layout_manager.scrollToPositionWithOffset(mViewModel.getStart(), 0);
+                    layout_manager.scrollToPositionWithOffset(mViewModel.getPos(), 0);
                 } else {
                     comicAdapter.getItemData().addAll(mViewModel.getComicList());
                     comicAdapter.notifyItemRangeInserted(length, mViewModel.getComicList().size());
                 }
                 length = comicAdapter.getItemData().size();
-                binding.progressText.setText(requireContext().getString(R.string.progress_text, mViewModel.getStart() + 1, length));
+                binding.progressText.setText(requireContext().getString(R.string.progress_text, mViewModel.getPos() + 1, length));
             }
             loading = false;
         });
 
         mViewModel.getChapters().observe(getViewLifecycleOwner(), title -> {
-            if (mViewModel.getStart() == 0) {
+            if (mViewModel.getPos() == 0) {
                 binding.progress.show();
                 errorRetryButton.setVisibility(View.INVISIBLE);
             }
@@ -159,7 +159,7 @@ public class ComicReaderFragment extends Fragment {
         mViewModel.queryCatalogue();
         int[] r = mViewModel.readProgress();
         mViewModel.setProgress(r[0]);
-        mViewModel.setStart(r[1]);
+        mViewModel.setPos(r[1]);
         mViewModel.getContentComic(true);
 
     }
@@ -205,14 +205,14 @@ public class ComicReaderFragment extends Fragment {
                         page = last_completely + 1;
                     }
                 } else {
-                    page = mViewModel.getStart() + 1;
+                    page = mViewModel.getPos() + 1;
                 }
 
                 binding.progressText.setText(requireContext().getString(R.string.progress_text, page, count));
 
-                if (mViewModel.getStart() + 1 != page || page == count) {
-                    if (page != count || mViewModel.getStart() + 2 == page) {
-                        mViewModel.setStart(page - 1);
+                if (mViewModel.getPos() + 1 != page || page == count) {
+                    if (page != count || mViewModel.getPos() + 2 == page) {
+                        mViewModel.setPos(page - 1);
                         mViewModel.saveProgressComic();
                     }
                     //通过最后一页判断是否还有下一章，从当前页加载时会因为加载的只有一张时重复加载

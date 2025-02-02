@@ -50,7 +50,7 @@ public class BookReaderFragment extends BookReaderFragmentBase{
         binding.readerText.setDownPage(() -> {
             if (mViewModel.isLoading()) return true;
             if (mViewModel.isHaveNextChapters()) {
-                mViewModel.setStart(0);
+                mViewModel.setPos(0);
                 mViewModel.loadNextChapters();
                 return true;
             } else {
@@ -62,7 +62,7 @@ public class BookReaderFragment extends BookReaderFragmentBase{
         binding.readerText.setUpPage(() -> {
             if (mViewModel.isLoading()) return true;
             if (mViewModel.isHavePreviousChapters()) {
-                mViewModel.setStart(0);
+                mViewModel.setPos(0);
                 mViewModel.loadPreviousChapters();
                 return true;
             } else {
@@ -148,9 +148,9 @@ public class BookReaderFragment extends BookReaderFragmentBase{
             } else {
                 //判断是否转跳到文本末尾
                 if (map.containsKey("end") && Boolean.parseBoolean(String.valueOf(map.get("end")))) {
-                    mViewModel.setStart(String.valueOf(map.get("content")).length()-1);
+                    mViewModel.setPos(String.valueOf(map.get("content")).length()-1);
                 }
-                binding.readerText.setText(String.valueOf(map.get("content")), mViewModel.getStart());
+                binding.readerText.setText(String.valueOf(map.get("content")), mViewModel.getPos());
                 mViewModel.saveProgress(mViewModel.getProgress(), binding.readerText.getTextStart());
             }
         });

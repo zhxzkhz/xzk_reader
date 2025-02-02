@@ -34,7 +34,7 @@ public abstract class BookReaderFragmentBase extends Fragment{
         mViewModel.queryCatalogue();
         int[] r = mViewModel.readProgress();
         mViewModel.setProgress(r[0]);
-        mViewModel.setStart(r[1]);
+        mViewModel.setPos(r[1]);
         mViewModel.getContent();
     }
 

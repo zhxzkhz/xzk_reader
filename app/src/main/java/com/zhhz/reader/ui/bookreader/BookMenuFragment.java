@@ -90,7 +90,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         binding.menuNextPage.setOnClickListener(view -> {
-            int progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getStart())[0] : mViewModel.getProgress();
+            int progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getPos())[0] : mViewModel.getProgress();
             if (mViewModel.isHaveNextChapters(progress)) {
                 mViewModel.jumpChapters(progress + 1);
             } else {
@@ -99,7 +99,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         binding.menuPreviousPage.setOnClickListener(view -> {
-            int progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getStart())[0] : mViewModel.getProgress();
+            int progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getPos())[0] : mViewModel.getProgress();
             if (mViewModel.isHavePreviousChapters(progress)) {
                 mViewModel.jumpChapters(progress - 1);
             } else {
@@ -148,7 +148,7 @@ public class BookMenuFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             //显示时更新标题
-            int tmp_progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getStart())[0] : mViewModel.getProgress();
+            int tmp_progress = mViewModel.isComic() ? mViewModel.current_progress_page(mViewModel.getPos())[0] : mViewModel.getProgress();
             int pos = catalogueAdapter.getPos();
             catalogueAdapter.setPos(tmp_progress);
             int height = requireActivity().getResources().getDisplayMetrics().heightPixels;

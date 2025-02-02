@@ -53,7 +53,7 @@ public class BookReaderViewModel extends ViewModel {
     //目录进度
     private int progress = 0;
     //章节进度
-    private int start = 0;
+    private int pos = 0;
     //唯一值
     private String uuid;
     private BookBean book;
@@ -159,7 +159,6 @@ public class BookReaderViewModel extends ViewModel {
     public void getContent(boolean bool) {
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
-        System.out.println("data_catalogue.getValue() = " + data_catalogue.getValue());
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
 
         HashMap<String, Object> map = new HashMap<>();
@@ -256,7 +255,7 @@ public class BookReaderViewModel extends ViewModel {
         DiskCache.delete_cache(true);
         String url;
         if (isComic()){
-            int[] a = current_progress_page(start);
+            int[] a = current_progress_page(pos);
             url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(a[0]));
         } else {
             url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
@@ -279,12 +278,12 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public void saveProgressComic() {
-        int[] a = current_progress_page(start);
+        int[] a = current_progress_page(pos);
         saveProgress(a[0], a[1]);
     }
 
-    public void saveProgress(int progress, int start) {
-        CompletableFuture.runAsync(() -> FileUtil.writeFile(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "progress", progress + "," + start));
+    public void saveProgress(int progress, int pos) {
+        CompletableFuture.runAsync(() -> FileUtil.writeFile(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "progress", progress + "," + pos));
     }
 
     /**
@@ -320,12 +319,12 @@ public class BookReaderViewModel extends ViewModel {
         this.progress = progress;
     }
 
-    public int getStart() {
-        return start;
+    public int getPos() {
+        return pos;
     }
 
-    public void setStart(int start) {
-        this.start = start;
+    public void setPos(int pos) {
+        this.pos = pos;
     }
 
     public void cacheBook(int progress) {
@@ -366,7 +365,7 @@ public class BookReaderViewModel extends ViewModel {
 
     public boolean isHaveNextChapters() {
         if (isComic()) {
-            return isHaveNextChapters(current_progress_page(start)[0]);
+            return isHaveNextChapters(current_progress_page(pos)[0]);
         }
         return isHaveNextChapters(-1);
     }
@@ -393,7 +392,7 @@ public class BookReaderViewModel extends ViewModel {
      */
     public boolean isHavePreviousChapters() {
         if (isComic()) {
-            return isHavePreviousChapters(current_progress_page(start)[0]);
+            return isHavePreviousChapters(current_progress_page(pos)[0]);
         }
         return isHavePreviousChapters(-1);
     }
@@ -444,7 +443,7 @@ public class BookReaderViewModel extends ViewModel {
      * @param pos 转跳位置
      */
     public void jumpChapters(int pos) {
-        start = 0;
+        this.pos = 0;
         progress = pos;
         comic_list.clear();
         comic_chapters.clear();

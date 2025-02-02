@@ -7,6 +7,8 @@ import com.zhhz.reader.sql.SQLiteUtil
 
 object ReadBookConfig{
 
+    const val useZhLayout: Boolean = true
+
     var curConfig: Config = JSON.parseObject(SQLiteUtil.readSetting("read_text_x_setting"), Config::class.java)
         private set
 

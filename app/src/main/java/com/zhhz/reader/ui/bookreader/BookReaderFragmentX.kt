@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.jeremyliao.liveeventbus.LiveEventBus
 import com.zhhz.reader.databinding.FragmentBookreaderXBinding
+import com.zhhz.reader.ui.book.EventBus
 import com.zhhz.reader.ui.book.ReadBookConfig
 import com.zhhz.reader.ui.book.ReadProvider
 import com.zhhz.reader.ui.book.TextActionMenu
@@ -15,18 +17,11 @@ import com.zhhz.reader.ui.book.entities.TextPage
 import com.zhhz.reader.util.Coroutine
 import com.zhhz.reader.util.LogUtil
 import com.zhhz.reader.view.XReadTextView
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.IO
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.Any
-import kotlin.Float
-import kotlin.Int
-import kotlin.String
-import kotlin.getValue
-import kotlin.lazy
-import kotlin.let
-import kotlin.run
-import kotlin.toString
 
 class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
     private var binding: FragmentBookreaderXBinding? = null
@@ -97,15 +92,16 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
             }
             mViewModel.saveSetting()
             ReadProvider.updateStyle()
-            Coroutine.async {
+
+            Coroutine.async(
+                start = CoroutineStart.LAZY,
+                executeContext = IO) {
                 binding!!.readerText.run {
                     val textChapter = ReadProvider.getTextChapter(getTextChapter()!!.title,getTextChapter()!!.getContent(),0)
                     binding!!.readerText.setContent(textChapter,getReadProgress())
                 }
             }.onError {
                 LogUtil.error(it)
-            }.onFinally {
-                binding!!.readerText.postInvalidate()
             }
         }
 
@@ -114,15 +110,15 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
                 binding!!.progress.hide()
                 if (map.containsKey("error")) {
                     val textChapter = ReadProvider.getTextChapter("文字加载失败", map["error"] as String,0)
-                    binding!!.readerText.setContent(textChapter,mViewModel.start)
+                    binding!!.readerText.setContent(textChapter,mViewModel.pos)
                     errorRetryButton.visibility = View.VISIBLE
                 } else {
                     //判断是否转跳到文本末尾
                     if (map.containsKey("end") && map["end"].toString().toBoolean()) {
-                        mViewModel.start = map["content"].toString().length - 1
+                        mViewModel.pos = map["content"].toString().length - 1
                     }
                     val textChapter = ReadProvider.getTextChapter(mViewModel.chapters.value.let { it ?: "" }, map["content"] as String,0)
-                    binding!!.readerText.setContent(textChapter,mViewModel.start)
+                    binding!!.readerText.setContent(textChapter,mViewModel.pos)
                     saveProgress()
                 }
             }.onError {
@@ -135,7 +131,9 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
             binding!!.progress.show()
             binding!!.readerText.setContent(null)
         }
-        
+
+        LiveEventBus.get(EventBus.UPDATE_CONFIG, Boolean::class.java).observe(viewLifecycleOwner) { value -> if (value) binding?.readerText?.upDateTextIndex() }
+
         super.onViewCreated(view, savedInstanceState)
     }
 
@@ -197,14 +195,14 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
         if (mViewModel.isLoading) return
         if (i == 0){
             if (mViewModel.isHavePreviousChapters) {
-                mViewModel.start = 0
+                mViewModel.pos = 0
                 mViewModel.loadPreviousChapters()
             } else {
                 Toast.makeText(requireContext(), "已经是第一章了", Toast.LENGTH_SHORT).show()
             }
         } else {
             if (mViewModel.isHaveNextChapters) {
-                mViewModel.start = 0
+                mViewModel.pos = 0
                 mViewModel.loadNextChapters()
             } else {
                 Toast.makeText(requireContext(), "已经没有下一章了", Toast.LENGTH_SHORT).show()

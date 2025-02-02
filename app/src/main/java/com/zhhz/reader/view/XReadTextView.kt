@@ -20,6 +20,7 @@ import com.zhhz.reader.ui.book.textHeight
 import java.text.BreakIterator
 import java.util.Locale
 
+
 class XReadTextView(context: Context, attrs: AttributeSet) : View(context, attrs) {
 
     //是否选中文本
@@ -74,13 +75,17 @@ class XReadTextView(context: Context, attrs: AttributeSet) : View(context, attrs
      * index 文本位置索引
      */
     fun setContent(textChapter: TextChapter?, index: Int = 0) {
+        this.textChapter = textChapter
+        upDateTextIndex(index)
+    }
+
+    fun upDateTextIndex(index: Int = this.textIndex) {
         if (textChapter != null) {
-            this.textChapter = textChapter
-            this.textIndex = textChapter.getTextIndex(index)
-            this.textPage = textChapter.getPageByReadPos(this.textIndex) ?: textPage
+            this.textIndex = textChapter!!.getTextIndex(index)
+            this.textPage = textChapter!!.getPageByReadPos(this.textIndex) ?: textPage
+            invalidate()
             callBack.saveProgress()
         }
-        invalidate()
     }
 
     fun getTextChapter(): TextChapter? {
@@ -310,7 +315,7 @@ class XReadTextView(context: Context, attrs: AttributeSet) : View(context, attrs
             leftRect.contains(x, y) -> if (textChapter != null) {
                 //上一页
                 if (!textChapter!!.isFirstPage(textPage.index)) {
-                    this.textIndex += textPage.charSize
+                    this.textIndex = maxOf(0, this.textIndex - textPage.charSize)
                     textPage = textChapter!!.previousPage(textPage)
                     callBack.saveProgress()
                     invalidate()
@@ -336,6 +341,8 @@ class XReadTextView(context: Context, attrs: AttributeSet) : View(context, attrs
                 }
             }
         }
+
+        println("onSingleTapUp ==> $textIndex")
     }
 
     @SuppressLint("ClickableViewAccessibility")
