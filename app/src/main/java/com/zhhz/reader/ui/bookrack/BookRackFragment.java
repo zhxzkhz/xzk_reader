@@ -219,9 +219,7 @@ public class BookRackFragment extends Fragment {
                     AtomicInteger index = new AtomicInteger();
                     AlertDialog dialog = new AlertDialog.Builder(requireContext())
                             .setTitle("章节缓存")
-                            .setSingleChoiceItems(lists, 0, (dialog12, which) -> {
-                                index.set(which);
-                            })
+                            .setSingleChoiceItems(lists, 0, (dialog12, which) -> index.set(which))
                             .setPositiveButton("确定", (dialog13, which) -> {
                                 for (BookBean itemDatum : bookAdapter.getItemData()) {
                                     if (name.equals(itemDatum.getBookId())) {
@@ -287,35 +285,31 @@ public class BookRackFragment extends Fragment {
                     AlertDialog dialog = new AlertDialog.Builder(requireContext())
                             .setTitle("删除提示")
                             .setSingleChoiceItems(adapter, 0, null)
-                            .setPositiveButton("确定", (dialogInterface, i) -> {
-
-                                CompletableFuture.supplyAsync(() -> {
-                                /* pos
-                                  0 删除数据库书本数据，保留书本进度和缓存数据
-                                  1 删除数据库书本数据，并书本进度和缓存数据
-                                  2 删除书本缓存数据
-                                 */
-                                    int pos = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
-                                    if (pos < 2) {
-                                        bookrackViewModel.removeBooks(ids);
-                                        bookrackViewModel.updateBookRack();
-                                        if (pos == 1) {
-                                            bookrackViewModel.deleteBookCaches(ids);
-                                            cacheFileList.forEach(path -> new File(path).delete());
-                                        }
-                                    } else {
-                                        bookrackViewModel.deleteBookChapterCaches(ids);
+                            .setPositiveButton("确定", (dialogInterface, i) -> CompletableFuture.supplyAsync(() -> {
+                            /* pos
+                              0 删除数据库书本数据，保留书本进度和缓存数据
+                              1 删除数据库书本数据，并书本进度和缓存数据
+                              2 删除书本缓存数据
+                             */
+                                int pos = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+                                if (pos < 2) {
+                                    bookrackViewModel.removeBooks(ids);
+                                    bookrackViewModel.updateBookRack();
+                                    if (pos == 1) {
+                                        bookrackViewModel.deleteBookCaches(ids);
+                                        cacheFileList.forEach(path -> new File(path).delete());
                                     }
-                                    return pos;
-                                }).whenComplete((pos,ex) -> {
-                                    if (ex != null){
-                                        LogUtil.error(ex);
-                                    } else {
-                                        ToastUtil.show(pos < 2 ? "已移除书架" : "缓存清除成功");
-                                    }
-                                }).join();
-
-                            })
+                                } else {
+                                    bookrackViewModel.deleteBookChapterCaches(ids);
+                                }
+                                return pos;
+                            }).whenComplete((pos,ex) -> {
+                                if (ex != null){
+                                    LogUtil.error(ex);
+                                } else {
+                                    ToastUtil.show(pos < 2 ? "已移除书架" : "缓存清除成功");
+                                }
+                            }).join())
                             .setOnCancelListener(DialogInterface::dismiss)
                             .setNeutralButton("取消", null)
                             .setOnCancelListener(dialog1 -> BookUtil.cancel())

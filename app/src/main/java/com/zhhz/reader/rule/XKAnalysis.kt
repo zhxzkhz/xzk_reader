@@ -27,7 +27,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
     private val analysisPattern = """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:(?!@js:|@json:|@css:|\$\.|\{\{).)+)""".toRegex(RegexOption.IGNORE_CASE)
 
     //防重复次数标记
-    private var count =0;
+    private var count =0
 
     private fun split(str: String): Array<String>{
         val list = ArrayList<String>()

@@ -15,10 +15,7 @@ import javax.script.ScriptException
 import javax.script.SimpleBindings
 
 
-class JsonAnalysis : Analysis{
-
-    constructor(jsonObject: RuleJsonBean) : super(jsonObject)
-
+class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
 
 
     //规则分割
@@ -263,7 +260,7 @@ class JsonAnalysis : Analysis{
         bindings["url"] = url
         bindings["callback"] = callback
         http(url) { result ->
-            val lhm: OrderlyMap = OrderlyMap()
+            val lhm = OrderlyMap()
             if (!result.isStatus) {
                 log(result.error)
                 callback.accept(lhm,url)

@@ -24,7 +24,7 @@ public class LogUtil {
 
     static {
         try {
-            path = MyApplication.context.getExternalCacheDir().getAbsolutePath() + File.separator + "log";
+            path = Objects.requireNonNull(MyApplication.context.getExternalCacheDir()).getAbsolutePath() + File.separator + "log";
             if (!new File(path).isDirectory()) {
                 if (!new File(path).mkdirs()) {
                     throw new FileNotFoundException();
@@ -33,7 +33,7 @@ public class LogUtil {
             path = path + File.separator + System.currentTimeMillis() + ".log";
             bufferedWriter = new BufferedWriter(new FileWriter(path));
         } catch (IOException e) {
-            e.printStackTrace();
+            LogUtil.error(e);
         }
         //js执行器加上Log函数
         SCRIPT_ENGINE.put("log",LogUtil.class);

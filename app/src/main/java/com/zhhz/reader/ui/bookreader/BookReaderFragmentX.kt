@@ -16,7 +16,6 @@ import com.zhhz.reader.util.Coroutine
 import com.zhhz.reader.util.LogUtil
 import com.zhhz.reader.view.XReadTextView
 import kotlinx.coroutines.Dispatchers
-import java.lang.Boolean
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.Any
@@ -119,7 +118,7 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
                     errorRetryButton.visibility = View.VISIBLE
                 } else {
                     //判断是否转跳到文本末尾
-                    if (map.containsKey("end") && Boolean.parseBoolean(map["end"].toString())) {
+                    if (map.containsKey("end") && map["end"].toString().toBoolean()) {
                         mViewModel.start = map["content"].toString().length - 1
                     }
                     val textChapter = ReadProvider.getTextChapter(mViewModel.chapters.value.let { it ?: "" }, map["content"] as String,0)

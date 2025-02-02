@@ -131,6 +131,7 @@ public class BookBean implements Serializable, Parcelable {
         this.status = status;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "BookBean{" +

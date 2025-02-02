@@ -100,7 +100,6 @@ class TextActionMenu(private val context: Context/*, private val callBack: CallB
 
     @SuppressLint("QueryPermissionsNeeded")
     private fun getSupportedActivities(): List<ResolveInfo> {
-        @Suppress("DEPRECATION")
         return context.packageManager
             .queryIntentActivities(createProcessTextIntent(), 0)
     }

@@ -240,7 +240,7 @@ object ReadProvider {
     /**
      * 添加字符
      */
-    private suspend fun addTextToLine(
+    private fun addTextToLine(
         textLine: TextLine,
         x: Int,
         char: String,

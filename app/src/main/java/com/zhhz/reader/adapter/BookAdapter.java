@@ -105,14 +105,14 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
                     .error(R.drawable.no_cover)
                     .listener(new RequestListener<Bitmap>() {
                         @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
                             long endTime = SystemClock.elapsedRealtime();
                             Log.d("GlideLoadTime", "加载失败或者图片未能加载成功，用时：" + (endTime - startTime) + "ms");
                             return false;
                         }
 
                         @Override
-                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                        public boolean onResourceReady(@NonNull Bitmap resource, @NonNull Object model, Target<Bitmap> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                             long endTime = SystemClock.elapsedRealtime();
                             Log.d("GlideLoadTime", "图片加载成功，用时：" + (endTime - startTime) + "ms");
                             return false;

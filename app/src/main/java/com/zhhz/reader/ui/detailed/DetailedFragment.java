@@ -150,6 +150,7 @@ public class DetailedFragment extends Fragment {
         View root = binding.getRoot();
 
         searchResultBean = (SearchResultBean) requireActivity().getIntent().getSerializableExtra("book");
+        assert searchResultBean != null;
         binding.detailedTitle.setText(searchResultBean.getTitle());
         binding.detailedLayout.itemTitle.setText(searchResultBean.getTitle());
         binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());

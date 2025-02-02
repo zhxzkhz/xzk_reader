@@ -14,17 +14,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.scwang.smart.refresh.footer.ClassicsFooter;
 import com.zhhz.reader.activity.DetailedActivity;
 import com.zhhz.reader.adapter.SearchResultAdapter;
-import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.databinding.FragmentSearchResultBinding;
 import com.zhhz.reader.view.RecycleViewDivider;
-
-import java.util.ArrayList;
 
 public class SearchResultFragment extends Fragment {
 
@@ -113,33 +109,4 @@ public class SearchResultFragment extends Fragment {
     }
 
 
-    private static class SearchResultDiffCallback extends DiffUtil.Callback {
-        private final ArrayList<SearchResultBean> oldData;
-        private final ArrayList<SearchResultBean> newData;
-
-        public SearchResultDiffCallback(ArrayList<SearchResultBean> oldData, ArrayList<SearchResultBean> newData) {
-            this.oldData = oldData;
-            this.newData = newData;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldData.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newData.size();
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldData.get(oldItemPosition).getTitle().equals(newData.get(newItemPosition).getTitle());
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldData.get(oldItemPosition).toString().equals(newData.get(newItemPosition).toString());
-        }
-    }
 }

@@ -18,8 +18,7 @@ import java.util.regex.Pattern
 import javax.script.ScriptException
 import javax.script.SimpleBindings
 
-class JsoupAnalysis : Analysis {
-    constructor(ruleJsonBean: RuleJsonBean) : super(ruleJsonBean)
+class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
 
     //规则分割
     private fun parseArray(s: String): Array<String> {

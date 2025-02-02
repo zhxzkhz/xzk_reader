@@ -2,12 +2,12 @@ package com.zhhz.reader.adapter;
 
 import android.annotation.SuppressLint;
 import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.view.menu.MenuItemImpl;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 // ① 创建Adapter
 public class SelectTextAdapter extends RecyclerView.Adapter<SelectTextAdapter.ViewHolder> {
 
-    private ArrayList<MenuItemImpl> menu;
+    private ArrayList<? extends MenuItem> menu;
     private final FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-2, -2);
 
     private int pos = -1;
@@ -34,7 +34,7 @@ public class SelectTextAdapter extends RecyclerView.Adapter<SelectTextAdapter.Vi
         this.onClickListener = onClickListener;
     }
 
-    public void setItemData(ArrayList<MenuItemImpl> mData) {
+    public void setItemData(ArrayList<? extends MenuItem> mData) {
         this.menu = mData;
     }
 
