@@ -57,9 +57,7 @@ public class DetailedFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            readCheck();
-        });
+        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> readCheck());
         mViewModel = new ViewModelProvider(this).get(DetailedViewModel.class);
     }
 
@@ -106,7 +104,7 @@ public class DetailedFragment extends Fragment {
             }
         });
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
-            if (map == null) {
+            if (map == null || map.isEmpty()) {
                 binding.startRead.setText("目录获取失败");
                 binding.startRead.setOnClickListener(v -> mViewModel.queryCatalogue(bookBean.getCatalogue(), searchResultBean, 0));
             } else {
@@ -118,10 +116,10 @@ public class DetailedFragment extends Fragment {
                     binding.startRead.setClickable(true);
                     binding.startRead.setOnClickListener(view1 -> {
                         SQLiteUtil.saveBook(bookBean);
-                        mViewModel.saveDirectory(bookBean.getBook_id());
-                        mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
+                        mViewModel.saveDirectory(bookBean.getBookId());
+                        mViewModel.saveRule(searchResultBean, bookBean.getBookId(), 0);
                         Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
-                        intent.putExtra("book", (Parcelable)bookBean);
+                        intent.putExtra("book", (Parcelable)bookBean );
                         //DetailedFragment.this.startActivity(intent);
                         launcher.launch(intent);
                         DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
@@ -136,7 +134,7 @@ public class DetailedFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     public void readCheck() {
-        int[] pro = mViewModel.readProgress(bookBean.getBook_id());
+        int[] pro = mViewModel.readProgress(bookBean.getBookId());
         if (pro[0] + pro[1] > 0 && catalogueAdapter.getTitleList().size() > pro[0]) {
             binding.startRead.setText("继续阅读(" + catalogueAdapter.getTitleList().get(pro[0]) + ")");
         } else {
@@ -191,13 +189,13 @@ public class DetailedFragment extends Fragment {
             Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
             //获取点击事件位置
             int position = binding.detailedRv.getChildAdapterPosition(view);
-            mViewModel.saveDirectory(bookBean.getBook_id());
-            mViewModel.saveRule(searchResultBean, bookBean.getBook_id(), 0);
-            mViewModel.saveProgress(bookBean.getBook_id(), position);
+            mViewModel.saveDirectory(bookBean.getBookId());
+            mViewModel.saveRule(searchResultBean, bookBean.getBookId(), 0);
+            mViewModel.saveProgress(bookBean.getBookId(), position);
             intent.putExtra("book", (Parcelable)bookBean);
             //startActivity(intent);
             launcher.launch(intent);
-            DetailedFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
 
         return root;

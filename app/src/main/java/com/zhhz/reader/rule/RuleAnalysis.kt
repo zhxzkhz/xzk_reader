@@ -35,7 +35,7 @@ class RuleAnalysis(jsonObject: RuleJsonBean, bool: Boolean) {
         }
     }
 
-    fun bookSearch(keyWord: String, callback: SearchCallBack, label: String) {
+    fun bookSearch(keyWord: String, page: Int, callback: SearchCallBack, label: String) {
         var keyWord1 = keyWord
         if (ObjectUtil.isNotEmpty(analysis.json.encode)) {
             try {
@@ -45,7 +45,7 @@ class RuleAnalysis(jsonObject: RuleJsonBean, bool: Boolean) {
                 e.printStackTrace()
             }
         }
-        analysis.bookSearch(keyWord1, callback, label)
+        analysis.bookSearch(keyWord1,page, callback, label)
     }
 
     /**

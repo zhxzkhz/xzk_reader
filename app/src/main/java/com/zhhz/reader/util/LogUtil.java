@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 日志工具，主要用于js日志，输出失败时使用Log.i进行输出
@@ -47,19 +49,22 @@ public class LogUtil {
 
     public static void error(Object object) {
         if (check(object, "error")) return;
-        try {
-            if (object instanceof Throwable) {
-                bufferedWriter.append("error : ").write(((Throwable) object).getMessage());
-            } else {
-                bufferedWriter.append("error : ").write(String.valueOf(object));
+        CompletableFuture.runAsync(() -> {
+            try {
+                if (object instanceof Throwable) {
+                    bufferedWriter.append("error : ").write(((Throwable) object).getMessage());
+                } else {
+                    bufferedWriter.append("error : ").write(String.valueOf(object));
+                }
+                bufferedWriter.newLine();
+                bufferedWriter.flush();
+            } catch (IOException e) {
+                Log.i("error", Objects.requireNonNull(e.getMessage()));
+            } finally {
+                Log.i("error", String.valueOf(object));
             }
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            Log.i("error", String.valueOf(object));
-        }
+        }).join();
+
     }
 
     public static void info(Object object) {

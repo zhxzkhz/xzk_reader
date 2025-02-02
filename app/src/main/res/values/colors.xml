@@ -10,4 +10,5 @@
     <color name="gray">#FFA0A0A0</color>
     <color name="gray_a">#80A0A0A0</color>
     <color name="transparent">#00000000</color>
+    <color name="white_a">#DDDDDD</color>
 </resources>

@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.util.DisplayMetrics;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -38,10 +40,10 @@ import com.zhhz.reader.adapter.BookAdapter;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.databinding.FragmentBookrackBinding;
 import com.zhhz.reader.util.BookUtil;
-import com.zhhz.reader.util.DiskCache;
 import com.zhhz.reader.util.FileSizeUtil;
-import com.zhhz.reader.util.FileUtil;
+import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.NotificationUtil;
+import com.zhhz.reader.util.ToastUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,12 +72,13 @@ public class BookRackFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        bookrackViewModel = new ViewModelProvider(requireActivity()).get(BookRackViewModel.class);
+
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (bookrackViewModel != null) {
-                bookrackViewModel.updateBooks();
+                bookrackViewModel.updateBookRack();
             }
         });
-
 
         alertDialog = new AlertDialog.Builder(requireContext())
                 .setMessage("书本解析中").create();
@@ -90,16 +93,16 @@ public class BookRackFragment extends Fragment {
     @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        bookrackViewModel = new ViewModelProvider(requireActivity()).get(BookRackViewModel.class);
-
         binding = FragmentBookrackBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
 
-        bookAdapter = new BookAdapter(BookRackFragment.this.getContext());
+        bookAdapter = new BookAdapter(requireContext());
         bookAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
         binding.rv.setItemAnimator(new DefaultItemAnimator());
-        binding.rv.setLayoutManager(new GridLayoutManager(BookRackFragment.this.getContext(), 3, GridLayoutManager.VERTICAL, false));
+        // 获取屏幕的宽度（单位：dp）
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int widthInDp = (int) (displayMetrics.widthPixels / displayMetrics.density);
+        binding.rv.setLayoutManager(new GridLayoutManager(requireContext(), widthInDp /120, GridLayoutManager.VERTICAL, false));
         //固定高度
         binding.rv.setHasFixedSize(true);
         binding.rv.setAdapter(bookAdapter);
@@ -107,8 +110,7 @@ public class BookRackFragment extends Fragment {
 
         //设置点击事件
         binding.searchView.setOnClickListener(view -> {
-            Intent intent = new Intent(BookRackFragment.this.getContext(), SearchActivity.class);
-            //startActivity(intent);
+            Intent intent = new Intent(requireContext(), SearchActivity.class);
             launcher.launch(intent);
             BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         });
@@ -127,14 +129,13 @@ public class BookRackFragment extends Fragment {
                 .withSelectionPredicate(SelectionPredicates.createSelectAnything())
                 .withOperationMonitor(new OperationMonitor())
                 .withOnItemActivatedListener((item, e) -> {
-                    Intent intent = new Intent(BookRackFragment.this.getContext(), BookReaderActivity.class);
+                    Intent intent = new Intent(requireContext(), BookReaderActivity.class);
                     //获取点击事件位置
                     int position = item.getPosition();
                     bookAdapter.getItemData().get(position).setUpdate(false);
                     bookrackViewModel.updateBook(bookAdapter.getItemData().get(position));
                     bookAdapter.notifyItemChanged(position);
-                    intent.putExtra("book",(Parcelable) bookAdapter.getItemData().get(position));
-                    //startActivity(intent);
+                    intent.putExtra("book", (Parcelable) bookAdapter.getItemData().get(position));
                     launcher.launch(intent);
                     tracker.clearSelection();
                     BookRackFragment.this.requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
@@ -147,18 +148,18 @@ public class BookRackFragment extends Fragment {
             @Override
             public void onItemStateChanged(@NonNull String key, boolean selected) {
                 super.onItemStateChanged(key, selected);
-                LinearLayoutCompat item_menu = requireActivity().findViewById(R.id.item_menu);
-                if (!tracker.getSelection().isEmpty() && item_menu.getVisibility() == View.GONE) {
-                    item_menu.setVisibility(View.VISIBLE);
-                } else if (tracker.getSelection().isEmpty() && item_menu.getVisibility() == View.VISIBLE) {
-                    item_menu.setVisibility(View.GONE);
+                LinearLayoutCompat itemMenu = requireActivity().findViewById(R.id.item_menu);
+                if (!tracker.getSelection().isEmpty() && itemMenu.getVisibility() == View.GONE) {
+                    itemMenu.setVisibility(View.VISIBLE);
+                } else if (tracker.getSelection().isEmpty() && itemMenu.getVisibility() == View.VISIBLE) {
+                    itemMenu.setVisibility(View.GONE);
                 }
-                item_menu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
-                item_menu.getChildAt(1).setEnabled(false);
+                itemMenu.getChildAt(0).setEnabled(tracker.getSelection().size() == 1);
+                itemMenu.getChildAt(1).setEnabled(false);
                 if (tracker.getSelection().size() == 1) {
                     for (BookBean itemDatum : bookAdapter.getItemData()) {
-                        if (itemDatum.getBook_id().equals(tracker.getSelection().iterator().next()) && itemDatum.isComic()) {
-                            item_menu.getChildAt(1).setEnabled(tracker.getSelection().size() == 1);
+                        if (itemDatum.getBookId().equals(tracker.getSelection().iterator().next()) && itemDatum.isComic()) {
+                            itemMenu.getChildAt(1).setEnabled(tracker.getSelection().size() == 1);
                         }
                     }
                 }
@@ -180,7 +181,7 @@ public class BookRackFragment extends Fragment {
             }
             lists.clear();
             for (BookBean bookBean : list) {
-                lists.add(bookBean.getBook_id());
+                lists.add(bookBean.getBookId());
             }
 
             bookAdapter.setItemData(list);
@@ -199,136 +200,163 @@ public class BookRackFragment extends Fragment {
             binding.refreshLayout.finishRefresh();
         });
 
-        ArrayList<String> arr_list;
+        ArrayList<String> strings;
         ArrayAdapter<String> adapter;
         TypedArray a = requireContext().obtainStyledAttributes(null, com.google.android.material.R.styleable.AlertDialog,
                 com.google.android.material.R.attr.alertDialogStyle, 0);
-        arr_list = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)", "清除章节和图片缓存"));
-        adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), arr_list);
+        strings = new ArrayList<>(Arrays.asList("只删除书架记录", "删除书架记录并删除本地缓存文件(大小:计算中)", "清除章节和图片缓存"));
+        adapter = new ArrayAdapter<>(requireContext(), a.getResourceId(com.google.android.material.R.styleable.AlertDialog_singleChoiceItemLayout, 0), strings);
         a.recycle();
 
         //长按多选事件
-        bookrackViewModel.getOperation().observe(getViewLifecycleOwner(), integer -> {
+        bookrackViewModel.getOperations().observe(getViewLifecycleOwner(), operation -> {
 
-            if (integer == 0) {
-                String name = tracker.getSelection().iterator().next();
-                String[] lists = {"缓存后面10章","缓存后面30章","缓存后面50章","缓存后面100章","缓存后面200章","缓存后面全章","缓存所有章"};
-                int[] num = {10,30,50,100,200,Integer.MAX_VALUE,-1};
-                AtomicInteger index = new AtomicInteger();
-                AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                        .setTitle("章节缓存")
-                        .setSingleChoiceItems(lists, 0, (dialog12, which) -> {
-                            index.set(which);
-                        })
-                        .setPositiveButton("确定", (dialog13, which) -> {
-                            for (BookBean itemDatum : bookAdapter.getItemData()) {
-                                if (name.equals(itemDatum.getBook_id())) {
-                                    BookUtil.CacheBook(itemDatum,num[index.get()]);
-                                    break;
-                                }
-                            }
-                        })
-                        .create();
-                dialog.show();
-            }else if (integer == 1) {
-                AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                        .setView(R.layout.progress_dialog)
-                        .setCancelable(false)
-                        .setOnCancelListener(dialog1 -> BookUtil.cancel())
-                        .create();
-                dialog.show();
-
-                String name = tracker.getSelection().iterator().next();
-                final long[] time = {System.currentTimeMillis()};
-
-                for (BookBean itemDatum : bookAdapter.getItemData()) {
-                    if (name.equals(itemDatum.getBook_id())) {
-                        BookUtil.GetCacheSize(itemDatum, (atomicLong, fileList, deficiencyList) -> requireActivity().runOnUiThread(() -> {
-                            dialog.cancel();
-                            new AlertDialog.Builder(requireContext())
-                                    .setTitle("打包方式")
-                                    .setMessage("已缓存 " + fileList.size() + "张图片(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + "),缺失 " + deficiencyList.size() + " 张图片\n提示：导出全部图片会自动下载未缓存图片，开始后无法取消")
-                                    //.setCancelable(false)
-                                    .setOnCancelListener(dialog1 -> BookUtil.cancel())
-                                    .setPositiveButton("导出已缓存图片", (dialog2, which) -> BookUtil.imageToZip(itemDatum, false, (status, msg, progress, max) -> {
-                                        if (System.currentTimeMillis() - time[0] < 100 && !status) return;
-                                        time[0] = System.currentTimeMillis();
-                                        NotificationUtil.sendProgressMessage(itemDatum.getTitle(),msg,progress,max);
-                                    }))
-                                    .setNegativeButton("导出全部图片", (dialog22, which) -> BookUtil.imageToZip(itemDatum, true, (status, msg, progress, max) -> {
-                                        if (System.currentTimeMillis() - time[0] < 100 && !status) return;
-                                        time[0] = System.currentTimeMillis();
-                                        NotificationUtil.sendProgressMessage(itemDatum.getTitle(),msg,progress,max);
-                                    }))
-                                    .show();
-                        }));
-                        break;
-                    }
-                }
-
-
-            } else if (integer == 2) {
-                String[] ss = new String[tracker.getSelection().size()];
-                int index = 0;
-                for (String s : tracker.getSelection()) {
-                    ss[index++] = s;
-                }
-                ArrayList<String> fileList = new ArrayList<>();
-                arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:计算中)");
-                AlertDialog dialog = new AlertDialog.Builder(requireContext())
-                        .setTitle("删除提示")
-                        //.setMessage("确定删除书本？")
-                        .setSingleChoiceItems(adapter, 0, null)
-                        .setPositiveButton("确定", (dialogInterface, i) -> {
-                            //为1时删除所以记录 为2仅清除缓存
-                            if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) > 0) {
-                                CompletableFuture.runAsync(() -> {
-                                    if ((((AlertDialog) dialogInterface).getListView().getCheckedItemPosition()) == 1) {
-                                        bookrackViewModel.removeBooks(ss);
-                                        bookrackViewModel.updateBooks();
-                                        for (String value : ss) {
-                                            FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + value);
-                                        }
-                                    } else {
-                                        for (String value : ss) {
-                                            FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + value + File.separator + "book_chapter");
-                                        }
+            switch (operation) {
+                case CACHE: {
+                    String name = tracker.getSelection().iterator().next();
+                    String[] lists = {"缓存后面10章", "缓存后面30章", "缓存后面50章", "缓存后面100章", "缓存后面200章", "缓存后面全章", "缓存所有章"};
+                    int[] num = {10, 30, 50, 100, 200, Integer.MAX_VALUE, -1};
+                    AtomicInteger index = new AtomicInteger();
+                    AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                            .setTitle("章节缓存")
+                            .setSingleChoiceItems(lists, 0, (dialog12, which) -> {
+                                index.set(which);
+                            })
+                            .setPositiveButton("确定", (dialog13, which) -> {
+                                for (BookBean itemDatum : bookAdapter.getItemData()) {
+                                    if (name.equals(itemDatum.getBookId())) {
+                                        BookUtil.CacheBook(itemDatum, num[index.get()]);
+                                        break;
                                     }
-                                    fileList.forEach(s -> new File(s).delete());
-                                });
-                            }
-                        })
-                        .setOnCancelListener(DialogInterface::dismiss)
-                        .setNeutralButton("取消", null)
-                        .setOnCancelListener(dialog1 -> BookUtil.cancel())
-                        .create();
-                dialog.show();
+                                }
+                            })
+                            .create();
+                    dialog.show();
+                    break;
+                }
+                case PACK: {
+                    AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                            .setView(R.layout.progress_dialog)
+                            .setCancelable(false)
+                            .setOnCancelListener(dialog1 -> BookUtil.cancel())
+                            .create();
+                    dialog.show();
 
-                ArrayList<BookBean> beans = new ArrayList<>();
+                    String name = tracker.getSelection().iterator().next();
+                    final long[] time = {System.currentTimeMillis()};
 
-                for (String s : ss) {
                     for (BookBean itemDatum : bookAdapter.getItemData()) {
-                        if (itemDatum.getBook_id().equals(s)) {
-                            beans.add(itemDatum);
+                        if (name.equals(itemDatum.getBookId())) {
+                            BookUtil.GetCacheSize(itemDatum, (atomicLong, fileList, deficiencyList) -> requireActivity().runOnUiThread(() -> {
+                                dialog.cancel();
+                                new AlertDialog.Builder(requireContext())
+                                        .setTitle("打包方式")
+                                        .setMessage("已缓存 " + fileList.size() + "张图片(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + "),缺失 " + deficiencyList.size() + " 张图片\n提示：导出全部图片会自动下载未缓存图片，开始后无法取消")
+                                        //.setCancelable(false)
+                                        .setOnCancelListener(dialog1 -> BookUtil.cancel())
+                                        .setPositiveButton("导出已缓存图片", (dialog2, which) -> BookUtil.imageToZip(itemDatum, false, (status, msg, progress, max) -> {
+                                            if (System.currentTimeMillis() - time[0] < 100 && !status)
+                                                return;
+                                            time[0] = System.currentTimeMillis();
+                                            NotificationUtil.sendProgressMessage(itemDatum.getTitle(), msg, progress, max);
+                                        }))
+                                        .setNegativeButton("导出全部图片", (dialog22, which) -> BookUtil.imageToZip(itemDatum, true, (status, msg, progress, max) -> {
+                                            if (System.currentTimeMillis() - time[0] < 100 && !status)
+                                                return;
+                                            time[0] = System.currentTimeMillis();
+                                            NotificationUtil.sendProgressMessage(itemDatum.getTitle(), msg, progress, max);
+                                        }))
+                                        .show();
+                            }));
                             break;
                         }
                     }
+
+
+                    break;
                 }
+                case DELETE: {
+                    String[] ids = new String[tracker.getSelection().size()];
+                    int index = 0;
+                    for (String s : tracker.getSelection()) {
+                        ids[index++] = s;
+                    }
+                    System.out.println("ss = " + Arrays.toString(ids));
+                    ArrayList<String> cacheFileList = new ArrayList<>();
+                    strings.set(1, "删除书架记录并删除本地缓存文件(大小:计算中)");
+                    AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                            .setTitle("删除提示")
+                            .setSingleChoiceItems(adapter, 0, null)
+                            .setPositiveButton("确定", (dialogInterface, i) -> {
 
-                BookUtil.GetCacheSize(beans, (atomicLong, fileList1, deficiencyList) -> requireActivity().runOnUiThread(() -> {
-                    fileList.addAll(fileList1);
-                    arr_list.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + ")");
-                    adapter.notifyDataSetChanged();
-                }));
+                                CompletableFuture.supplyAsync(() -> {
+                                /* pos
+                                  0 删除数据库书本数据，保留书本进度和缓存数据
+                                  1 删除数据库书本数据，并书本进度和缓存数据
+                                  2 删除书本缓存数据
+                                 */
+                                    int pos = ((AlertDialog) dialogInterface).getListView().getCheckedItemPosition();
+                                    if (pos < 2) {
+                                        bookrackViewModel.removeBooks(ids);
+                                        bookrackViewModel.updateBookRack();
+                                        if (pos == 1) {
+                                            bookrackViewModel.deleteBookCaches(ids);
+                                            cacheFileList.forEach(path -> new File(path).delete());
+                                        }
+                                    } else {
+                                        bookrackViewModel.deleteBookChapterCaches(ids);
+                                    }
+                                    return pos;
+                                }).whenComplete((pos,ex) -> {
+                                    if (ex != null){
+                                        LogUtil.error(ex);
+                                    } else {
+                                        ToastUtil.show(pos < 2 ? "已移除书架" : "缓存清除成功");
+                                    }
+                                }).join();
+
+                            })
+                            .setOnCancelListener(DialogInterface::dismiss)
+                            .setNeutralButton("取消", null)
+                            .setOnCancelListener(dialog1 -> BookUtil.cancel())
+                            .create();
+                    dialog.show();
+
+                    ArrayList<BookBean> beans = new ArrayList<>();
+
+                    for (String s : ids) {
+                        for (BookBean itemDatum : bookAdapter.getItemData()) {
+                            if (itemDatum.getBookId().equals(s)) {
+                                beans.add(itemDatum);
+                                break;
+                            }
+                        }
+                    }
+
+                    BookUtil.GetCacheSize(beans, (atomicLong, list, deficiencyList) -> requireActivity().runOnUiThread(() -> {
+                        cacheFileList.addAll(list);
+                        strings.set(1, "删除书架记录并删除本地缓存文件(大小:" + FileSizeUtil.ConvertFileSize(atomicLong.get()) + ")");
+                        adapter.notifyDataSetChanged();
+                    }));
 
 
-
+                    break;
+                }
             }
         });
 
-        return root;
+        return binding.getRoot();
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent ignoredEvent){
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (!tracker.getSelection().isEmpty()) {
+                tracker.clearSelection();
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public void onDestroyView() {

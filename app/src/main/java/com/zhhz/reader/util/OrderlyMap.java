@@ -18,7 +18,7 @@ import java.util.Set;
 public class OrderlyMap implements Map<String, String>, Cloneable, Serializable {
 
     /**
-     * 一个可以添加重复key的有序Map
+     * 自定义的 Map，允许键重复，并且保持插入顺序
      */
 
     private String[] keys = new String[4096];
@@ -62,10 +62,12 @@ public class OrderlyMap implements Map<String, String>, Cloneable, Serializable 
                 }
             }
         }
-        if (index == -1 || index >= k) {
-            return temp[k - 1];
-        } else if (k != 0) {
-            return temp[index];
+        if (k > 0) {
+            if (index == -1 || index >= k) {
+                return temp[k - 1];
+            } else {
+                return temp[index];
+            }
         }
         return null;
     }
@@ -393,7 +395,7 @@ public class OrderlyMap implements Map<String, String>, Cloneable, Serializable 
                 }
             }
             index = 0;
-            next = table[index];
+            if (table.length>0) next = table[index];
         }
 
         public final boolean hasNext() {
@@ -514,7 +516,9 @@ public class OrderlyMap implements Map<String, String>, Cloneable, Serializable 
         for (int i = 0; i < size; i++) {
             sb.append("\"").append(keys[i]).append("\"=\"").append(values[i]).append("\",");
         }
-        sb.delete(sb.length() - 1, sb.length());
+        if (sb.length()>1) {
+            sb.delete(sb.length() - 1, sb.length());
+        }
         sb.append("}");
         return sb.toString();
     }

@@ -29,7 +29,9 @@ public class SearchActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySearchBinding.inflate(LayoutInflater.from(this));
+
         setContentView(binding.getRoot());
+
 
         SearchViewModel mViewModel = new ViewModelProvider(this).get(SearchViewModel.class);
         binding.searchClear.setOnClickListener(view -> finish());
@@ -37,11 +39,11 @@ public class SearchActivity extends AppCompatActivity {
         });
         binding.searchText.changeSearchLogo(true);
         binding.searchText.setOnEditorActionListener((textView, i, keyEvent) -> {
-            if (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN){
+            if (keyEvent != null && keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER && keyEvent.getAction() == KeyEvent.ACTION_DOWN) {
                 return true;
             }
 
-            if (RuleAnalysis.analyses_map.size() == 0) {
+            if (RuleAnalysis.analyses_map.isEmpty()) {
                 Toast.makeText(this, "请设置书源", Toast.LENGTH_SHORT).show();
                 return true;
             }
@@ -68,15 +70,18 @@ public class SearchActivity extends AppCompatActivity {
 
                 SearchResultBean bean = mViewModel.isUrl(textView.getText().toString());
 
-                if (bean!=null){
+                if (bean != null) {
                     Intent intent = new Intent(SearchActivity.this, DetailedActivity.class);
                     intent.putExtra("book", bean);
                     startActivity(intent);
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 } else {
-                    if (mViewModel.getData().getValue() != null)
+                    if (mViewModel.getData().getValue() != null) {
                         //搜索前清除上次搜索记录
                         mViewModel.getData().setValue(null);
+                    }
+                    //每次搜索设置页数为1
+                    mViewModel.setPage(1);
                     mViewModel.searchBook(textView.getText().toString());
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.search_fragment, SearchResultFragment.getInstance(), "SearchResultFragment")

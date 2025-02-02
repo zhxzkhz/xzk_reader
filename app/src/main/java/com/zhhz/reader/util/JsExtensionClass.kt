@@ -1,5 +1,6 @@
 package com.zhhz.reader.util
 
+import cn.hutool.core.codec.Base64
 import cn.hutool.crypto.symmetric.SymmetricCrypto
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.TypeReference
@@ -49,7 +50,7 @@ interface JsExtensionClass {
 
         return runBlocking {
             kotlin.runCatching {
-                okHttpClient.newCall(builder.build()).execute().body.bytes().let { String(it) }
+                okHttpClient.newCall(builder.build()).execute().body?.string()
             }.onFailure {
                 //log("ajax(${url}) error\n${it.localizedMessage}
                 it.printStackTrace()
@@ -79,15 +80,15 @@ interface JsExtensionClass {
     /**
      * base64解密
      */
-    fun base64Decrypt(str: String): String{
-        return AutoBase64.decodeToString(str)
+    fun base64Decrypt(str: String): String {
+        return Base64.decodeStr(str)
     }
 
     /**
      * base64加密
      */
-    fun base64Encrypt(str: String): String{
-        return AutoBase64.encodeToString(str)
+    fun base64Encrypt(str: String): String {
+        return Base64.encode(str)
     }
 
     /**

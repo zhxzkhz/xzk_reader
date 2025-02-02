@@ -1,5 +1,6 @@
 package com.zhhz.reader.rule
 
+import cn.hutool.core.codec.Base64
 import cn.hutool.core.util.ObjectUtil
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson2.JSONPath
@@ -7,7 +8,6 @@ import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
 import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
-import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache
 import com.zhhz.reader.util.OrderlyMap
 import com.zhhz.reader.util.StringUtil
@@ -85,7 +85,13 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             when (match.groupValues[1]) {
                 "@js:" -> {
                     bindings["value"] = dataTemp
-                    val tempJs = DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(match.groupValues[2]), bindings)
+                    var tempJs: Any
+                    try {
+                        tempJs = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(match.groupValues[2]), bindings)
+                    } catch (e :Exception){
+                        log(e)
+                        return ""
+                    }
                     if (bool) {
                         originalRule = ""
                         dataTemp = bindings["result"] ?: tempJs
@@ -129,7 +135,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             if (it.groupValues[1].contains("^(?:@json:|\\$\\.)".toRegex())) {
                 parse(dataTemp, it.groupValues[1], bindings).toString()
             } else {
-                parse(dataTemp, "@js:" + AutoBase64.encodeToString(it.groupValues[1]), bindings).toString()
+                parse(dataTemp, "@js:" + Base64.encode(it.groupValues[1]), bindings).toString()
             }
         }
 
@@ -150,6 +156,8 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         val cssArray = rule.split("@")
 
         elements.addAll(element.select(cssArray[0]))
+
+        if ( elements.size == 0 ) return textArray
 
         //如果是最后一个规则
         if (cssArray.size == 2 || cssArray.size == 3) {
@@ -363,25 +371,30 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
     //运行js进行解密
     private fun jsDecryption(s: String, bindings: SimpleBindings): String {
         bindings["data"] = s
-        return DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.jsDecryption), bindings).toString()
+        try {
+            return DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.jsDecryption), bindings).toString()
+        } catch (e :Exception){
+            log(e)
+        }
+        return ""
     }
 
 
-    override fun bookSearch(keyWord: String, callback: AnalysisCallBack.SearchCallBack, label: String) {
+    override fun bookSearch(keyWord: String, page: Int, callback: AnalysisCallBack.SearchCallBack, label: String) {
         val bindings = SimpleBindings()
         bindings["java"] = this
 
         bindings["callback"] = callback
         val search = json.search
-        val url = search.url.replace("\${key}", keyWord)
+        val url = search.url.replace("\${key}", keyWord).replace("\${page}", "$page")
         bindings["url"] = url
 
-        Http(toAbsoluteUrl(parse("", url).toString(), this.url)) { result ->
+        http(toAbsoluteUrl(parse("", url).toString(), this.url)) { result ->
             val al: MutableList<SearchResultBean> = ArrayList()
 
             if (!result.isStatus) {
                 callback.accept(al)
-                return@Http
+                return@http
             }
             val data = typeAutoConvert(result, bindings)
 
@@ -412,12 +425,12 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
 
     override fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack) {
 
-        Http(url) { result ->
+        http(url) { result ->
             val book = BookBean()
 
             if (!result.isStatus) {
                 callback.accept(book)
-                return@Http
+                return@http
             }
             val bindings = SimpleBindings()
             bindings["java"] = this
@@ -454,7 +467,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 var resultJs: Any? = null
                 try {
                     resultJs = DiskCache.SCRIPT_ENGINE.eval(
-                        AutoBase64.decodeToString(json.detail.catalog.substring(3)),
+                        Base64.decodeStr(json.detail.catalog.substring(3)),
                         bindings
                     )
                 } catch (e: ScriptException) {
@@ -464,7 +477,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 resultJs = resultJs ?: DiskCache.SCRIPT_ENGINE["result"]
                 if (resultJs == null) {
                     callback.accept(null)
-                    return@Http
+                    return@http
                 }
                 book.catalogue = resultJs.toString()
             } else {
@@ -472,7 +485,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             }
 
             //加入 isComic 用于区分出来相同名字的小说和漫画
-            book.book_id = StringUtil.getMD5(book.title + "▶☀" + isComic + "☀◀" + book.author)
+            book.bookId = StringUtil.getMD5(book.title + "▶☀" + isComic + "☀◀" + book.author)
             callback.accept(book)
         }
     }
@@ -485,23 +498,24 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         if (count++>100){
             return callback.accept(OrderlyMap(),url)
         }
-        Http(url) { result ->
+        http(url) { result ->
             val lhm = OrderlyMap()
             if (!result.isStatus) {
                 log(result.error)
+                count = 0
                 callback.accept(lhm, url)
-                return@Http
+                return@http
             }
             val data = typeAutoConvert(result, bindings)
 
             if (ObjectUtil.isNotEmpty(json.catalog.js)) {
                 try {
-                    DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.catalog.js), bindings)
+                    DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.catalog.js), bindings)
                 } catch (e: ScriptException) {
                     log(e)
                     e.printStackTrace()
                 }
-                return@Http
+                return@http
             }
 
             var list = parse(data, json.catalog.list, bindings, isString = false)
@@ -518,7 +532,29 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                             parse(it, json.catalog.chapter, bindings, url, "href").toString()
                 }
             }
-            callback.accept(lhm, url)
+
+            if (ObjectUtil.isNotEmpty(json.catalog.page)) {
+                val page = parse(data, json.catalog.page, bindings, url, "href").toString()
+                if (page.isNotEmpty() && page != url) {
+                    bookDirectory(page) { lhm1: OrderlyMap, url1: String ->
+                        if (json.catalog.inverted) {
+                            lhm1.putAll(lhm)
+                            callback.accept(lhm1, url1)
+                        } else {
+                            lhm.putAll(lhm1)
+                            callback.accept(lhm, url1)
+                        }
+
+                    }
+                } else {
+                    count = 0
+                    callback.accept(lhm, url)
+                }
+            } else {
+                count = 0
+                callback.accept(lhm, url)
+            }
+
         }
     }
 
@@ -536,11 +572,11 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             httpResponseBean.error = "循环获取已超过100次，请检查规则是否有误"
             return callback.accept(httpResponseBean, label)
         }
-        Http(url) { result ->
+        http(url) { result ->
             var s = ""
             if (!result.isStatus) {
                 callback.accept(result, label)
-                return@Http
+                return@http
             }
             val data = typeAutoConvert(result, bindings)
 
@@ -576,7 +612,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             //执行js
             if (ObjectUtil.isNotEmpty(json.chapter.js)) {
                 try {
-                    val tempJs = DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.chapter.js), bindings)
+                    val tempJs = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js), bindings)
                     s = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     httpResponseBean.isStatus = false
@@ -586,7 +622,8 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 }
                 //返回false代表 js 内部处理
                 if (s == "false") {
-                    return@Http
+                    count = 0
+                    return@http
                 }
             }
             httpResponseBean.data = s
@@ -604,9 +641,11 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                         callback.accept(dataA, labelA)
                     }, label)
                 } else {
+                    count = 0
                     callback.accept(httpResponseBean, label)
                 }
             } else {
+                count = 0
                 callback.accept(httpResponseBean, label)
             }
 

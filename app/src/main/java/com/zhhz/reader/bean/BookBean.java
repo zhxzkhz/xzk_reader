@@ -3,6 +3,7 @@ package com.zhhz.reader.bean;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import androidx.annotation.NonNull;
 
 import java.io.Serializable;
@@ -50,11 +51,11 @@ public class BookBean implements Serializable, Parcelable {
         }
     };
 
-    public String getBook_id() {
+    public String getBookId() {
         return book_id;
     }
 
-    public void setBook_id(String book_id) {
+    public void setBookId(String book_id) {
         this.book_id = book_id;
     }
 

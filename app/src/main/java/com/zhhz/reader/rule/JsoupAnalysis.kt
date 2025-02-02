@@ -1,11 +1,11 @@
 package com.zhhz.reader.rule
 
+import cn.hutool.core.codec.Base64
 import cn.hutool.core.util.ObjectUtil
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
 import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
-import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
 import com.zhhz.reader.util.OrderlyMap
 import com.zhhz.reader.util.StringUtil
@@ -124,15 +124,15 @@ class JsoupAnalysis : Analysis {
         return value.toString()
     }
 
-    override fun bookSearch(keyWord: String, callback: AnalysisCallBack.SearchCallBack, label: String) {
+    override fun bookSearch(keyWord: String, page: Int,callback: AnalysisCallBack.SearchCallBack, label: String) {
 
-        val url = json.search.url.replace("\${key}", keyWord)
-        Http(url) { result ->
+        val url = json.search.url.replace("\${key}", keyWord).replace("\${page}", "$page")
+        http(url) { result ->
             val al: MutableList<SearchResultBean> = ArrayList()
 
             if (!result.isStatus) {
                 callback.accept(al)
-                return@Http
+                return@http
             }
 
             val element = Jsoup.parse(result.data)
@@ -165,12 +165,12 @@ class JsoupAnalysis : Analysis {
     }
 
     override fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack) {
-        Http(url) { result ->
+        http(url) { result ->
             val book = BookBean()
 
             if (!result.isStatus) {
                 callback.accept(book)
-                return@Http
+                return@http
             }
 
             val element = Jsoup.parse(result.data)
@@ -210,7 +210,7 @@ class JsoupAnalysis : Analysis {
                 val simpleBindings = intiBindings(url, callback, element)
                 try {
                     resultJs = SCRIPT_ENGINE.eval(
-                        AutoBase64.decodeToString(json.detail.catalog.substring(3)), simpleBindings
+                        Base64.decodeStr(json.detail.catalog.substring(3)), simpleBindings
                     )
                 } catch (e: ScriptException) {
                     log(e)
@@ -219,7 +219,7 @@ class JsoupAnalysis : Analysis {
                 resultJs = jsToJavaObject(simpleBindings["result"] ?: resultJs)
                 if (ObjectUtil.isEmpty(resultJs)) {
                     callback.accept(null)
-                    return@Http
+                    return@http
                 }
                 book.catalogue = resultJs.toString()
             } else {
@@ -230,28 +230,28 @@ class JsoupAnalysis : Analysis {
             }
 
             //加入 isComic 用于区分出来相同名字的小说和漫画
-            book.book_id = StringUtil.getMD5(book.title + "▶☀" + isComic + "☀◀" + book.author)
+            book.bookId = StringUtil.getMD5(book.title + "▶☀" + isComic + "☀◀" + book.author)
             callback.accept(book)
         }
     }
 
     override fun bookDirectory(url: String, callback: AnalysisCallBack.DirectoryCallBack) {
-        Http(url) { result ->
+        http(url) { result ->
             val lhm: OrderlyMap
             if (!result.isStatus) {
                 callback.accept(OrderlyMap(), url)
-                return@Http
+                return@http
             }
             val element = Jsoup.parse(result.data)
             val catalog = json.catalog
             if (ObjectUtil.isNotEmpty(catalog.js)) {
                 try {
-                    SCRIPT_ENGINE.eval(AutoBase64.decodeToString(catalog.js), intiBindings(url, callback, element))
+                    SCRIPT_ENGINE.eval(Base64.decodeStr(catalog.js), intiBindings(url, callback, element))
                 } catch (e: ScriptException) {
                     log(e)
                     e.printStackTrace()
                 }
-                return@Http
+                return@http
             }
 
             lhm = catalogAnalysis(url, element)
@@ -384,10 +384,10 @@ class JsoupAnalysis : Analysis {
 
 
     override fun bookContent(url: String, callback: AnalysisCallBack.ContentCallBack, label: Any) {
-        Http(url) { result ->
+        http(url) { result ->
             if (!result.isStatus) {
                 callback.accept(result, label)
-                return@Http
+                return@http
             }
             val data: Document = Jsoup.parse(result.data)
             //data.outputSettings().prettyPrint(false)
@@ -459,7 +459,7 @@ class JsoupAnalysis : Analysis {
                 bindings["CallBackData"] = httpResponseBean
 
                 try {
-                    val tempJs = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(chapter.js), bindings)
+                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(chapter.js), bindings)
                     str = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     log(e)
@@ -467,7 +467,7 @@ class JsoupAnalysis : Analysis {
                 }
                 //返回false代表 js 内部处理
                 if (str == "false") {
-                    return@Http
+                    return@http
                 }
             }
             httpResponseBean.data = str

@@ -7,10 +7,12 @@ import androidx.annotation.NonNull;
 
 import com.zhhz.reader.MyApplication;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileVisitResult;
@@ -63,14 +65,18 @@ public class FileUtil {
 
     public static byte[] readFile(Context context, Uri uri) {
         try {
-            return readFile(context.getContentResolver().openInputStream(uri));
+            return readFile(Objects.requireNonNull(context.getContentResolver().openInputStream(uri)));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            LogUtil.error(e);
         }
         return null;
     }
 
     public static byte[] readFile(String path) {
+        return readFile(new File(path));
+    }
+
+    public static byte[] readFile(File path) {
         try {
             return readFile(new FileInputStream(path));
         } catch (FileNotFoundException e) {
@@ -80,16 +86,28 @@ public class FileUtil {
 
     public static byte[] readFile(InputStream fis) {
         try {
-
             int size = fis.available();
             byte[] bytes = new byte[size];
             if (fis.read(bytes) != size) throw new IOException("文件读取异常");
             fis.close();
             return bytes;
         } catch (IOException e) {
-            e.printStackTrace();
+            LogUtil.error(e);
             return null;
         }
+    }
+
+    public static String readFileString(String path) {
+        return readFileString(new File(path));
+    }
+
+    @NonNull
+    public static String readFileString(File file) {
+        byte[] bytes = readFile(file);
+        if (bytes != null){
+            return new String(bytes);
+        }
+        return "";
     }
 
     /**
@@ -119,4 +137,10 @@ public class FileUtil {
 
     }
 
+    public static void writeFile(String path, String text) {
+        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(path))) {
+            bufferedWriter.write(text);
+        } catch (IOException ignored) {
+        }
+    }
 }

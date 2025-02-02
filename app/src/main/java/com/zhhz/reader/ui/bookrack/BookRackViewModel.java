@@ -13,6 +13,7 @@ import com.zhhz.reader.livedata.SingleLiveEvent;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.FileUtil;
 import com.zhhz.reader.util.LocalBookUtil;
 import com.zhhz.reader.util.OrderlyMap;
 
@@ -32,19 +33,19 @@ public class BookRackViewModel extends ViewModel {
 
     private final MutableLiveData<BookBean> catalogue;
 
-    private final SingleLiveEvent<Integer> operation;
+    private final SingleLiveEvent<Operation> operations;
 
     private final SingleLiveEvent<Boolean> callback;
 
     public BookRackViewModel() {
         data = new MutableLiveData<>();
         catalogue = new MutableLiveData<>();
-        operation = new SingleLiveEvent<>();
+        operations = new SingleLiveEvent<>();
         callback = new SingleLiveEvent<>();
         data.setValue(SQLiteUtil.readBooks());
     }
 
-    public void updateBooks() {
+    public void updateBookRack() {
         data.postValue(SQLiteUtil.readBooks());
     }
 
@@ -52,17 +53,44 @@ public class BookRackViewModel extends ViewModel {
         SQLiteUtil.saveBook(bookBean);
     }
 
-    public void operationBooks(Integer integer) {
-        operation.setValue(integer);
+    /**
+     * 设置书本支持的操作
+     * @param operation 操作ID
+     */
+    public void operationBooks(Operation operation) {
+        operations.setValue(operation);
     }
 
-    public void removeBooks(String[] s) {
-        SQLiteUtil.removeBooks(s);
+    /**
+     * 从书架上移除书本
+     * @param ids 书本ID数组
+     */
+    public void removeBooks(String[] ids) {
+        SQLiteUtil.removeBooks(ids);
+    }
+
+    /**
+     * 删除书本缓存
+     * @param ids 书本ID数组
+     */
+    public void deleteBookCaches(String[] ids) {
+        for (String id : ids) {
+            FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + id);
+        }
+    }
+
+    /**
+     * 删除书本章节缓存
+     * @param ids 书本ID数组
+     */
+    public void deleteBookChapterCaches(String[] ids) {
+        for (String id : ids) {
+            FileUtil.deleteFolders(DiskCache.path + File.separator + "book" + File.separator + id + File.separator + "book_chapter");
+        }
     }
 
     /**
      * 导入本地书本
-     *
      * @param uri 书本位置
      */
     public void importLocalBook(Uri uri) {
@@ -71,7 +99,7 @@ public class BookRackViewModel extends ViewModel {
                 SQLiteUtil.saveBook(bean);
                 callback.postValue(true);
                 //导入成功后更新本地书架
-                updateBooks();
+                updateBookRack();
             } else {
                 callback.postValue(false);
             }
@@ -86,7 +114,7 @@ public class BookRackViewModel extends ViewModel {
         for (BookBean bookBean : Objects.requireNonNull(data.getValue())) {
             RuleAnalysis rule;
             try {
-                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "rule",false);
+                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBookId() + File.separator + "rule",false);
                 rule.getAnalysis().setDetail(bookBean);
             } catch (Exception e) {
                 //规则为空代表是本地导入书本
@@ -98,13 +126,13 @@ public class BookRackViewModel extends ViewModel {
                 if (data == null) {
                     catalogue.postValue(null);
                 } else {
-                    if (data.size() == 0) {
+                    if (data.isEmpty()) {
                         catalogue.postValue(null);
                         return;
                     }
 
                     //读取书本目录章节
-                    File file = new File(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBook_id() + File.separator + "chapter");
+                    File file = new File(DiskCache.path + File.separator + "book" + File.separator + bookBean.getBookId() + File.separator + "chapter");
                     OrderlyMap old_map;
                     try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
                         old_map = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
@@ -148,11 +176,16 @@ public class BookRackViewModel extends ViewModel {
         return catalogue;
     }
 
-    public SingleLiveEvent<Integer> getOperation() {
-        return operation;
+    public SingleLiveEvent<Operation> getOperations() {
+        return operations;
     }
 
     public SingleLiveEvent<Boolean> getCallback() {
         return callback;
     }
+
+    public enum Operation {
+        CACHE,PACK,DELETE
+    }
+
 }

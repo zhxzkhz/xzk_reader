@@ -1,5 +1,6 @@
 package com.zhhz.reader.rule
 
+import cn.hutool.core.codec.Base64
 import cn.hutool.core.util.ObjectUtil
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONObject
@@ -17,6 +18,7 @@ import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.Charset
 import java.util.*
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 import javax.script.ScriptException
 import javax.script.SimpleBindings
@@ -79,6 +81,8 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             builder.addInterceptor(DiskCache.interceptor)
         }
         if (json.cookieJar) {
+            builder.cookieJar(CookiesManager())
+            /*
             builder.cookieJar(object : CookieJar {
                 private val cookieStore = HashMap<String, List<Cookie>>()
                 override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
@@ -90,6 +94,8 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                     return cookies ?: ArrayList()
                 }
             })
+
+             */
         }
         if (ObjectUtil.isEmpty(json.init)) {
             client = if (json.cookieJar) {
@@ -103,7 +109,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             bindings["xlua_rule"] = this
             bindings["java"] = this
             client = try {
-                val obj = DiskCache.SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.init), bindings)
+                val obj = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.init), bindings)
                 if (obj is OkHttpClient.Builder) {
                     obj.build()
                 } else {
@@ -157,12 +163,12 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
          */
         get() = ObjectUtil.isNotNull(json.search) && ObjectUtil.isNotEmpty(json.search.url)
 
-    abstract fun bookSearch(keyWord: String, callback: AnalysisCallBack.SearchCallBack, label: String)
+    abstract fun bookSearch(keyWord: String,page: Int, callback: AnalysisCallBack.SearchCallBack, label: String)
     abstract fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack)
     abstract fun bookDirectory(url: String, callback: AnalysisCallBack.DirectoryCallBack)
     fun bookChapters(book: BookBean, url: String, callback: AnalysisCallBack.ContentCallBack, label: Any) {
         //val file = File(DiskCache.path + File.separator + "book" + File.separator + book.book_id + File.separator + "book_chapter" + File.separator + url.substring(url.lastIndexOf('/') + 1))
-        val file = File(DiskCache.path + File.separator + "book" + File.separator + book.book_id + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(url))
+        val file = File(DiskCache.path + File.separator + "book" + File.separator + book.bookId + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(url))
 
         if (!Objects.requireNonNull(file.parentFile).isDirectory) {
             if (!file.parentFile?.mkdirs()!!) {
@@ -202,7 +208,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
     abstract fun bookContent(url: String, callback: AnalysisCallBack.ContentCallBack, label: Any)
 
-    fun Http(url: String, callBack: AnalysisCallBack.CallBack) {
+    fun http(url: String, callBack: AnalysisCallBack.CallBack) {
         Coroutine.async {
         //url等于skip跳过请求
         if (url.equals("skip", ignoreCase = true)) {
@@ -212,9 +218,9 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
             return@async
         }
         if (url.contains("@post->")) {
-            Http_Post(url, callBack)
+            httpPost(url, callBack)
         } else {
-            Http_Get(url, callBack)
+            httpGet(url, callBack)
         }
         }.onError {
             it.printStackTrace()
@@ -224,7 +230,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         }
     }
 
-    fun Http_Post(url: String, callback: AnalysisCallBack.CallBack) {
+    fun httpPost(url: String, callback: AnalysisCallBack.CallBack) {
         var header: String? = null
         val data: String
         val arr= url.split("@post->".toRegex(), limit = 2)
@@ -258,7 +264,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
      * @param url      地址
      * @param callback 回调事件
      */
-    fun Http_Get(url: String, callback: AnalysisCallBack.CallBack) {
+    fun httpGet(url: String, callback: AnalysisCallBack.CallBack) {
         var urlTemp = url
         var header: String? = null
         if (urlTemp.contains("\$header")) {
@@ -290,7 +296,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
                     h = jsToJavaObject(
                         DiskCache.SCRIPT_ENGINE.eval(
-                            AutoBase64.decodeToString(h.split("js@|@js:".toRegex())[1]),
+                            Base64.decodeStr(h.split("js@|@js:".toRegex())[1]),
                             bindings
                         )
                     )
@@ -322,17 +328,21 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                 httpResponseBean.isStatus = response.code == 200
                 var charset: String? = null
                 if (ObjectUtil.isNotNull(response.body)) {
-                    val contentType = response.body.contentType()
+                    val contentType = response.body?.contentType()
                     if (contentType?.charset() != null) {
                         charset = contentType.charset()?.name()
                     }
                 }
-                if (charset == null) {
+                if (this@Analysis.charset != charset) {
                     charset = this@Analysis.charset
                 }
                 var s = ""
                 try {
-                    s = String(response.body.bytes(), Charset.forName(charset))
+                    s = if (this@Analysis.charset == charset) {
+                        response.body?.string()
+                    } else {
+                        response.body?.bytes()?.toString(Charset.forName(charset))
+                    }.orEmpty()
                     DiskCache.FileSave(DiskCache.path, call, s)
                 } catch (e: IOException) {
                     httpResponseBean.isStatus = false
@@ -376,20 +386,14 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
         @Throws(IOException::class)
         fun readText(path: String): RuleJsonBean {
-            val file = File(path)
-            if (!file.isFile) throw FileNotFoundException("文件未找到 -> $file")
-            val fis: FileInputStream
-            try {
-                fis = FileInputStream(path)
-                val size = fis.available()
-                val bytes = ByteArray(size)
-                if (fis.read(bytes) != size) throw IOException("文件读取异常")
-                fis.close()
-                return JSON.parseObject(bytes,RuleJsonBean::class.java)
-            } catch (e: FileNotFoundException) {
-                e.printStackTrace()
-            }
-            throw IOException("加载异常")
+            return CompletableFuture.supplyAsync {
+                try {
+                    return@supplyAsync JSON.parseObject(FileUtil.readFile(path),RuleJsonBean::class.java)
+                } catch (e: IOException) {
+                    LogUtil.error(e)
+                    throw FileNotFoundException("文件读取异常 -> $path")
+                }
+            }.join()
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.zhhz.reader.rule
 
+import cn.hutool.core.codec.Base64
 import cn.hutool.core.util.ObjectUtil
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONPath
@@ -7,7 +8,6 @@ import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
 import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
-import com.zhhz.reader.util.AutoBase64
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
 import com.zhhz.reader.util.OrderlyMap
 import java.util.regex.Pattern
@@ -84,7 +84,7 @@ class JsonAnalysis : Analysis{
             when (k) {
                 "js" -> {
                     bindings["value"] = value
-                    value = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(v), bindings)
+                    value = SCRIPT_ENGINE.eval(Base64.decodeStr(v), bindings)
                 }
 
                 "match" -> {
@@ -135,7 +135,7 @@ class JsonAnalysis : Analysis{
     //运行js进行解密
     private fun jsDecryption(s: String, bindings: SimpleBindings): String {
         bindings["data"] = s
-        return SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.jsDecryption), bindings).toString()
+        return SCRIPT_ENGINE.eval(Base64.decodeStr(json.jsDecryption), bindings).toString()
     }
 
     private fun responseParse(result: HttpResponseBean, bindings: SimpleBindings): JSON {
@@ -153,20 +153,20 @@ class JsonAnalysis : Analysis{
         return data
     }
 
-    override fun bookSearch(keyWord: String, callback: AnalysisCallBack.SearchCallBack, label: String) {
+    override fun bookSearch(keyWord: String, page: Int, callback: AnalysisCallBack.SearchCallBack, label: String) {
         val bindings = SimpleBindings()
         bindings["xlua_rule"] = this
         bindings["keyWord"] = keyWord
         bindings["callback"] = callback
         val search = json.search
-        val url = search.url.replace("\${key}", keyWord)
+        val url = search.url.replace("\${key}", keyWord).replace("\${page}", "$page")
         bindings["url"] = url
 
-        Http(url) { result ->
+        http(url) { result ->
             val al: MutableList<SearchResultBean> = ArrayList()
             if (!result.isStatus) {
                 callback.accept(al)
-                return@Http
+                return@http
             }
 
             val data = responseParse(result, bindings)
@@ -202,12 +202,12 @@ class JsonAnalysis : Analysis{
         bindings["xlua_rule"] = this
         bindings["url"] = url
         bindings["callback"] = callback
-        Http(url) { result ->
+        http(url) { result ->
             val book = BookBean()
             if (!result.isStatus) {
                 log(result.error)
                 callback.accept(book)
-                return@Http
+                return@http
             }
 
             val data = responseParse(result, bindings)
@@ -237,7 +237,7 @@ class JsonAnalysis : Analysis{
             } else if (json.detail.catalog.startsWith("js@")) {
                 var resultJs: Any? = null
                 try {
-                    resultJs = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.detail.catalog.substring(3)), bindings)
+                    resultJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.detail.catalog.substring(3)), bindings)
                 } catch (e: ScriptException) {
                     log(e)
                     e.printStackTrace()
@@ -245,7 +245,7 @@ class JsonAnalysis : Analysis{
                 resultJs = resultJs ?: SCRIPT_ENGINE["result"]
                 if (resultJs == null) {
                     callback.accept(null)
-                    return@Http
+                    return@http
                 }
                 book.catalogue = resultJs.toString()
             } else {
@@ -262,24 +262,24 @@ class JsonAnalysis : Analysis{
         bindings["xlua_rule"] = this
         bindings["url"] = url
         bindings["callback"] = callback
-        Http(url) { result ->
+        http(url) { result ->
             val lhm: OrderlyMap = OrderlyMap()
             if (!result.isStatus) {
                 log(result.error)
                 callback.accept(lhm,url)
-                return@Http
+                return@http
             }
 
             val data = responseParse(result, bindings)
 
             if (ObjectUtil.isNotEmpty(json.catalog.js)) {
                 try {
-                    SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.catalog.js), bindings)
+                    SCRIPT_ENGINE.eval(Base64.decodeStr(json.catalog.js), bindings)
                 } catch (e: ScriptException) {
                     log(e)
                     e.printStackTrace()
                 }
-                return@Http
+                return@http
             }
 
             var list = parseRule(data, json.catalog.list, bindings)
@@ -310,11 +310,11 @@ class JsonAnalysis : Analysis{
         val httpResponseBean = HttpResponseBean()
         httpResponseBean.isStatus = true
         bindings["CallBackData"] = httpResponseBean
-        Http(url) { result ->
+        http(url) { result ->
             var s = ""
             if (!result.isStatus) {
                 callback.accept(result, label)
-                return@Http
+                return@http
             }
 
             val data = responseParse(result, bindings)
@@ -326,7 +326,7 @@ class JsonAnalysis : Analysis{
             //执行js
             if (ObjectUtil.isNotEmpty(json.chapter.js)) {
                 try {
-                    val tempJs = SCRIPT_ENGINE.eval(AutoBase64.decodeToString(json.chapter.js),bindings)
+                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js),bindings)
                     s = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     httpResponseBean.isStatus = false
@@ -336,7 +336,7 @@ class JsonAnalysis : Analysis{
                 }
                 //返回false代表 js 内部处理
                 if (s == "false") {
-                    return@Http
+                    return@http
                 }
             }
             httpResponseBean.data = s

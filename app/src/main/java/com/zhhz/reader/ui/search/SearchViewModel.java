@@ -15,8 +15,29 @@ public class SearchViewModel extends ViewModel {
 
     private final MutableLiveData<ArrayList<SearchResultBean>> data;
 
+    private int page = 1;
+
+    private String keyWord = "";
+
     public SearchViewModel() {
         this.data = new MutableLiveData<>();
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public void nextPage() {
+        this.page++;
+        searchBook(keyWord);
+    }
+
+    public String getKeyWord() {
+        return keyWord;
     }
 
     public void searchBook(String key) {
@@ -26,10 +47,11 @@ public class SearchViewModel extends ViewModel {
             Analysis analysis = entry.getValue();
             if (analysis.isHaveSearch()) {
                 bool = false;
-                analysis.bookSearch(key, (data) -> SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data), entry.getKey());
+                analysis.bookSearch(key,page , (data) -> SearchViewModel.this.data.postValue((ArrayList<SearchResultBean>) data), entry.getKey());
             }
         }
         if (bool) {
+            keyWord = key;
             SearchViewModel.this.data.postValue(new ArrayList<>());
         }
     }

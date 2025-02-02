@@ -19,20 +19,39 @@ import org.apache.commons.compress.archivers.zip.UnixStat;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.parallel.ScatterGatherBackingStore;
+import org.apache.commons.io.input.BoundedInputStream;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.Deflater;
 
 import cn.hutool.core.util.ObjectUtil;
-import org.apache.commons.compress.utils.BoundedInputStream;
 
 public class BookUtil {
 
@@ -54,7 +73,7 @@ public class BookUtil {
      */
     public static void CacheBook(BookBean bean,int num){
         cache_error = 0;
-        String path = DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id();
+        String path = DiskCache.path + File.separator + "book" + File.separator + bean.getBookId();
         File file = new File(path + File.separator + "chapter");
         OrderlyMap chapters;
         ArrayList<String> list;
@@ -64,7 +83,7 @@ public class BookUtil {
             chapters = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
             list = new ArrayList<>(chapters.values());
         } catch (IOException e) {
-            e.printStackTrace();
+            LogUtil.error(e);
             return;
         }
         if (num == -1){
@@ -78,7 +97,7 @@ public class BookUtil {
                 progress = Integer.parseInt(s[0]);
                 if (num != Integer.MAX_VALUE) num += progress;
             } catch (IOException | NumberFormatException e) {
-                e.printStackTrace();
+                LogUtil.error(e);
                 return;
             }
         }
@@ -86,7 +105,7 @@ public class BookUtil {
         try {
              ruleAnalysis = new RuleAnalysis(path + File.separator + "rule",false);
         } catch (IOException e) {
-            e.printStackTrace();
+            LogUtil.error(e);
             return;
         }
 
@@ -133,7 +152,7 @@ public class BookUtil {
             //失败三次跳过
             AtomicInteger error = new AtomicInteger();
 
-            ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
+            ScheduledFuture<?> future = scheduledExecutorService.scheduleWithFixedDelay(() -> {
                 if (list.size() <= index.get()) {
                     NotificationUtil.sendMessage("《" + bean.getTitle() + "》" + list.size() + "章缓存完成");
                     throw new CancellationException();
@@ -166,7 +185,7 @@ public class BookUtil {
 
                 error.set(0);
                 int count = 1;
-                while (imageList.size() != 0) {
+                while (!imageList.isEmpty()) {
                     String url = imageList.get(0);
                     String p = GlideGetPath.getCacheFileKey(url);
                     if (p == null || !new File(p).isFile()) {
@@ -193,7 +212,7 @@ public class BookUtil {
             try {
                 future.get();
             } catch (ExecutionException | InterruptedException e) {
-                e.printStackTrace();
+                LogUtil.error(e);
             }
 
         }));
@@ -233,10 +252,10 @@ public class BookUtil {
 
             for (BookBean bean : beans) {
                 if (bean == null) break;
-                String path = DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id();
+                String path = DiskCache.path + File.separator + "book" + File.separator + bean.getBookId();
                 count_size += (long) FileSizeUtil.getFileOrFilesSize(path, FileSizeUtil.SIZE_TYPE_B);
                 //判断是否是漫画
-                if (bean.getBook_id().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))) {
+                if (bean.getBookId().equals(StringUtil.getMD5(bean.getTitle() + "▶☀true☀◀" + bean.getAuthor()))) {
                     File file = new File(path + File.separator + "book_chapter");
                     if (file.isDirectory()) {
                         paths.add(file);
@@ -332,14 +351,13 @@ public class BookUtil {
         callback.accept(false, "开始打包", 0, 1);
         futures.add(CompletableFuture.runAsync(() -> {
             LinkedHashMap<String, String> chapter;
-            try {
-                Type link = TypeReference.intern(new ParameterizedTypeImpl(new Type[]{String.class, String.class}, null, LinkedHashMap.class));
-                try (final InputStream is = Files.newInputStream(Paths.get(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "chapter"))){
-                    chapter = JSONObject.parseObject(is, link);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
+
+            Type link = TypeReference.intern(new ParameterizedTypeImpl(new Type[]{String.class, String.class}, null, LinkedHashMap.class));
+            try (final InputStream is = Files.newInputStream(Paths.get(DiskCache.path + File.separator + "book" + File.separator + bean.getBookId() + File.separator + "chapter"))){
+                chapter = JSONObject.parseObject(is, link);
+            } catch (IOException e) {
+                LogUtil.error(e);
+                return;
             }
 
             //用于判断是否完成
@@ -347,7 +365,7 @@ public class BookUtil {
             RuleAnalysis rule;
             LazyHeaders headers;
             try {
-                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "rule", false);
+                rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + bean.getBookId() + File.separator + "rule", false);
                 LazyHeaders.Builder header = new LazyHeaders.Builder();
                 if (rule.getAnalysis().getJson().getImgHeader() != null) {
                     if (ObjectUtil.isNotEmpty(rule.getAnalysis().getJson().getImgHeader().getHeader())) {
@@ -367,7 +385,7 @@ public class BookUtil {
                 }
                 headers = header.build();
             } catch (IOException e) {
-                e.printStackTrace();
+                LogUtil.error(e);
                 return;
             }
             //章节顺序
@@ -381,7 +399,7 @@ public class BookUtil {
 
             callback.accept(false, "读取目录中（" + i.get() + "/" + chapter.size() + "）", 0, chapter.size());
             for (Map.Entry<String, String> entry : chapter.entrySet()) {
-                File file = new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(entry.getValue()));
+                File file = new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBookId() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(entry.getValue()));
                 if (!(file.isFile() || all)) {
                     i.getAndIncrement();
                     callback.accept(false, "读取目录中（" + i.get() + "/" + chapter.size() + "）", i.get(), chapter.size());
@@ -408,21 +426,21 @@ public class BookUtil {
                     }, entry.getKey());
                 } catch (Exception e) {
                     sign.addAndGet(-1);
-                    e.printStackTrace();
+                    LogUtil.error(e);
                 }
 
             }
 
 
             try {
-                ScheduledFuture<?> future = scheduledExecutorService.scheduleAtFixedRate(() -> {
+                ScheduledFuture<?> future = scheduledExecutorService.scheduleWithFixedDelay(() -> {
                     if (sign.get() == 0) {
                         throw new CancellationException();
                     }
                 }, 0, 1, TimeUnit.SECONDS);
                 future.get();
-            } catch (InterruptedException | ExecutionException ignored) {
-
+            } catch (InterruptedException | ExecutionException e) {
+                LogUtil.error(e);
             }
 
             callback.accept(false, "读取目录完成", 1, 1);
@@ -477,7 +495,6 @@ public class BookUtil {
                                 is.close();
                             } catch (Exception e) {
                                 callback.accept(false, chapterName + " - " + i.get() + "图片加载失败", i.get(), count.get());
-                                e.printStackTrace();
                                 LogUtil.error(e);
                             }
                         }
@@ -494,23 +511,23 @@ public class BookUtil {
             });
 
             try {
-                ZipArchiveOutputStream zipArchive = new ZipArchiveOutputStream(new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id() + File.separator + bean.getTitle() + ".zip"));
+                ZipArchiveOutputStream zipArchive = new ZipArchiveOutputStream(new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBookId() + File.separator + bean.getTitle() + ".zip"));
                 zipArchive.setEncoding("UTF-8");
 
                 try {
                     ScheduledFuture<?> future = scheduledExecutorService.scheduleWithFixedDelay(() -> {
-                        if (bool.get() && zip_list.size() == 0) {
+                        if (bool.get() && zip_list.isEmpty()) {
                             throw new CancellationException();
                         }
-                        while (zip_list.size() > 0) {
+                        while (!zip_list.isEmpty()) {
                             try {
                                 ZipArchiveEntryObject zip = zip_list.remove(0);
-                                try (final BoundedInputStream is = new BoundedInputStream(zip.sb.getInputStream(), zip.zipArchiveEntry.getCompressedSize())) {
+                                try (final BoundedInputStream is = BoundedInputStream.builder().setInputStream(zip.sb.getInputStream()).setMaxCount(zip.zipArchiveEntry.getCompressedSize()).get()) {
                                     zipArchive.addRawArchiveEntry(zip.zipArchiveEntry, is);
                                     zip.close();
                                 }
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                LogUtil.error(e);
                             }
                         }
                     }, 0, 100, TimeUnit.MILLISECONDS);
@@ -520,7 +537,7 @@ public class BookUtil {
                 callback.accept(true, "打包成功", i.get(), count.get());
             } catch (Exception e) {
                 callback.accept(true, "打包失败", 0, 1);
-                e.printStackTrace();
+                LogUtil.error(e);
             }
 
         }, XluaTask.getThreadPool()));

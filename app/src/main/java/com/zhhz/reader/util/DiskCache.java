@@ -1,6 +1,7 @@
 package com.zhhz.reader.util;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.sun.script.javascript.RhinoScriptEngine;
 import com.zhhz.reader.MyApplication;
@@ -9,12 +10,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import javax.script.ScriptEngine;
 
+import cn.hutool.crypto.digest.MD5;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -59,7 +60,6 @@ public class DiskCache {
                 b = new byte[size];
                 if (fis.read(b) != size) return chain.proceed(chain.request());
             } catch (IOException e) {
-                e.printStackTrace();
                 return chain.proceed(chain.request());
             }
         } else {
@@ -77,12 +77,15 @@ public class DiskCache {
     };
 
     static {
-        File f = new File(path);
-        if (!f.isDirectory() || (f.isDirectory() && !f.canWrite())) {
-            if (!new File(path).mkdirs()) {
-                path = MyApplication.context.getExternalFilesDir("").getAbsolutePath();
+        CompletableFuture.runAsync(() -> {
+            File f = new File(path);
+            if (!f.isDirectory() || (f.isDirectory() && !f.canWrite())) {
+                if (!new File(path).mkdirs()) {
+                    path = Objects.requireNonNull(MyApplication.context.getExternalFilesDir("")).getAbsolutePath();
+                }
             }
-        }
+        });
+
     }
 
     /**
@@ -108,7 +111,7 @@ public class DiskCache {
 
         if (cache_delete_tag || bool) {
             cache_delete_tag = false;
-            String pt = path == null ? MyApplication.context.getExternalCacheDir().getAbsolutePath() : path;
+            String pt = path == null ? Objects.requireNonNull(MyApplication.context.getExternalCacheDir()).getAbsolutePath() : path;
             String file = pt + File.separator + "Disk_Cache" + File.separator;
             File[] files = new File(file).listFiles();
             //删除缓存时间大于五分钟的
@@ -123,23 +126,6 @@ public class DiskCache {
             }
         }
 
-    }
-
-    public static String encrypt(String dataStr) {
-        try {
-            MessageDigest m = MessageDigest.getInstance("MD5");
-            m.update(dataStr.getBytes(StandardCharsets.UTF_8));
-            byte[] s = m.digest();
-            StringBuilder result = new StringBuilder();
-            for (byte b : s) {
-                result.append(Integer.toHexString((0x000000FF & b) | 0xFFFFFF00).substring(6));
-            }
-            return result.toString().toLowerCase();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return dataStr;
     }
 
     public static void FileSave(String pt, @NonNull okhttp3.Call call, String data) {
@@ -165,21 +151,22 @@ public class DiskCache {
     }
 
 
+    @Nullable
     public static File urlToFile(HttpUrl call, String pt) {
         String paths = call.encodedPath().substring(1).replace("/", "_");
-        pt = pt == null ? MyApplication.context.getExternalCacheDir().getAbsolutePath() : pt;
+        pt = pt == null ? Objects.requireNonNull(MyApplication.context.getExternalCacheDir()).getAbsolutePath() : pt;
         String url = pt + File.separator + "Disk_Cache" + File.separator;
-        if (paths.equals("")) {
+        if (paths.isEmpty()) {
             if (call.encodedQuery() == null) {
                 return null;
             } else {
-                return new File(url + encrypt(call.host() + call.encodedQuery()));
+                return new File(url + MD5.create().digestHex(call.host() + call.encodedQuery()));
             }
         } else {
             if (call.encodedQuery() == null) {
-                return new File(url + encrypt(call.host() + paths));
+                return new File(url + MD5.create().digestHex(call.host() + paths));
             } else {
-                return new File(url + encrypt(call.host() + paths + call.encodedQuery()));
+                return new File(url + MD5.create().digestHex(call.host() + paths + call.encodedQuery()));
             }
         }
     }

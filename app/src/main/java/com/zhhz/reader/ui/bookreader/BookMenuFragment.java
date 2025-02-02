@@ -107,11 +107,14 @@ public class BookMenuFragment extends Fragment {
             }
         });
 
-        binding.menuHide.setOnClickListener(view -> getParentFragmentManager().beginTransaction().hide(BookMenuFragment.this).commitNow());
+        binding.menuHide.setOnClickListener(view -> container.callOnClick());
 
-        if (mViewModel.isLocalBooks()) {
+
+        if (mViewModel.isLocalBook()) {
+            //本地书本禁用缓存按钮
             binding.menuCache.setClickable(false);
         } else {
+            //开启缓存按钮
             binding.menuCache.setOnClickListener(view -> mViewModel.cacheBook(-1, true));
         }
         binding.menuSource.setOnClickListener(view -> {
@@ -154,6 +157,7 @@ public class BookMenuFragment extends Fragment {
             catalogueAdapter.notifyItemChanged(tmp_progress);
             binding.menuSource.setText(mViewModel.getCatalogue().get(tmp_progress));
         }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -167,6 +171,7 @@ public class BookMenuFragment extends Fragment {
         });
 
         mViewModel.getChapters().observe(getViewLifecycleOwner(), s -> onHiddenChanged(false));
+
     }
 
     @Override

@@ -31,14 +31,14 @@ public class BookReaderActivity extends AppCompatActivity implements XReadTextVi
         setContentView(R.layout.activity_bookreader);
         BookReaderViewModel mViewModel = new ViewModelProvider(this).get(BookReaderViewModel.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            mViewModel.setBook(getIntent().getSerializableExtra("book",BookBean.class));
+            mViewModel.setBook(Objects.requireNonNull(getIntent().getSerializableExtra("book", BookBean.class)));
         } else {
-            mViewModel.setBook((BookBean) getIntent().getSerializableExtra("book"));
+            mViewModel.setBook((BookBean) Objects.requireNonNull(getIntent().getSerializableExtra("book")));
         }
         if (savedInstanceState == null) {
             SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
             //是否开启日志悬浮窗
-            boolean bool = sharedPrefs.getBoolean("test_read",false);
+            boolean bool = sharedPrefs.getBoolean("test_read", false);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, mViewModel.isComic() ? ComicReaderFragment.newInstance() : (bool ? BookReaderFragmentX.Companion.newInstance() : BookReaderFragment.newInstance()), mViewModel.isComic() ? "ComicReaderFragment" : "BookReaderFragment")
                     .commitNow();
@@ -46,12 +46,19 @@ public class BookReaderActivity extends AppCompatActivity implements XReadTextVi
 
         findViewById(R.id.container).setOnClickListener(view -> {
             if (BookMenuFragment.getInstance().isVisible()) {
-                getSupportFragmentManager().beginTransaction().hide(BookMenuFragment.getInstance()).commitNow();
+                getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                        .hide(BookMenuFragment.getInstance())
+                        .commitNow();
             } else {
                 if (BookMenuFragment.getInstance().isAdded()) {
-                    getSupportFragmentManager().beginTransaction().show(BookMenuFragment.getInstance()).commitNow();
+                    getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                            .show(BookMenuFragment.getInstance())
+                            .commitNow();
                 } else {
                     getSupportFragmentManager().beginTransaction()
+                            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                             .add(R.id.container, BookMenuFragment.getInstance())
                             .commitNow();
                 }
@@ -61,17 +68,16 @@ public class BookReaderActivity extends AppCompatActivity implements XReadTextVi
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean dispatchKeyEvent(KeyEvent event) {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag("BookReaderFragment");
         if (fragment != null) {
-            boolean bool = ((BookReaderFragmentBase) fragment).onKeyDown(keyCode, event);
+            boolean bool = ((BookReaderFragmentBase) fragment).dispatchKeyEvent(event);
             if (bool) return true;
-            return super.onKeyDown(keyCode, event);
         }
-        return super.onKeyDown(keyCode, event);
+        return super.dispatchKeyEvent(event);
     }
 
-    private BookReaderFragmentX getFragmentX(){
+    private BookReaderFragmentX getFragmentX() {
         Fragment fragment = getSupportFragmentManager().findFragmentByTag("BookReaderFragment");
         if (fragment != null) {
             return (BookReaderFragmentX) fragment;

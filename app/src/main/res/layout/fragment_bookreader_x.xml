@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:id="@+id/book_reader"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             android:clickable="true"
+             tools:context=".ui.bookreader.BookReaderFragment">
+
+    <com.zhhz.reader.view.XReadTextView
+        android:id="@+id/reader_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+    />
+
+    <View
+        android:id="@+id/text_menu_position"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="invisible"/>
+
+    <ImageView
+        android:id="@+id/cursor_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/select_start"
+        android:src="@drawable/ic_cursor_left"
+        android:visibility="invisible"/>
+
+    <ImageView
+        android:id="@+id/cursor_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/select_end"
+        android:src="@drawable/ic_cursor_right"
+        android:visibility="invisible"/>
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progress"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:visibility="gone"
+        app:indicatorColor="@color/black"
+        app:indicatorSize="100dp"
+        app:showDelay="100"
+        app:trackColor="@color/gray"
+        app:trackThickness="5dp"/>
+
+
+</FrameLayout>

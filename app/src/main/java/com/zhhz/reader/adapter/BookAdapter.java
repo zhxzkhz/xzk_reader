@@ -1,6 +1,9 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.SystemClock;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +17,11 @@ import androidx.recyclerview.selection.ItemDetailsLookup;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.BookBean;
@@ -71,7 +78,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         BookBean book = itemData.get(position);
         if (mSelectionTracker != null) {
-            boolean bool = mSelectionTracker.isSelected(book.getBook_id());
+            boolean bool = mSelectionTracker.isSelected(book.getBookId());
             if (bool) {
                 holder.checkBox.setVisibility(View.VISIBLE);
             } else {
@@ -88,16 +95,32 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
             holder.last.setText(book.getLastChapter());
         }
         if (book.getCover() != null) {
+            long startTime = SystemClock.elapsedRealtime();
             GlideApp.with(context)
                     .asBitmap()
-                    .diskCacheStrategy(DiskCacheStrategy.RESOURCE)
+                    .load(book.getCover())
+                    .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                     .centerCrop()
                     .placeholder(R.drawable.no_cover)
                     .error(R.drawable.no_cover)
-                    .load(book.getCover())
-                    .into(holder.imageView);
+                    .listener(new RequestListener<Bitmap>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                            long endTime = SystemClock.elapsedRealtime();
+                            Log.d("GlideLoadTime", "加载失败或者图片未能加载成功，用时：" + (endTime - startTime) + "ms");
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                            long endTime = SystemClock.elapsedRealtime();
+                            Log.d("GlideLoadTime", "图片加载成功，用时：" + (endTime - startTime) + "ms");
+                            return false;
+                        }
+                    })
+                    .into(holder.bookCoverImageView);
         } else {
-            holder.imageView.setImageDrawable(MyApplication.coverDrawable);
+            holder.bookCoverImageView.setImageDrawable(MyApplication.coverDrawable);
         }
         if (holder.update != null) {
             if (book.getUpdate()) {
@@ -151,7 +174,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     //② 创建ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final AppCompatImageView imageView;
+        public final AppCompatImageView bookCoverImageView;
         public final AppCompatTextView title;
         public final AppCompatTextView author;
         public final AppCompatTextView last;
@@ -160,7 +183,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
         private ViewHolder(View v) {
             super(v);
-            this.imageView = v.findViewById(R.id.item_image);
+            this.bookCoverImageView = v.findViewById(R.id.item_image);
             this.title = v.findViewById(R.id.item_title);
             this.author = v.findViewById(R.id.item_author);
             this.last = v.findViewById(R.id.item_latest);
@@ -169,7 +192,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         }
 
         public ItemDetailsLookup.ItemDetails<String> getItemDetails() {
-            return new StringItemDetails(getBindingAdapterPosition(), itemData.get(getBindingAdapterPosition()).getBook_id());
+            return new StringItemDetails(getBindingAdapterPosition(), itemData.get(getBindingAdapterPosition()).getBookId());
         }
     }
 

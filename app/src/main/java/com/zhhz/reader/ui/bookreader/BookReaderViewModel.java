@@ -24,10 +24,8 @@ import com.zhhz.reader.util.StringUtil;
 import com.zhhz.reader.view.ReadTextView;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -36,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import cn.hutool.core.util.ObjectUtil;
 
@@ -87,7 +86,7 @@ public class BookReaderViewModel extends ViewModel {
         return catalogue;
     }
 
-    public boolean isLocalBooks() {
+    public boolean isLocalBook() {
         return localBooks;
     }
 
@@ -98,12 +97,12 @@ public class BookReaderViewModel extends ViewModel {
     public void setBook(BookBean book) {
         this.book = book;
         //rule 为空代表是本地书本
-        if (!new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule").isFile()) {
+        if (!new File(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "rule").isFile()) {
             localBooks = true;
             return;
         }
         try {
-            rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "rule", false);
+            rule = new RuleAnalysis(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "rule", false);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -131,7 +130,7 @@ public class BookReaderViewModel extends ViewModel {
      * 获取章节
      */
     public void queryCatalogue() {
-        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "chapter");
+        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "chapter");
         try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
             OrderlyMap map = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
             catalogue.addAll(map.keySet());
@@ -160,6 +159,7 @@ public class BookReaderViewModel extends ViewModel {
     public void getContent(boolean bool) {
         uuid = UUID.randomUUID().toString();
         chapters.setValue(catalogue.get(progress));
+        System.out.println("data_catalogue.getValue() = " + data_catalogue.getValue());
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
 
         HashMap<String, Object> map = new HashMap<>();
@@ -171,13 +171,15 @@ public class BookReaderViewModel extends ViewModel {
         map.put("end", bool);
         // url 第一个字符是 / 代表是本地章节
         if (url.startsWith("/")) {
-            byte[] bytes = FileUtil.readFile(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + url);
-            if (bytes == null) {
-                map.put("error", "内容获取失败");
-            } else {
-                map.put("content", new String(bytes));
-            }
-            data_content.postValue(map);
+            CompletableFuture.runAsync(() -> {
+                String text = FileUtil.readFileString(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "book_chapter" + url);
+                if (text.isEmpty()) {
+                    map.put("error", "内容获取失败");
+                } else {
+                    map.put("content", text);
+                }
+                data_content.postValue(map);
+            });
         } else {
             loading = true;
             rule.bookChapters(book, url, (data, label) -> {
@@ -262,7 +264,7 @@ public class BookReaderViewModel extends ViewModel {
 
         if (url != null) {
             try {
-                Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(url)));
+                Files.delete(Paths.get(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "book_chapter" + File.separator + StringUtil.getMD5(url)));
             } catch (IOException e) {
                 LogUtil.error(e);
             }
@@ -282,12 +284,8 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     public void saveProgress(int progress, int start) {
-        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "progress"))) {
-            bufferedWriter.write(progress + "," + start);
-        } catch (IOException ignored) {
-        }
+        CompletableFuture.runAsync(() -> FileUtil.writeFile(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "progress", progress + "," + start));
     }
-
 
     /**
      * 获取阅读章节和位置
@@ -297,23 +295,20 @@ public class BookReaderViewModel extends ViewModel {
     public int[] readProgress() {
         // 0 章节进度 1 阅读进度
         int[] pro = new int[2];
-        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBook_id() + File.separator + "progress");
-        if (!file.isFile()) {
+        File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "progress");
+        if (!file.isFile()){
             saveProgress(0);
             return pro;
         }
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
-            String[] progress = bufferedReader.readLine().split(",");
-            bufferedReader.close();
-            pro[0] = Integer.parseInt(progress[0]);
-            pro[1] = Integer.parseInt(progress[1]);
-            return pro;
-        } catch (IOException | NumberFormatException e) {
-            return pro;
-        }
+
+        String[] progress = FileUtil.readFileString(file).split(",");
+        pro[0] = Integer.parseInt(progress[0]);
+        pro[1] = Integer.parseInt(progress[1]);
+
+        return pro;
     }
 
-    public ArrayList<GlideUrl> getComic_list() {
+    public ArrayList<GlideUrl> getComicList() {
         return comic_list;
     }
 

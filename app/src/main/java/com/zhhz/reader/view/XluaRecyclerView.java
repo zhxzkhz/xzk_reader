@@ -77,7 +77,7 @@ public class XluaRecyclerView extends RecyclerView {
                 mPosY = h2;
             }
 
-            polydactylism = true;
+            polydactylies = true;
 
             XluaRecyclerView.this.invalidate();
             return true;
@@ -90,7 +90,7 @@ public class XluaRecyclerView extends RecyclerView {
     private float y1;
 
     //是否多指触碰
-    private boolean polydactylism = false;
+    private boolean polydactylies = false;
 
     @SuppressLint("ClickableViewAccessibility")
     public boolean onTouchEvent(MotionEvent motionEvent) {
@@ -100,12 +100,12 @@ public class XluaRecyclerView extends RecyclerView {
         int actions = motionEvent.getPointerCount();
 
         if (actions > 1) {
-            polydactylism = true;
+            polydactylies = true;
             this.mScaleDetector.onTouchEvent(motionEvent);
             return false;
         }
-        if (polydactylism) {
-            polydactylism = false;
+        if (polydactylies) {
+            polydactylies = false;
             x = motionEvent.getX(0);
             y = motionEvent.getY(0);
 
@@ -154,7 +154,7 @@ public class XluaRecyclerView extends RecyclerView {
 
 
     @Override
-    protected void dispatchDraw(Canvas canvas) {
+    protected void dispatchDraw(@NonNull Canvas canvas) {
         if (this.mScaleFactor == this.defaultScaleFactor) {
             this.mPosX = 0.0f;
             this.mPosY = 0.0f;
@@ -165,6 +165,6 @@ public class XluaRecyclerView extends RecyclerView {
         canvas.scale(this.mScaleFactor, this.mScaleFactor, this.centerX, this.centerY);
         super.dispatchDraw(canvas);
         canvas.restore();
-        invalidate();
+        //invalidate();
     }
 }

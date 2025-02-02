@@ -41,20 +41,20 @@ public class LocalBookUtil {
                 }
             } catch (Exception e) {
                 callBack.result(null);
-                e.printStackTrace();
+                LogUtil.error(e);
                 return;
             }
 
-            String name = uri.getPath().substring(uri.getPath().lastIndexOf("/") + 1, uri.getPath().indexOf("."));
+            String name = Objects.requireNonNull(uri.getPath()).substring(uri.getPath().lastIndexOf("/") + 1, uri.getPath().indexOf("."));
 
             BookBean bean = new BookBean();
-            bean.setBook_id(StringUtil.getMD5(UUID.randomUUID().toString()));
+            bean.setBookId(StringUtil.getMD5(UUID.randomUUID().toString()));
             bean.setTitle(name);
             bean.setUpdate(false);
             bean.setStatus(true);
 
-            if (!analysisChapter(stringBuilder.toString(), bean.getBook_id())) {
-                if (new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBook_id()).delete()) {
+            if (!analysisChapter(stringBuilder.toString(), bean.getBookId())) {
+                if (new File(DiskCache.path + File.separator + "book" + File.separator + bean.getBookId()).delete()) {
                     callBack.result(null);
                     return;
                 }
@@ -162,7 +162,7 @@ public class LocalBookUtil {
             try (FileWriter fr = new FileWriter(file_dir + File.separator + "book_chapter" + File.separator + i)) {
                 fr.write(temp_content_list.get(i));
             } catch (Exception e) {
-                e.printStackTrace();
+                LogUtil.error(e);
                 return false;
             }
             chapter.put(chapter_list.get(i), "/" + i);
@@ -173,7 +173,7 @@ public class LocalBookUtil {
             f.write(JSONObject.toJSONString(chapter));
             f.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogUtil.error(e);
             return false;
         }
 

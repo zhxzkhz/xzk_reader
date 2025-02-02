@@ -24,7 +24,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     private final Context context;
     private ArrayList<SearchResultBean> itemData;
-    private View.OnClickListener onClickListener;
+    private View.OnClickListener clickListener;
 
     public SearchResultAdapter(Context context) {
         this.context = context;
@@ -36,8 +36,8 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         this.itemData = data;
     }
 
-    public void setOnClickListener(View.OnClickListener onClickListener) {
-        this.onClickListener = onClickListener;
+    public void setOnClickListener(View.OnClickListener clickListener) {
+        this.clickListener = clickListener;
     }
 
     public ArrayList<SearchResultBean> getItemData() {
@@ -60,8 +60,8 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         } else {
             view = new View(parent.getContext());
         }
-        if (onClickListener != null) {
-            view.setOnClickListener(onClickListener);
+        if (clickListener != null) {
+            view.setOnClickListener(clickListener);
         }
         return new ViewHolder(view);
     }
@@ -81,6 +81,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
             GlideApp.with(context)
                     .asBitmap()
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
+                    .placeholder(MyApplication.coverDrawable)
                     .error(MyApplication.coverDrawable)
                     .centerCrop()
                     .load(book.getCover())

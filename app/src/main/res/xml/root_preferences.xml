@@ -34,6 +34,11 @@
             app:key="log"
             app:title="@string/is_log" />
 
+        <SwitchPreferenceCompat
+                app:iconSpaceReserved="false"
+                app:key="test_read"
+                app:title="@string/test_read" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>
