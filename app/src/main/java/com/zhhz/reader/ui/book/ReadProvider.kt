@@ -2,6 +2,7 @@ package com.zhhz.reader.ui.book
 
 import android.graphics.Typeface
 import android.os.Build
+import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import com.zhhz.reader.ui.book.entities.TextChapter
@@ -13,7 +14,7 @@ import kotlin.math.sqrt
 
 object ReadProvider {
 
-    private const val indentChar = "　"
+    const val indentChar = "　"
 
     @JvmStatic
     var viewWidth = 0
@@ -92,6 +93,7 @@ object ReadProvider {
         text: String,
         pos: Int
     ): TextChapter {
+        val long = System.currentTimeMillis()
         val contents = arrayListOf<String>()
         text.split("\n").forEach { str ->
             val paragraph = str.trim {
@@ -102,7 +104,7 @@ object ReadProvider {
                 contents.add("　　$paragraph")
             }
         }
-
+        println("耗时1 => ${System.currentTimeMillis() - long}")
         val textPages = arrayListOf<TextPage>()
         textPages.add(TextPage())
         var x = marginLeft
@@ -128,7 +130,6 @@ object ReadProvider {
         return TextChapter(title, pos, textPages)
     }
 
-
     private fun textParse(
         x: Int,
         y: Float,
@@ -138,7 +139,6 @@ object ReadProvider {
         sb: StringBuilder,
         isTitle: Boolean = false,
     ): Pair<Int, Float> {
-
         val widthsArray = FloatArray(text.length)
         textPaint.getTextWidths(text, widthsArray)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -211,12 +211,16 @@ object ReadProvider {
 
                 }
             }
+
             sb.append(lineText)
+            if (textLine.isParagraphEnd) {
+                sb.append("\n")
+            }
+
             textPages.last().addLine(textLine)
             textLine.updateTopBottom(curY, textPaint)
             curY += textPaint.textHeight * lineHeightRatio
             textPages.last().height = curY
-
         }
 
         curY += textPaint.textHeight * 0.3f + paragraphSpacing
@@ -224,7 +228,6 @@ object ReadProvider {
 
         return Pair(curX, curY)
     }
-
 
     //首行缩进,两端对齐
     private fun addTextToLineFirst(
@@ -256,7 +259,26 @@ object ReadProvider {
                 desiredWidth, x, textWidths1
             )
         }
+        /*
+        val icw = StaticLayout.getDesiredWidth(bodyIndent, textPaint) / bodyIndent.length
+        for (char in bodyIndent.toStringArray()) {
+            val x2 = x1 + icw
+            textLine.addColumn(
+                TextColumn(
+                    charData = char,
+                    start = x + x1,
+                    end = x + x2
+                )
+            )
+            x1 = x2
+            textLine.indentWidth = x1
+        }
+        if (words.size > bodyIndent.length) {
+            val words1 = words.subList(bodyIndent.length, words.size)
+            addTextToLineMiddle(textLine, x, words1, desiredWidth, x1, textWidths)
+        }
 
+         */
     }
 
     //无缩进,两端对齐
@@ -353,6 +375,17 @@ object ReadProvider {
         }
         exceed(absStartX, textLine, words)
 
+/*        var x1 = startX
+        words.forEachIndexed { index, char ->
+            val cw = StaticLayout.getDesiredWidth(char, textPaint)
+            val x2 = x1 + cw
+            addTextToLine(textLine, absStartX, char, x1, x2, index + 1 == words.size)
+            x1 = x2
+            if (hasIndent && index == indentLength - 1) {
+                textLine.indentWidth = x1
+            }
+        }
+        exceed(absStartX, textLine, words)*/
     }
 
 

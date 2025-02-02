@@ -79,10 +79,10 @@ public class BookReaderFragment extends BookReaderFragmentBase{
         });
 
         ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(-2,-2);
-        layoutParams.topToTop = binding.progress.getId();
-        layoutParams.bottomToBottom = binding.progress.getId();
-        layoutParams.leftToLeft = binding.progress.getId();
-        layoutParams.rightToRight = binding.progress.getId();
+        layoutParams.topToTop = binding.bookReader.getId();
+        layoutParams.bottomToBottom = binding.bookReader.getId();
+        layoutParams.leftToLeft = binding.bookReader.getId();
+        layoutParams.rightToRight = binding.bookReader.getId();
         binding.bookReader.addView(errorRetryButton, layoutParams);
 
         return root;
@@ -140,17 +140,17 @@ public class BookReaderFragment extends BookReaderFragmentBase{
             mViewModel.saveSetting(binding.readerText);
         });
 
-        mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
+        mViewModel.getDataContent().observe(getViewLifecycleOwner(), contentBean -> {
             binding.progress.hide();
-            if (map.containsKey("error")) {
-                binding.readerText.setText(String.valueOf(map.get("error")));
+            if (!contentBean.isStatus()) {
+                binding.readerText.setText(contentBean.getError());
                 errorRetryButton.setVisibility(View.VISIBLE);
             } else {
                 //判断是否转跳到文本末尾
-                if (map.containsKey("end") && Boolean.parseBoolean(String.valueOf(map.get("end")))) {
-                    mViewModel.setPos(String.valueOf(map.get("content")).length()-1);
+                if (contentBean.getPreviousPage()) {
+                    mViewModel.setPos(String.valueOf(contentBean.getData()).length()-1);
                 }
-                binding.readerText.setText(String.valueOf(map.get("content")), mViewModel.getPos());
+                binding.readerText.setText(String.valueOf(contentBean.getData()), mViewModel.getPos());
                 mViewModel.saveProgress(mViewModel.getProgress(), binding.readerText.getTextStart());
             }
         });

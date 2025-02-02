@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.jeremyliao.liveeventbus.LiveEventBus
+import com.zhhz.reader.bean.ContentBean
 import com.zhhz.reader.databinding.FragmentBookreaderXBinding
 import com.zhhz.reader.ui.book.EventBus
 import com.zhhz.reader.ui.book.ReadBookConfig
@@ -14,6 +15,7 @@ import com.zhhz.reader.ui.book.ReadProvider
 import com.zhhz.reader.ui.book.TextActionMenu
 import com.zhhz.reader.ui.book.entities.TextChapter
 import com.zhhz.reader.ui.book.entities.TextPage
+import com.zhhz.reader.ui.book.postEvent
 import com.zhhz.reader.util.Coroutine
 import com.zhhz.reader.util.LogUtil
 import com.zhhz.reader.view.XReadTextView
@@ -30,7 +32,11 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
         TextActionMenu(requireContext())
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         binding = FragmentBookreaderXBinding.inflate(inflater, container, false)
 
         val layoutParams = ConstraintLayout.LayoutParams(-2, -2)
@@ -92,38 +98,39 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
             }
             mViewModel.saveSetting()
             ReadProvider.updateStyle()
-
-            Coroutine.async(
-                start = CoroutineStart.LAZY,
-                executeContext = IO) {
-                binding!!.readerText.run {
-                    val textChapter = ReadProvider.getTextChapter(getTextChapter()!!.title,getTextChapter()!!.getContent(),0)
-                    binding!!.readerText.setContent(textChapter,getReadProgress())
-                }
-            }.onError {
-                LogUtil.error(it)
-            }
+            postEvent(EventBus.UPDATE_CONFIG, true)
         }
 
-        mViewModel.dataContent.observe(viewLifecycleOwner) { map: HashMap<String?, Any> ->
-            Coroutine.async (context = Dispatchers.Main.immediate){
+        mViewModel.dataContent.observe(viewLifecycleOwner) { contentBean: ContentBean ->
+            Coroutine.async(context = Dispatchers.Main.immediate) {
                 binding!!.progress.hide()
-                if (map.containsKey("error")) {
-                    val textChapter = ReadProvider.getTextChapter("文字加载失败", map["error"] as String,0)
-                    binding!!.readerText.setContent(textChapter,mViewModel.pos)
+                if (contentBean.isStatus) {
+                    val textChapter =
+                        ReadProvider.getTextChapter("文字加载失败", contentBean.error, 0)
+                    binding!!.readerText.setContent(textChapter, mViewModel.pos)
                     errorRetryButton.visibility = View.VISIBLE
                 } else {
                     //判断是否转跳到文本末尾
-                    if (map.containsKey("end") && map["end"].toString().toBoolean()) {
-                        mViewModel.pos = map["content"].toString().length - 1
+                    if (contentBean.previousPage) {
+                        mViewModel.pos = (contentBean.data as String).length - 1
                     }
-                    val textChapter = ReadProvider.getTextChapter(mViewModel.chapters.value.let { it ?: "" }, map["content"] as String,0)
-                    binding!!.readerText.setContent(textChapter,mViewModel.pos)
+                    val textChapter = ReadProvider.getTextChapter(
+                        mViewModel.chapters.value.let { it ?: "" },
+                        contentBean.data as String,
+                        0
+                    )
+                    binding!!.readerText.setContent(textChapter, mViewModel.pos)
                     saveProgress()
                 }
             }.onError {
                 LogUtil.error(it)
-                binding!!.readerText.setContent(TextChapter("加载失败", 0, listOf(TextPage(text = it.message.let { "失败原因获取失败" }))))
+                binding!!.readerText.setContent(
+                    TextChapter(
+                        "加载失败",
+                        0,
+                        listOf(TextPage(text = it.message.let { "失败原因获取失败" }))
+                    )
+                )
             }
         }
 
@@ -132,7 +139,25 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
             binding!!.readerText.setContent(null)
         }
 
-        LiveEventBus.get(EventBus.UPDATE_CONFIG, Boolean::class.java).observe(viewLifecycleOwner) { value -> if (value) binding?.readerText?.upDateTextIndex() }
+        LiveEventBus.get(EventBus.UPDATE_CONFIG, Boolean::class.java)
+            .observe(viewLifecycleOwner) { value ->
+                if (value) {
+                    Coroutine.async(
+                        executeContext = IO
+                    ) {
+                        binding!!.readerText.run {
+                            val textChapter = ReadProvider.getTextChapter(
+                                getTextChapter()!!.title,
+                                getTextChapter()!!.getContent(),
+                                0
+                            )
+                            binding!!.readerText.setContent(textChapter, getReadProgress())
+                        }
+                    }.onError {
+                        LogUtil.error(it)
+                    }
+                }
+            }
 
         super.onViewCreated(view, savedInstanceState)
     }
@@ -183,7 +208,8 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
      * 保存章节阅读进度
      */
     override fun saveProgress() {
-        mViewModel.saveProgress(mViewModel.progress, binding!!.readerText.getReadProgress())
+        mViewModel.pos = binding!!.readerText.getReadProgress()
+        mViewModel.saveProgress(mViewModel.progress, mViewModel.pos)
     }
 
     /**
@@ -193,7 +219,7 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
     override fun switchChapter(i: Int) {
         //加载中时屏蔽切换章节
         if (mViewModel.isLoading) return
-        if (i == 0){
+        if (i == 0) {
             if (mViewModel.isHavePreviousChapters) {
                 mViewModel.pos = 0
                 mViewModel.loadPreviousChapters()
@@ -212,13 +238,13 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
 
     override fun upPage() {
         binding!!.readerText.run {
-            onSingleTapUp(width * 0.15f,height * 0.5f)
+            onSingleTapUp(width * 0.15f, height * 0.5f)
         }
     }
 
     override fun downPage() {
         binding!!.readerText.run {
-            onSingleTapUp(width * 0.75f,height * 0.5f)
+            onSingleTapUp(width * 0.75f, height * 0.5f)
         }
     }
 

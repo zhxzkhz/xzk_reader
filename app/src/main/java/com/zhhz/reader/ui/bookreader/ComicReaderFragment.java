@@ -123,18 +123,18 @@ public class ComicReaderFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        mViewModel.getDataContent().observe(getViewLifecycleOwner(), map -> {
+        mViewModel.getDataContent().observe(getViewLifecycleOwner(), contentBean -> {
             binding.progress.hide();
-            if (map.containsKey("error")) {
+            if (!contentBean.isStatus()) {
                 new AlertDialog.Builder(requireContext()).setTitle("错误提示")
-                        .setMessage((CharSequence) map.get("error"))
+                        .setMessage(contentBean.getError())
                         .show();
                 if (comicAdapter.getItemData().isEmpty()) {
                     errorRetryButton.setVisibility(View.VISIBLE);
                 }
             } else {
                 int length = comicAdapter.getItemData().size();
-                if ("true".equals(String.valueOf(map.get("end")))) {
+                if (contentBean.getPreviousPage()) {
                     comicAdapter.setItemData(new ArrayList<>(mViewModel.getComicList()));
                     comicAdapter.notifyDataSetChanged();
                     @NonNull LinearLayoutManager layout_manager = (LinearLayoutManager) Objects.requireNonNull(binding.readerComic.getLayoutManager());

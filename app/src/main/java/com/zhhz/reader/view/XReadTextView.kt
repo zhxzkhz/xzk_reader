@@ -76,13 +76,9 @@ class XReadTextView(context: Context, attrs: AttributeSet) : View(context, attrs
      */
     fun setContent(textChapter: TextChapter?, index: Int = 0) {
         this.textChapter = textChapter
-        upDateTextIndex(index)
-    }
-
-    fun upDateTextIndex(index: Int = this.textIndex) {
         if (textChapter != null) {
-            this.textIndex = textChapter!!.getTextIndex(index)
-            this.textPage = textChapter!!.getPageByReadPos(this.textIndex) ?: textPage
+            this.textIndex = textChapter.getTextIndex(index)
+            this.textPage = textChapter.getPageByReadPos(this.textIndex) ?: textPage
             invalidate()
             callBack.saveProgress()
         }
@@ -342,7 +338,6 @@ class XReadTextView(context: Context, attrs: AttributeSet) : View(context, attrs
             }
         }
 
-        println("onSingleTapUp ==> $textIndex")
     }
 
     @SuppressLint("ClickableViewAccessibility")

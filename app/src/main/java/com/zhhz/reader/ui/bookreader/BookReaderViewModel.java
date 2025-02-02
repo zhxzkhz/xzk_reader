@@ -12,6 +12,7 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.bean.ContentBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.ui.book.ReadBookConfig;
@@ -42,7 +43,7 @@ public class BookReaderViewModel extends ViewModel {
 
     public final ArrayList<String> catalogue;
     private final MutableLiveData<OrderlyMap> data_catalogue;
-    private final MutableLiveData<HashMap<String, Object>> data_content;
+    private final MutableLiveData<ContentBean> data_content;
     private final MutableLiveData<String> chapters;
     private final MutableLiveData<String> font_setting;
     private final MutableLiveData<JSONObject> font_setting_text;
@@ -161,23 +162,24 @@ public class BookReaderViewModel extends ViewModel {
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
 
-        HashMap<String, Object> map = new HashMap<>();
+        ContentBean contentBean = new ContentBean();
         if (url == null) {
-            map.put("error", "章节地址为空");
-            data_content.postValue(map);
+            contentBean.setError("章节地址为空");
+            data_content.postValue(contentBean);
             return;
         }
-        map.put("end", bool);
+        contentBean.setPreviousPage(bool);
+
         // url 第一个字符是 / 代表是本地章节
         if (url.startsWith("/")) {
             CompletableFuture.runAsync(() -> {
                 String text = FileUtil.readFileString(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "book_chapter" + url);
                 if (text.isEmpty()) {
-                    map.put("error", "内容获取失败");
+                    contentBean.setError("内容获取为空,请尝试刷新重新获取");
                 } else {
-                    map.put("content", text);
+                    contentBean.setData(text);
                 }
-                data_content.postValue(map);
+                data_content.postValue(contentBean);
             });
         } else {
             loading = true;
@@ -185,16 +187,15 @@ public class BookReaderViewModel extends ViewModel {
                 loading = false;
                 if (uuid.equals(label)) {
                     if (data.isStatus()) {
-                        map.put("content", data.getData());
+                        contentBean.setData(data.getData());
                         //自动缓存下一章
                         if (isHaveNextChapters()) {
                             cacheBook(progress);
                         }
                     } else {
-                        map.put("error", data.getError());
+                        contentBean.setError(data.getError());
                     }
-
-                    data_content.postValue(map);
+                    data_content.postValue(contentBean);
                 }
             }, uuid);
         }
@@ -213,21 +214,21 @@ public class BookReaderViewModel extends ViewModel {
         chapters.setValue(catalogue.get(progress));
         String url = Objects.requireNonNull(data_catalogue.getValue()).get(catalogue.get(progress));
 
-        HashMap<String, Object> map = new HashMap<>();
+        ContentBean contentBean = new ContentBean();
         if (url == null) {
-            map.put("error", "章节地址为空");
-            data_content.postValue(map);
+            contentBean.setError("章节地址为空");
+            data_content.postValue(contentBean);
             return;
         }
         loading = true;
         rule.bookChapters(book, url, (data, label) -> {
             loading = false;
-            map.put("end", bool);
+            contentBean.setPreviousPage(bool);
             if (uuid.equals(label)) {
                 if (data.isStatus()) {
                     String[] arr = data.getData().split("\n");
                     if (ObjectUtil.isEmpty(arr)) {
-                        map.put("error", "获取图片链接为空");
+                        contentBean.setError("获取图片链接为空");
                     } else {
                         for (String s : arr) {
                             if (ObjectUtil.isNotEmpty(s)) {
@@ -235,15 +236,15 @@ public class BookReaderViewModel extends ViewModel {
                             }
                         }
                         comic_chapters.add(comic_list.size());
-                        map.put("content", comic_list);
+                        contentBean.setData(comic_list);
                     }
                 } else {
                     if (isLoadDownPage){
                         progress--;
                     }
-                    map.put("error", data.getError());
+                    contentBean.setError(data.getError());
                 }
-                data_content.postValue(map);
+                data_content.postValue(contentBean);
             }
         }, uuid);
     }
@@ -500,7 +501,7 @@ public class BookReaderViewModel extends ViewModel {
         return data_catalogue;
     }
 
-    public MutableLiveData<HashMap<String, Object>> getDataContent() {
+    public MutableLiveData<ContentBean> getDataContent() {
         return data_content;
     }
 
