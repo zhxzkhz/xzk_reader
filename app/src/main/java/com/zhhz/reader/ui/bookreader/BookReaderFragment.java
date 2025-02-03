@@ -2,9 +2,11 @@ package com.zhhz.reader.ui.bookreader;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -78,11 +80,8 @@ public class BookReaderFragment extends BookReaderFragmentBase{
             return false;
         });
 
-        ConstraintLayout.LayoutParams layoutParams = new ConstraintLayout.LayoutParams(-2,-2);
-        layoutParams.topToTop = binding.bookReader.getId();
-        layoutParams.bottomToBottom = binding.bookReader.getId();
-        layoutParams.leftToLeft = binding.bookReader.getId();
-        layoutParams.rightToRight = binding.bookReader.getId();
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(-2,-2);
+        layoutParams.gravity = Gravity.CENTER;
         binding.bookReader.addView(errorRetryButton, layoutParams);
 
         return root;

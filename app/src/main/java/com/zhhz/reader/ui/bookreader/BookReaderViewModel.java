@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -80,7 +79,7 @@ public class BookReaderViewModel extends ViewModel {
     }
 
     private void init() {
-        font_setting_text.postValue(readSetting());
+        font_setting_text.setValue(readSetting());
     }
 
     public ArrayList<String> getCatalogue() {
@@ -509,7 +508,7 @@ public class BookReaderViewModel extends ViewModel {
         return chapters;
     }
 
-    public void setFont_setting(String s) {
+    public void setFontSetting(String s) {
         font_setting.postValue(s);
     }
 

@@ -1,11 +1,12 @@
 package com.zhhz.reader.ui.bookreader
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.Toast
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.jeremyliao.liveeventbus.LiveEventBus
 import com.zhhz.reader.bean.ContentBean
 import com.zhhz.reader.databinding.FragmentBookreaderXBinding
@@ -19,7 +20,6 @@ import com.zhhz.reader.ui.book.postEvent
 import com.zhhz.reader.util.Coroutine
 import com.zhhz.reader.util.LogUtil
 import com.zhhz.reader.view.XReadTextView
-import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.IO
 import java.math.BigDecimal
@@ -39,11 +39,8 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
     ): View {
         binding = FragmentBookreaderXBinding.inflate(inflater, container, false)
 
-        val layoutParams = ConstraintLayout.LayoutParams(-2, -2)
-        layoutParams.topToTop = binding!!.progress.id
-        layoutParams.bottomToBottom = binding!!.progress.id
-        layoutParams.leftToLeft = binding!!.progress.id
-        layoutParams.rightToRight = binding!!.progress.id
+        val layoutParams = FrameLayout.LayoutParams(-2, -2)
+        layoutParams.gravity = Gravity.CENTER
         binding!!.bookReader.addView(errorRetryButton, layoutParams)
 
         return binding!!.root
@@ -98,13 +95,13 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
             }
             mViewModel.saveSetting()
             ReadProvider.updateStyle()
-            postEvent(EventBus.UPDATE_CONFIG, true)
+            postEvent(EventBus.UPDATE_VIEW_SIZE, true)
         }
 
         mViewModel.dataContent.observe(viewLifecycleOwner) { contentBean: ContentBean ->
             Coroutine.async(context = Dispatchers.Main.immediate) {
                 binding!!.progress.hide()
-                if (contentBean.isStatus) {
+                if (!contentBean.isStatus) {
                     val textChapter =
                         ReadProvider.getTextChapter("文字加载失败", contentBean.error, 0)
                     binding!!.readerText.setContent(textChapter, mViewModel.pos)
@@ -139,7 +136,7 @@ class BookReaderFragmentX : BookReaderFragmentBase(), XReadTextView.CallBack {
             binding!!.readerText.setContent(null)
         }
 
-        LiveEventBus.get(EventBus.UPDATE_CONFIG, Boolean::class.java)
+        LiveEventBus.get(EventBus.UPDATE_VIEW_SIZE, Boolean::class.java)
             .observe(viewLifecycleOwner) { value ->
                 if (value) {
                     Coroutine.async(

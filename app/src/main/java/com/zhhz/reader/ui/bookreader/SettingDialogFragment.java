@@ -42,7 +42,7 @@ public class SettingDialogFragment extends DialogFragment {
         binding = FragmentBookReaderSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        View.OnClickListener click = v -> mViewModel.setFont_setting(v.getTag().toString());
+        View.OnClickListener click = v -> mViewModel.setFontSetting(v.getTag().toString());
 
         binding.fontSizeAdd.setOnClickListener(click);
         binding.fontSizeSub.setOnClickListener(click);
