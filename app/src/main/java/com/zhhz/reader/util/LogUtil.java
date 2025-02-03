@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
@@ -21,6 +23,7 @@ public class LogUtil {
     public static String path = null;
 
     private static BufferedWriter bufferedWriter = null;
+    private static PrintWriter printWriter = null;
 
     static {
         try {
@@ -32,6 +35,7 @@ public class LogUtil {
             }
             path = path + File.separator + System.currentTimeMillis() + ".log";
             bufferedWriter = new BufferedWriter(new FileWriter(path));
+            printWriter = new PrintWriter(bufferedWriter);
         } catch (IOException e) {
             LogUtil.error(e);
         }
@@ -52,10 +56,12 @@ public class LogUtil {
         CompletableFuture.runAsync(() -> {
             try {
                 if (object instanceof Throwable) {
-                    bufferedWriter.append("error : ").write(((Throwable) object).getMessage());
+                    bufferedWriter.append("error : ");//.write(((Throwable) object).getMessage());
+                    ((Throwable) object).printStackTrace(printWriter);
                 } else {
                     bufferedWriter.append("error : ").write(String.valueOf(object));
                 }
+                printWriter.flush();
                 bufferedWriter.newLine();
                 bufferedWriter.flush();
             } catch (IOException e) {
