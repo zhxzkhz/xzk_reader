@@ -1,20 +1,27 @@
 package com.zhhz.reader.adapter;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.ResultListBean;
 import com.zhhz.reader.util.GlideApp;
+import com.zhhz.reader.view.CoverImageView;
 
 import java.util.ArrayList;
 
@@ -74,16 +81,29 @@ public class ResultListAdapter extends RecyclerView.Adapter<ResultListAdapter.Vi
         } else {
             holder.last.setText(null);
         }
+
         if (book.getCover() != null) {
             GlideApp.with(context)
                     .asBitmap()
+                    .load(book.getCover())
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
                     .placeholder(MyApplication.coverDrawable)
                     .error(MyApplication.coverDrawable)
                     .centerCrop()
-                    .load(book.getCover())
+                    .listener(new RequestListener<Bitmap>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, @Nullable Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
+                            holder.imageView.setNameAuthor(book.getTitle(), book.getAuthor());
+                            return false;
+                        }
+                        @Override
+                        public boolean onResourceReady(@NonNull Bitmap resource, @NonNull Object model, Target<Bitmap> target, @NonNull DataSource dataSource, boolean isFirstResource) {
+                            return false;
+                        }
+                    })
                     .into(holder.imageView);
         } else {
+            holder.imageView.setNameAuthor(book.getTitle(), book.getAuthor());
             holder.imageView.setImageDrawable(MyApplication.coverDrawable);
         }
     }
@@ -112,7 +132,7 @@ public class ResultListAdapter extends RecyclerView.Adapter<ResultListAdapter.Vi
 
     //② 创建ViewHolder
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public final AppCompatImageView imageView;
+        public final CoverImageView imageView;
         public final AppCompatTextView title;
         public final AppCompatTextView author;
         public final AppCompatTextView last;

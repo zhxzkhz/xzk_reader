@@ -26,6 +26,7 @@ import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.R;
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.util.GlideApp;
+import com.zhhz.reader.view.CoverImageView;
 
 import java.util.ArrayList;
 
@@ -66,7 +67,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         if (viewType == 1) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.book_grid_item_layout, parent, false);
         } else {
-            view = new View(parent.getContext());
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.book_linear_item_layout, parent, false);
         }
         if (onClickListener != null) {
             view.setOnClickListener(onClickListener);
@@ -94,32 +95,31 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
         if (holder.last != null && book.getAuthor() != null) {
             holder.last.setText(book.getLastChapter());
         }
+        holder.bookCoverImageView.setNameAuthor(null,null);
         if (book.getCover() != null) {
-            long startTime = SystemClock.elapsedRealtime();
+            holder.bookCoverImageView.setNameAuthor(book.getTitle(), book.getAuthor());
             GlideApp.with(context)
                     .asBitmap()
                     .load(book.getCover())
                     .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                     .centerCrop()
-                    .placeholder(R.drawable.no_cover)
-                    .error(R.drawable.no_cover)
+                    .placeholder(MyApplication.coverDrawable)
+                    .error(MyApplication.coverDrawable)
                     .listener(new RequestListener<Bitmap>() {
                         @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
-                            long endTime = SystemClock.elapsedRealtime();
-                            Log.d("GlideLoadTime", "加载失败或者图片未能加载成功，用时：" + (endTime - startTime) + "ms");
+                        public boolean onLoadFailed(@Nullable GlideException e, @Nullable Object model, @NonNull Target<Bitmap> target, boolean isFirstResource) {
                             return false;
                         }
 
                         @Override
                         public boolean onResourceReady(@NonNull Bitmap resource, @NonNull Object model, Target<Bitmap> target, @NonNull DataSource dataSource, boolean isFirstResource) {
-                            long endTime = SystemClock.elapsedRealtime();
-                            Log.d("GlideLoadTime", "图片加载成功，用时：" + (endTime - startTime) + "ms");
+                            holder.bookCoverImageView.setNameAuthor(null,null);
                             return false;
                         }
                     })
                     .into(holder.bookCoverImageView);
         } else {
+            holder.bookCoverImageView.setNameAuthor(book.getTitle(), book.getAuthor());
             holder.bookCoverImageView.setImageDrawable(MyApplication.coverDrawable);
         }
         if (holder.update != null) {
@@ -174,7 +174,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.ViewHolder> {
 
     //② 创建ViewHolder
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final AppCompatImageView bookCoverImageView;
+        public final CoverImageView bookCoverImageView;
         public final AppCompatTextView title;
         public final AppCompatTextView author;
         public final AppCompatTextView last;
