@@ -6,9 +6,11 @@ import androidx.lifecycle.ViewModel;
 
 import com.alibaba.fastjson.JSON;
 import com.zhhz.reader.bean.BookBean;
+import com.zhhz.reader.bean.ResultListBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.util.DiskCache;
+import com.zhhz.reader.util.LogUtil;
 import com.zhhz.reader.util.OrderlyMap;
 import com.zhhz.reader.util.StringUtil;
 
@@ -33,7 +35,7 @@ public class DetailedViewModel extends ViewModel {
         data_catalogue = new MutableLiveData<>();
     }
 
-    public void queryDetailed(SearchResultBean bean, int index) {
+    public void queryDetailed(ResultListBean bean, int index) {
 
         if (ObjectUtil.isEmpty(bean.getUrl()) || !(bean.getUrl().startsWith("http") || bean.getUrl().equals("skip"))){
             DetailedViewModel.this.data.setValue(null);
@@ -55,7 +57,7 @@ public class DetailedViewModel extends ViewModel {
         });
     }
 
-    public void queryCatalogue(String url, SearchResultBean bean, int index) {
+    public void queryCatalogue(String url, ResultListBean bean, int index) {
         Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).bookDirectory(url, (data, label) -> DetailedViewModel.this.data_catalogue.postValue(data));
     }
 
@@ -88,7 +90,7 @@ public class DetailedViewModel extends ViewModel {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + id + File.separator + "chapter");
         if (!Objects.requireNonNull(file.getParentFile()).isDirectory()) {
             if (!file.getParentFile().mkdirs()) {
-                System.out.println("目录创建失败");
+                LogUtil.info("目录创建失败");
             }
         }
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
@@ -97,7 +99,7 @@ public class DetailedViewModel extends ViewModel {
         }
     }
 
-    public void saveRule(SearchResultBean bean, String id, int index) {
+    public void saveRule(ResultListBean bean, String id, int index) {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + id + File.separator + "rule");
         try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file))) {
             bufferedWriter.write(JSON.toJSONString(Objects.requireNonNull(RuleAnalysis.analyses_map.get(bean.getSource().get(index))).getJson()));

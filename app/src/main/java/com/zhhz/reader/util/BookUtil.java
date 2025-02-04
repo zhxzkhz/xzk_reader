@@ -172,7 +172,6 @@ public class BookUtil {
                 }, bean);
                 try {
                     if (!countDownLatch.await(1, TimeUnit.MINUTES)) {
-                        System.out.println("请求超时");
                         if (error.incrementAndGet() > 3) {
                             error.set(0);
                             imageList.remove(0);

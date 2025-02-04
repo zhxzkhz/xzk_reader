@@ -32,7 +32,6 @@ class TextActionMenu(private val context: Context/*, private val callBack: CallB
     init {
         @SuppressLint("InflateParams")
         contentView = binding.root
-        println("binding.recyclerView.layoutManager ->${binding.recyclerView.layoutManager}")
         isTouchable = true
         isOutsideTouchable = false
         isFocusable = false

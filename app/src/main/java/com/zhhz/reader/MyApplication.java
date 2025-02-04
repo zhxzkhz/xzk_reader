@@ -1,15 +1,25 @@
 package com.zhhz.reader;
 
+import static com.alibaba.fastjson2.util.BeanUtils.arrayOf;
+
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
 import android.os.StrictMode;
 import android.provider.Settings;
+import android.view.Window;
+import android.view.WindowInsetsController;
+import android.view.WindowManager;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 
 import com.scwang.smart.refresh.header.ClassicsHeader;
@@ -43,6 +53,7 @@ public class MyApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         context = getApplicationContext();
         MyApplication.coverDrawable = (BitmapDrawable) AppCompatResources.getDrawable(context, R.drawable.no_cover);
         CrashHandler crashHandler = CrashHandler.getInstance();

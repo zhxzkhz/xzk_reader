@@ -160,7 +160,6 @@ public class BookBean implements Serializable, Parcelable {
 
     @Override
     public int describeContents() {
-        System.out.println("\"describeContents\" = " + "describeContents");
         return 0;
     }
 

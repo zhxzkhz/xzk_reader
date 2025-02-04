@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.JSONPath
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
+import com.zhhz.reader.bean.LeaderboardResultBean
 import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
@@ -44,12 +45,12 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
             val regx = parseArray(it.groupValues[1])
             val temp = JSONPath.eval(dataTemp, regx[0])
             if (regx[1].isEmpty()) return@replace temp.toString()
-            return@replace regexRule(regx[1], temp,bindings).toString()
+            return@replace regexRule(regx[1], temp, bindings).toString()
         }
         val i = regs[0].indexOf("\$")
         dataTemp = if (i > 0) {
             regs[0].substring(0, i) + JSONPath.eval(dataTemp, regs[0].substring(i))
-        } else if (i == 0 ) {
+        } else if (i == 0) {
             JSONPath.eval(dataTemp, regs[0].substring(i))
         } else {
             regs[0]
@@ -95,14 +96,18 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 "replace" -> {
                     val m = mailPattern.matcher(v)
                     if (m.find()) {
-                        value = (value.toString()).replace(m.group(1).orEmpty(), m.group(2).orEmpty())
+                        value =
+                            (value.toString()).replace(m.group(1).orEmpty(), m.group(2).orEmpty())
                     }
                 }
 
                 "replaceAll" -> {
                     val m = mailPattern.matcher(v)
                     if (m.find()) {
-                        value = (value.toString()).replace(m.group(1).orEmpty().toRegex(), m.group(2).orEmpty())
+                        value = (value.toString()).replace(
+                            m.group(1).orEmpty().toRegex(),
+                            m.group(2).orEmpty()
+                        )
                     }
                 }
 
@@ -150,9 +155,15 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
         return data
     }
 
-    override fun bookSearch(keyWord: String, page: Int, callback: AnalysisCallBack.SearchCallBack, label: String) {
+    override fun bookSearch(
+        keyWord: String,
+        page: Int,
+        callback: AnalysisCallBack.SearchCallBack,
+        label: String
+    ) {
         val bindings = SimpleBindings()
         bindings["xlua_rule"] = this
+        bindings["java"] = this
         bindings["keyWord"] = keyWord
         bindings["callback"] = callback
         val search = json.search
@@ -168,7 +179,7 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
 
             val data = responseParse(result, bindings)
 
-            val list = parseRule(data,search.list,bindings)
+            val list = parseRule(data, search.list, bindings)
 
             if (list is List<*>) {
                 list.forEach { book ->
@@ -176,14 +187,36 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                         val searchResultBean = SearchResultBean()
                         val source: ArrayList<String> = ArrayList()
                         source.add(label)
-                        searchResultBean.source=source
+                        searchResultBean.source = source
                         searchResultBean.name = name
                         searchResultBean.title = parseRule(book, search.name, bindings).toString()
                         if (ObjectUtil.isNotEmpty(search.author))
-                            searchResultBean.author = parseRule(book, search.author, bindings).toString()
+                            searchResultBean.author =
+                                parseRule(book, search.author, bindings).toString()
+
                         if (ObjectUtil.isNotEmpty(search.cover))
-                            searchResultBean.cover = toAbsoluteUrl(parseRule(book, search.cover, bindings).toString(), url)
-                        searchResultBean.url = toAbsoluteUrl(parseRule(book, search.detail, bindings).toString(), url)
+                            searchResultBean.cover = toAbsoluteUrl(
+                                parseRule(book, search.cover, bindings).toString(),
+                                url
+                            )
+
+                        if (ObjectUtil.isNotEmpty(search.lastChapter))
+                            searchResultBean.lastChapter = toAbsoluteUrl(
+                                parseRule(
+                                    book,
+                                    search.lastChapter,
+                                    bindings
+                                ).toString(), url
+                            )
+
+                        if (ObjectUtil.isNotEmpty(search.intro))
+                            searchResultBean.intro = toAbsoluteUrl(
+                                parseRule(book, search.intro, bindings).toString(),
+                                url
+                            )
+
+                        searchResultBean.url =
+                            toAbsoluteUrl(parseRule(book, search.detail, bindings).toString(), url)
                         al.add(searchResultBean)
                     }
                 }
@@ -193,6 +226,101 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
         }
 
     }
+
+    override fun bookLeaderboard(
+        leaderboardUrl: String,
+        page: Int,
+        callback: AnalysisCallBack.LeaderboardCallBack,
+        label: String
+    ) {
+        val bindings = SimpleBindings()
+        bindings["xlua_rule"] = this
+        bindings["java"] = this
+        bindings["leaderboardUrl"] = leaderboardUrl
+        bindings["callback"] = callback
+        val leaderboard = json.leaderboard
+        val search = json.search
+
+        val url: String = leaderboardUrl.replace("\${page}", "$page")
+
+        http(url) { result ->
+            val al: ArrayList<LeaderboardResultBean> = ArrayList()
+            if (!result.isStatus) {
+                callback.accept(al)
+                return@http
+            }
+
+            val data = responseParse(result, bindings)
+
+            val list = parseRule(data, leaderboard.list ?: search.list, bindings)
+
+            if (list is List<*>) {
+                list.forEach { book ->
+                    if (book != null) {
+                        val leaderboardData = LeaderboardResultBean()
+                        val source: ArrayList<String> = ArrayList()
+                        source.add(label)
+                        leaderboardData.source = source
+                        leaderboardData.name = name
+                        leaderboardData.title =
+                            parseRule(book, leaderboard.name ?: search.name, bindings).toString()
+                        if (ObjectUtil.isNotEmpty(leaderboard.author) || ObjectUtil.isNotEmpty(
+                                search.author
+                            )
+                        )
+                            leaderboardData.author = parseRule(
+                                book,
+                                leaderboard.author ?: search.author,
+                                bindings
+                            ).toString()
+
+                        if (ObjectUtil.isNotEmpty(leaderboard.cover) || ObjectUtil.isNotEmpty(search.cover))
+                            leaderboardData.cover = toAbsoluteUrl(
+                                parseRule(
+                                    book,
+                                    leaderboard.cover ?: search.cover,
+                                    bindings
+                                ).toString(), url
+                            )
+
+                        if (ObjectUtil.isNotEmpty(leaderboard.lastChapter) || ObjectUtil.isNotEmpty(
+                                search.lastChapter
+                            )
+                        )
+                            leaderboardData.lastChapter = toAbsoluteUrl(
+                                parseRule(
+                                    book,
+                                    leaderboard.lastChapter ?: search.lastChapter,
+                                    bindings
+                                ).toString(), url
+                            )
+
+                        if (ObjectUtil.isNotEmpty(leaderboard.intro) || ObjectUtil.isNotEmpty(search.intro))
+                            leaderboardData.intro = toAbsoluteUrl(
+                                parseRule(
+                                    book,
+                                    leaderboard.intro ?: search.intro,
+                                    bindings
+                                ).toString(), url
+                            )
+
+                        leaderboardData.url = toAbsoluteUrl(
+                            parseRule(
+                                book,
+                                leaderboard.detail ?: search.detail,
+                                bindings
+                            ).toString(), url
+                        )
+                        al.add(leaderboardData)
+                    }
+                }
+            }
+            callback.accept(al)
+            bindings.clear()
+        }
+
+    }
+
 
     override fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack) {
         val bindings = SimpleBindings()
@@ -221,7 +349,8 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 book.lastChapter = parseRule(data, json.detail.lastChapter, bindings).toString()
 
             if (ObjectUtil.isNotEmpty(json.detail.status))
-                book.status = parseRule(data, json.detail.status, bindings).toString().contains("完结")
+                book.status =
+                    parseRule(data, json.detail.status, bindings).toString().contains("完结")
 
             if (ObjectUtil.isNotEmpty(json.detail.intro))
                 book.intro = parseRule(data, json.detail.intro, bindings).toString()
@@ -234,7 +363,10 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
             } else if (json.detail.catalog.startsWith("js@")) {
                 var resultJs: Any? = null
                 try {
-                    resultJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.detail.catalog.substring(3)), bindings)
+                    resultJs = SCRIPT_ENGINE.eval(
+                        Base64.decodeStr(json.detail.catalog.substring(3)),
+                        bindings
+                    )
                 } catch (e: ScriptException) {
                     log(e)
                     e.printStackTrace()
@@ -246,7 +378,8 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 }
                 book.catalogue = resultJs.toString()
             } else {
-                book.catalogue = toAbsoluteUrl(parseRule(data, json.detail.catalog, bindings).toString(), url)
+                book.catalogue =
+                    toAbsoluteUrl(parseRule(data, json.detail.catalog, bindings).toString(), url)
             }
 
             callback.accept(book)
@@ -263,7 +396,7 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
             val lhm = OrderlyMap()
             if (!result.isStatus) {
                 log(result.error)
-                callback.accept(lhm,url)
+                callback.accept(lhm, url)
                 return@http
             }
 
@@ -293,7 +426,7 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 }
             }
 
-            callback.accept(lhm,url)
+            callback.accept(lhm, url)
 
         }
     }
@@ -323,7 +456,7 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
             //执行js
             if (ObjectUtil.isNotEmpty(json.chapter.js)) {
                 try {
-                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js),bindings)
+                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js), bindings)
                     s = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     httpResponseBean.isStatus = false

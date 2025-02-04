@@ -7,6 +7,11 @@
         android:title="@string/title_home" />
 
     <item
+        android:id="@+id/navigation_leaderboard"
+        android:icon="@drawable/ic_dashboard_black_24dp"
+        android:title="@string/title_leaderboard" />
+
+    <item
         android:id="@+id/navigation_rule"
         android:icon="@drawable/ic_dashboard_black_24dp"
         android:title="@string/title_rule" />

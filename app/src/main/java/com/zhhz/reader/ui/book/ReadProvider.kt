@@ -2,7 +2,6 @@ package com.zhhz.reader.ui.book
 
 import android.graphics.Typeface
 import android.os.Build
-import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import com.zhhz.reader.ui.book.entities.TextChapter
@@ -93,7 +92,7 @@ object ReadProvider {
         text: String,
         pos: Int
     ): TextChapter {
-        val long = System.currentTimeMillis()
+
         val contents = arrayListOf<String>()
         text.split("\n").forEach { str ->
             val paragraph = str.trim {
@@ -104,7 +103,7 @@ object ReadProvider {
                 contents.add("　　$paragraph")
             }
         }
-        println("耗时1 => ${System.currentTimeMillis() - long}")
+
         val textPages = arrayListOf<TextPage>()
         textPages.add(TextPage())
         var x = marginLeft
@@ -494,10 +493,11 @@ object ReadProvider {
      */
     fun updateViewSize(width: Int, height: Int) {
         if (width > 0 && height > 0 && (width != viewWidth || height != viewHeight)) {
+            val bool = viewWidth > 0 && viewHeight > 0
             viewWidth = width
             viewHeight = height
             updateLayout()
-            postEvent(EventBus.UPDATE_CONFIG, true)
+            postEvent(EventBus.UPDATE_VIEW_SIZE, bool)
         }
     }
 

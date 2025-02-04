@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/linearLayout"
     android:layout_width="match_parent"
-    android:layout_height="141dp">
+    android:layout_height="141dp"
+    android:transitionName="book">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/item_image"
@@ -17,41 +18,72 @@
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/item_title"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="115dp"
+        android:layout_marginStart="10dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
         android:text="@string/app_name"
         android:textColor="@color/black"
-        android:textSize="16.5sp"
+        android:textSize="16sp"
+        app:layout_constraintLeft_toRightOf="@id/item_image"
         app:layout_constraintBottom_toTopOf="@id/item_author"
         app:layout_constraintTop_toTopOf="@id/item_image" />
 
+
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/item_author"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="115dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
-        android:text="@string/app_name"
+        android:id="@+id/author"
+        android:layout_marginStart="10dp"
+        android:text="@string/author"
         android:textColor="@color/gray"
+        app:layout_constraintLeft_toRightOf="@id/item_image"
         app:layout_constraintBottom_toTopOf="@id/item_latest"
         app:layout_constraintTop_toBottomOf="@id/item_title" />
 
     <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/item_latest"
-        android:layout_width="match_parent"
+        android:id="@+id/item_author"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="115dp"
         android:ellipsize="end"
         android:gravity="center_vertical"
         android:maxLines="1"
         android:text="@string/app_name"
         android:textColor="@color/gray"
+        app:layout_constraintLeft_toRightOf="@id/author"
+        app:layout_constraintBottom_toTopOf="@id/item_latest"
+        app:layout_constraintTop_toBottomOf="@id/item_title" />
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:id="@+id/last"
+        android:layout_marginStart="10dp"
+        android:text="@string/last"
+        android:textColor="@color/gray"
+        app:layout_constraintLeft_toRightOf="@id/item_image"
+        app:layout_constraintBottom_toBottomOf="@id/item_image"
+        app:layout_constraintTop_toBottomOf="@id/item_author" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/item_latest"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:text="@string/app_name"
+        android:textColor="@color/gray"
+        app:layout_constraintLeft_toRightOf="@id/last"
         app:layout_constraintBottom_toBottomOf="@id/item_image"
         app:layout_constraintTop_toBottomOf="@id/item_author" />
 

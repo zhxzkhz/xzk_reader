@@ -4,6 +4,7 @@ import cn.hutool.core.codec.Base64
 import cn.hutool.core.util.ObjectUtil
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
+import com.zhhz.reader.bean.LeaderboardResultBean
 import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.DiskCache.SCRIPT_ENGINE
@@ -98,7 +99,8 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 "replaceAll" -> {
                     val m = mailPattern1.matcher(v)
                     if (m.find()) {
-                        value = value.toString().replace(m.group(1).orEmpty().toRegex(), m.group(2).orEmpty())
+                        value = value.toString()
+                            .replace(m.group(1).orEmpty().toRegex(), m.group(2).orEmpty())
                     }
                 }
 
@@ -123,7 +125,12 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         return value.toString()
     }
 
-    override fun bookSearch(keyWord: String, page: Int,callback: AnalysisCallBack.SearchCallBack, label: String) {
+    override fun bookSearch(
+        keyWord: String,
+        page: Int,
+        callback: AnalysisCallBack.SearchCallBack,
+        label: String
+    ) {
 
         val url = json.search.url.replace("\${key}", keyWord).replace("\${page}", "$page")
         http(url) { result ->
@@ -147,7 +154,11 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 searchResultBean.title = parseJsoup(dl.select(rule[0]), rule[1])
                 val detail = parseArray(json.search.detail)
                 searchResultBean.url =
-                    toAbsoluteUrl(parseJsoup(dl.select(detail[0]), detail[1].ifEmpty { "attr->href" }), url)
+                    toAbsoluteUrl(
+                        parseJsoup(
+                            dl.select(detail[0]),
+                            detail[1].ifEmpty { "attr->href" }), url
+                    )
                 if (ObjectUtil.isNotEmpty(json.search.author)) {
                     val author = parseArray(json.search.author)
                     searchResultBean.author = parseJsoup(dl.select(author[0]), author[1])
@@ -155,9 +166,88 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 if (ObjectUtil.isNotEmpty(json.search.cover)) {
                     val cover = parseArray(json.search.cover)
                     searchResultBean.cover =
-                        toAbsoluteUrl(parseJsoup(dl.select(cover[0]), cover[1].ifEmpty { "attr->src" }), url)
+                        toAbsoluteUrl(
+                            parseJsoup(
+                                dl.select(cover[0]),
+                                cover[1].ifEmpty { "attr->src" }), url
+                        )
+                }
+                if (ObjectUtil.isNotEmpty(json.search.lastChapter)) {
+                    val lastChapter = parseArray(json.search.lastChapter)
+                    searchResultBean.lastChapter =
+                        parseJsoup(dl.select(lastChapter[0]), lastChapter[1])
+                }
+                if (ObjectUtil.isNotEmpty(json.search.intro)) {
+                    val intro = parseArray(json.search.intro)
+                    searchResultBean.intro = parseJsoup(dl.select(intro[0]), intro[1])
                 }
                 al.add(searchResultBean)
+            }
+            callback.accept(al)
+        }
+    }
+
+    override fun bookLeaderboard(
+        leaderboardUrl: String,
+        page: Int,
+        callback: AnalysisCallBack.LeaderboardCallBack,
+        label: String
+    ) {
+
+        val url = leaderboardUrl.replace("\${page}", "$page")
+        http(url) { result ->
+            val al: ArrayList<LeaderboardResultBean> = ArrayList()
+
+            if (!result.isStatus) {
+                callback.accept(al)
+                return@http
+            }
+
+            val element = Jsoup.parse(result.data)
+
+            val list = element.select(json.leaderboard.list ?: json.search.list)
+            for (dl in list) {
+                val leaderboardData = LeaderboardResultBean()
+                leaderboardData.name = name
+                val source: MutableList<String> = ArrayList()
+                source.add(label)
+                leaderboardData.source = source
+                val rule = parseArray(json.leaderboard.name ?: json.search.name)
+                leaderboardData.title = parseJsoup(dl.select(rule[0]), rule[1])
+                val detail = parseArray(json.leaderboard.detail ?: json.search.detail)
+                leaderboardData.url =
+                    toAbsoluteUrl(
+                        parseJsoup(
+                            dl.select(detail[0]),
+                            detail[1].ifEmpty { "attr->href" }), url
+                    )
+                if (ObjectUtil.isNotEmpty(json.leaderboard.author ?: json.search.author)) {
+                    val author = parseArray(json.leaderboard.author ?: json.search.author)
+                    leaderboardData.author = parseJsoup(dl.select(author[0]), author[1])
+                }
+                if (ObjectUtil.isNotEmpty(json.leaderboard.cover ?: json.search.cover)) {
+                    val cover = parseArray(json.leaderboard.cover ?: json.search.cover)
+                    leaderboardData.cover =
+                        toAbsoluteUrl(
+                            parseJsoup(
+                                dl.select(cover[0]),
+                                cover[1].ifEmpty { "attr->src" }), url
+                        )
+                }
+                if (ObjectUtil.isNotEmpty(
+                        json.leaderboard.lastChapter ?: json.search.lastChapter
+                    )
+                ) {
+                    val lastChapter =
+                        parseArray(json.leaderboard.lastChapter ?: json.search.lastChapter)
+                    leaderboardData.lastChapter =
+                        parseJsoup(dl.select(lastChapter[0]), lastChapter[1])
+                }
+                if (ObjectUtil.isNotEmpty(json.leaderboard.intro ?: json.search.intro)) {
+                    val intro = parseArray(json.leaderboard.intro ?: json.search.intro)
+                    leaderboardData.intro = parseJsoup(dl.select(intro[0]), intro[1])
+                }
+                al.add(leaderboardData)
             }
             callback.accept(al)
         }
@@ -188,7 +278,11 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             }
             if (ObjectUtil.isNotEmpty(json.detail.cover)) {
                 val obj = parseArray(json.detail.cover)
-                book.cover = toAbsoluteUrl(parseJsoup(element.select(obj[0]), obj[1].ifEmpty { "attr->src" }), url)
+                book.cover = toAbsoluteUrl(
+                    parseJsoup(
+                        element.select(obj[0]),
+                        obj[1].ifEmpty { "attr->src" }), url
+                )
             }
             if (ObjectUtil.isNotEmpty(json.detail.updateTime)) {
                 val obj = parseArray(json.detail.updateTime)
@@ -224,7 +318,11 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             } else {
                 val obj = parseArray(json.detail.catalog)
                 val str =
-                    toAbsoluteUrl(parseJsoup(element.select(obj[0]), obj[1].ifEmpty { "attr->href" }), url)
+                    toAbsoluteUrl(
+                        parseJsoup(
+                            element.select(obj[0]),
+                            obj[1].ifEmpty { "attr->href" }), url
+                    )
                 book.catalogue = str
             }
 
@@ -245,7 +343,10 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             val catalog = json.catalog
             if (ObjectUtil.isNotEmpty(catalog.js)) {
                 try {
-                    SCRIPT_ENGINE.eval(Base64.decodeStr(catalog.js), intiBindings(url, callback, element))
+                    SCRIPT_ENGINE.eval(
+                        Base64.decodeStr(catalog.js),
+                        intiBindings(url, callback, element)
+                    )
                 } catch (e: ScriptException) {
                     log(e)
                     e.printStackTrace()
@@ -258,7 +359,11 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             if (ObjectUtil.isNotEmpty(catalog.page)) {
                 val tmp = parseArray(catalog.page)
                 val page =
-                    toAbsoluteUrl(parseJsoup(element.select(tmp[0]), tmp[1].ifEmpty { "attr->href" }), url)
+                    toAbsoluteUrl(
+                        parseJsoup(
+                            element.select(tmp[0]),
+                            tmp[1].ifEmpty { "attr->href" }), url
+                    )
                 if (page.isNotEmpty() && page != url) {
                     bookDirectory(page) { it, urlTemp ->
                         if (it.isNotEmpty) {
@@ -286,13 +391,16 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         return bindings
     }
 
-    private fun catalogAnalysis(url: String?, data: Element): OrderlyMap {
+    private fun catalogAnalysis(url: String, data: Element): OrderlyMap {
         val lhm = OrderlyMap()
         var bookletName: Array<String>? = null
         val list: Elements
         val catalog = json.catalog
         val booklet = catalog.booklet
-        if (ObjectUtil.isNotNull(booklet) && ObjectUtil.isNotNull(booklet.list) && ObjectUtil.isNotEmpty(booklet.name)) {
+        if (ObjectUtil.isNotNull(booklet) && ObjectUtil.isNotNull(booklet.list) && ObjectUtil.isNotEmpty(
+                booklet.name
+            )
+        ) {
             bookletName = parseArray(booklet.name)
             //查询卷名和章节名
             list = data.select(booklet.list + " , " + catalog.list)
@@ -474,7 +582,11 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             if (ObjectUtil.isNotEmpty(chapter.page)) {
                 val tmp = parseArray(chapter.page)
                 val page =
-                    toAbsoluteUrl(parseJsoup(element.select(tmp[0]), tmp[1].ifEmpty { "attr->href" }), url)
+                    toAbsoluteUrl(
+                        parseJsoup(
+                            element.select(tmp[0]),
+                            tmp[1].ifEmpty { "attr->href" }), url
+                    )
                 if (page.isNotEmpty() && page != url) {
                     bookContent(page, { dataA: HttpResponseBean, labelA: Any ->
                         if (dataA.isStatus) {

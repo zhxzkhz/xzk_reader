@@ -10,4 +10,20 @@
         <item name="android:scrollHorizontally">true</item>
     </style>
 
+    <style name="AppTheme" parent="Theme.Material3.Light.NoActionBar">
+        <!-- 禁用 Fragment 进出动画 -->
+        <item name="android:windowAnimationStyle">@style/NoAnimation</item>
+    </style>
+
+    <style name="NoAnimation">
+        <item name="android:activityOpenEnterAnimation">@anim/no_anim</item>
+        <item name="android:activityOpenExitAnimation">@anim/no_anim</item>
+        <item name="android:activityCloseEnterAnimation">@anim/no_anim</item>
+        <item name="android:activityCloseExitAnimation">@anim/no_anim</item>
+        <item name="android:fragmentOpenEnterAnimation">@anim/no_anim</item>
+        <item name="android:fragmentOpenExitAnimation">@anim/no_anim</item>
+        <item name="android:fragmentCloseEnterAnimation">@anim/no_anim</item>
+        <item name="android:fragmentCloseExitAnimation">@anim/no_anim</item>
+    </style>
+
 </resources>

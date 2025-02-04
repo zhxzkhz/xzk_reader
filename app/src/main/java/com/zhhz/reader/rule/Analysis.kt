@@ -82,20 +82,6 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         }
         if (json.cookieJar) {
             builder.cookieJar(CookiesManager())
-            /*
-            builder.cookieJar(object : CookieJar {
-                private val cookieStore = HashMap<String, List<Cookie>>()
-                override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-                    cookieStore[url.host] = cookieStore[url.host] ?: cookies
-                }
-
-                override fun loadForRequest(url: HttpUrl): List<Cookie> {
-                    val cookies = cookieStore[url.host]
-                    return cookies ?: ArrayList()
-                }
-            })
-
-             */
         }
         if (ObjectUtil.isEmpty(json.init)) {
             client = if (json.cookieJar) {
@@ -144,26 +130,34 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         return shareMap[key]?:""
     }
 
-    fun toAbsoluteUrl(relativePath: String, absoluteBasePath: String?): String {
+    fun toAbsoluteUrl(relativePath: String, absoluteBasePath: String = url): String {
         if (relativePath.equals("skip", ignoreCase = true)) return relativePath
         return if (relativePath.isNotEmpty() && !relativePath.startsWith("http")) {
             try {
-                val absoluteUrl = URL(absoluteBasePath)
+
+                val absoluteUrl = if (!absoluteBasePath.startsWith("http")){
+                    URL("$http://$url")
+                } else {
+                    URL(absoluteBasePath)
+                }
+
                 URL(absoluteUrl, relativePath).toString()
             } catch (e: MalformedURLException) {
+                e.printStackTrace()
                 ""
             }
         } else relativePath
     }
 
+    /**
+     * 判断是否有搜索
+     * @return boolean
+     */
     val isHaveSearch: Boolean
-        /**
-         * 判断是否有搜索
-         * @return boolean
-         */
         get() = ObjectUtil.isNotNull(json.search) && ObjectUtil.isNotEmpty(json.search.url)
 
     abstract fun bookSearch(keyWord: String,page: Int, callback: AnalysisCallBack.SearchCallBack, label: String)
+    abstract fun bookLeaderboard(leaderboardUrl: String, page: Int, callback: AnalysisCallBack.LeaderboardCallBack, label: String)
     abstract fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack)
     abstract fun bookDirectory(url: String, callback: AnalysisCallBack.DirectoryCallBack)
     fun bookChapters(book: BookBean, url: String, callback: AnalysisCallBack.ContentCallBack, label: Any) {
@@ -265,12 +259,13 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
      * @param callback 回调事件
      */
     fun httpGet(url: String, callback: AnalysisCallBack.CallBack) {
-        var urlTemp = url
         var header: String? = null
-        if (urlTemp.contains("\$header")) {
-            val ar = urlTemp.split("\\\$header".toRegex(), limit = 2)
-            urlTemp = ar[0]
+        val urlTemp = if (url.contains("\$header")) {
+            val ar = url.split("\\\$header".toRegex(), limit = 2)
             header = ar[1]
+            ar[0]
+        } else {
+            url
         }
         val builder: Request.Builder = Request.Builder().url(urlTemp)
         initHeader(builder,url)
@@ -291,7 +286,6 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                     val bindings = SimpleBindings()
                     bindings["xlua_rule"] = this
                     bindings["java"] = this
-                    bindings["logError"] = logError
                     bindings["url"] = httpUrl
 
                     h = jsToJavaObject(

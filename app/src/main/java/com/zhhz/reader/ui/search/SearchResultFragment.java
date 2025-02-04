@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -18,7 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.scwang.smart.refresh.footer.ClassicsFooter;
 import com.zhhz.reader.activity.DetailedActivity;
-import com.zhhz.reader.adapter.SearchResultAdapter;
+import com.zhhz.reader.adapter.ResultListAdapter;
 import com.zhhz.reader.databinding.FragmentSearchResultBinding;
 import com.zhhz.reader.view.RecycleViewDivider;
 
@@ -27,7 +28,7 @@ public class SearchResultFragment extends Fragment {
     private static SearchResultFragment searchResultFragment;
     private FragmentSearchResultBinding binding;
     private SearchViewModel mViewModel;
-    private SearchResultAdapter searchResultAdapter;
+    private ResultListAdapter resultListAdapter;
 
     private ActivityResultLauncher<Intent> launcher;
 
@@ -43,6 +44,7 @@ public class SearchResultFragment extends Fragment {
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {});
     }
 
+
     @SuppressLint("NotifyDataSetChanged")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -50,17 +52,18 @@ public class SearchResultFragment extends Fragment {
 
         //监听搜索完成
         mViewModel.getData().observe(getViewLifecycleOwner(), list -> {
+            
             binding.progress.setVisibility(View.GONE);
             binding.refreshLayout.finishLoadMore();
 
             if (list == null) {
-                searchResultAdapter.getItemData().clear();
-                searchResultAdapter.notifyDataSetChanged();
+                resultListAdapter.getItemData().clear();
+                resultListAdapter.notifyDataSetChanged();
                 //失败也会显示，等后续优化
-                //binding.progress.setVisibility(View.VISIBLE);
+                binding.progress.setVisibility(View.VISIBLE);
             } else {
-                searchResultAdapter.getItemData().addAll(list);
-                searchResultAdapter.notifyItemRangeInserted(searchResultAdapter.getItemData().size(), list.size());
+                resultListAdapter.getItemData().addAll(list);
+                resultListAdapter.notifyItemRangeInserted(resultListAdapter.getItemData().size(), list.size());
             }
         });
     }
@@ -80,24 +83,22 @@ public class SearchResultFragment extends Fragment {
         //加载下一页
         binding.refreshLayout.setOnLoadMoreListener(refreshLayout -> mViewModel.nextPage());
 
-        searchResultAdapter = new SearchResultAdapter(requireContext());
-        searchResultAdapter.setHasStableIds(true);
+        resultListAdapter = new ResultListAdapter(requireContext());
+        resultListAdapter.setHasStableIds(true);
         //设置Item增加、移除动画
-        binding.searchResult.setItemAnimator(new DefaultItemAnimator());
-        binding.searchResult.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.resultList.setItemAnimator(new DefaultItemAnimator());
+        binding.resultList.setLayoutManager(new LinearLayoutManager(requireContext()));
         //固定高度
-        binding.searchResult.setHasFixedSize(true);
-        binding.searchResult.addItemDecoration(new RecycleViewDivider(requireContext(), 1));
-        binding.searchResult.setAdapter(searchResultAdapter);
+        binding.resultList.setHasFixedSize(true);
+        binding.resultList.addItemDecoration(new RecycleViewDivider(requireContext(), 1));
+        binding.resultList.setAdapter(resultListAdapter);
 
-        searchResultAdapter.setOnClickListener(view -> {
+        resultListAdapter.setOnClickListener(view -> {
             Intent intent = new Intent(requireContext(), DetailedActivity.class);
             //获取点击事件位置
-            int position = binding.searchResult.getChildAdapterPosition(view);
-            intent.putExtra("book", searchResultAdapter.getItemData().get(position));
-            //startActivity(intent);
-            launcher.launch(intent);
-            requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            int position = binding.resultList.getChildAdapterPosition(view);
+            intent.putExtra("book", resultListAdapter.getItemData().get(position));
+            launcher.launch(intent,ActivityOptionsCompat.makeSceneTransitionAnimation(this.requireActivity(), view, "book"));
         });
         return binding.getRoot();
     }

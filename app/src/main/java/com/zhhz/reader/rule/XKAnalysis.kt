@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson2.JSONPath
 import com.zhhz.reader.bean.BookBean
 import com.zhhz.reader.bean.HttpResponseBean
+import com.zhhz.reader.bean.LeaderboardResultBean
 import com.zhhz.reader.bean.SearchResultBean
 import com.zhhz.reader.bean.rule.RuleJsonBean
 import com.zhhz.reader.util.DiskCache
@@ -21,29 +22,33 @@ import javax.script.SimpleBindings
 class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
 
 
-    private val headRegex = """(?<!\{\{)(?:@(?:js|json|css):|\$\.)""".toRegex(RegexOption.IGNORE_CASE)
+    private val headRegex =
+        """(?<!\{\{)(?:@(?:js|json|css):|\$\.)""".toRegex(RegexOption.IGNORE_CASE)
 
     //private val analysisPattern = """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:[^@]|@(?!js|json|css)|\$\.)+)""".toRegex(RegexOption.IGNORE_CASE)
-    private val analysisPattern = """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:(?!@js:|@json:|@css:|\$\.|\{\{).)+)""".toRegex(RegexOption.IGNORE_CASE)
+    private val analysisPattern =
+        """((?<!\{\{)(?:@(?:js|json|css):|\$\.))((?:(?!@js:|@json:|@css:|\$\.|\{\{).)+)""".toRegex(
+            RegexOption.IGNORE_CASE
+        )
 
     //防重复次数标记
-    private var count =0
+    private var count = 0
 
-    private fun split(str: String): Array<String>{
+    private fun split(str: String): Array<String> {
         val list = ArrayList<String>()
         val arr = str.toCharArray()
         var flag = 0
         var last = 0.toChar()
         var lastIndex = 0
         for ((index, c) in arr.withIndex()) {
-            if (c == '{' && last == '{'){
+            if (c == '{' && last == '{') {
                 flag++
-            } else if (c == '}' && last == '}'){
+            } else if (c == '}' && last == '}') {
                 flag--
-            } else if (c == '#' && last == '#' && flag < 1){
+            } else if (c == '#' && last == '#' && flag < 1) {
                 flag = 0
-                list.add(str.substring(lastIndex,index-1))
-                lastIndex = index+1
+                list.add(str.substring(lastIndex, index - 1))
+                lastIndex = index + 1
             }
             last = c
         }
@@ -87,8 +92,11 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                     bindings["value"] = dataTemp
                     var tempJs: Any
                     try {
-                        tempJs = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(match.groupValues[2]), bindings)
-                    } catch (e :Exception){
+                        tempJs = DiskCache.SCRIPT_ENGINE.eval(
+                            Base64.decodeStr(match.groupValues[2]),
+                            bindings
+                        )
+                    } catch (e: Exception) {
                         log(e)
                         return ""
                     }
@@ -157,7 +165,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
 
         elements.addAll(element.select(cssArray[0]))
 
-        if ( elements.size == 0 ) return textArray
+        if (elements.size == 0) return textArray
 
         //如果是最后一个规则
         if (cssArray.size == 2 || cssArray.size == 3) {
@@ -184,10 +192,10 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 }
 
                 "ownText" -> for (e in elements) {
-                        val text = e.ownText()
-                        if (text.isNotEmpty()) {
-                            textArray.add(text)
-                        }
+                    val text = e.ownText()
+                    if (text.isNotEmpty()) {
+                        textArray.add(text)
+                    }
                 }
 
                 "html" -> {
@@ -241,7 +249,12 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         return textArray
     }
 
-    private fun contentJudgment(obj: Any, absoluteUrl: String, attr: String, rules: List<String>): String {
+    private fun contentJudgment(
+        obj: Any,
+        absoluteUrl: String,
+        attr: String,
+        rules: List<String>
+    ): String {
 
         if (obj is List<*> && obj.size == 0) return ""
 
@@ -372,15 +385,21 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
     private fun jsDecryption(s: String, bindings: SimpleBindings): String {
         bindings["data"] = s
         try {
-            return DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.jsDecryption), bindings).toString()
-        } catch (e :Exception){
+            return DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.jsDecryption), bindings)
+                .toString()
+        } catch (e: Exception) {
             log(e)
         }
         return ""
     }
 
 
-    override fun bookSearch(keyWord: String, page: Int, callback: AnalysisCallBack.SearchCallBack, label: String) {
+    override fun bookSearch(
+        keyWord: String,
+        page: Int,
+        callback: AnalysisCallBack.SearchCallBack,
+        label: String
+    ) {
         val bindings = SimpleBindings()
         bindings["java"] = this
 
@@ -401,19 +420,26 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             val list = parse(data, search.list, isString = false)
 
             if (list is List<*>) {
-                for (d in list) {
-                    if (ObjectUtil.isEmpty(d)) continue
+                for (tmpData in list) {
+                    if (ObjectUtil.isEmpty(tmpData)) continue
                     val searchResultBean = SearchResultBean()
                     val source: ArrayList<String> = ArrayList()
                     source.add(label)
                     searchResultBean.source = source
                     searchResultBean.name = name
-                    searchResultBean.title = parse(d!!, search.name, bindings).toString()
+                    searchResultBean.title = parse(tmpData!!, search.name, bindings).toString()
                     if (ObjectUtil.isNotEmpty(search.author))
-                        searchResultBean.author = parse(d, search.author, bindings).toString()
+                        searchResultBean.author = parse(tmpData, search.author, bindings).toString()
                     if (ObjectUtil.isNotEmpty(search.cover))
-                        searchResultBean.cover = parse(d, search.cover, bindings, url).toString()
-                    searchResultBean.url = parse(d, search.detail, bindings, url, "href").toString()
+                        searchResultBean.cover =
+                            parse(tmpData, search.cover, bindings, url).toString()
+                    if (ObjectUtil.isNotEmpty(search.intro))
+                        searchResultBean.intro = parse(tmpData, search.intro, bindings).toString()
+                    if (ObjectUtil.isNotEmpty(search.lastChapter))
+                        searchResultBean.lastChapter =
+                            parse(tmpData, search.lastChapter, bindings).toString()
+                    searchResultBean.url =
+                        parse(tmpData, search.detail, bindings, url, "href").toString()
                     al.add(searchResultBean)
                 }
             }
@@ -422,6 +448,79 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         }
 
     }
+
+    override fun bookLeaderboard(
+        leaderboardUrl: String,
+        page: Int,
+        callback: AnalysisCallBack.LeaderboardCallBack,
+        label: String
+    ) {
+        val bindings = SimpleBindings()
+        bindings["java"] = this
+
+        bindings["callback"] = callback
+        val search = json.search
+        val leaderboard = json.leaderboard
+        val url = leaderboardUrl.replace("\${page}", "$page")
+        bindings["url"] = url
+
+        http(toAbsoluteUrl(url)) { result ->
+            val al: ArrayList<LeaderboardResultBean> = ArrayList()
+
+            if (!result.isStatus) {
+                callback.accept(al)
+                return@http
+            }
+            val data = typeAutoConvert(result, bindings)
+
+            val list = parse(data, leaderboard.list ?: search.list, isString = false)
+
+            if (list is List<*>) {
+                for (tmpData in list) {
+                    if (ObjectUtil.isEmpty(tmpData)) continue
+                    val leaderboardData = LeaderboardResultBean()
+                    val source: ArrayList<String> = ArrayList()
+                    source.add(label)
+                    leaderboardData.source = source
+                    leaderboardData.name = name
+                    leaderboardData.title =
+                        parse(tmpData!!, leaderboard.name ?: search.name, bindings).toString()
+                    if (ObjectUtil.isNotEmpty(leaderboard.author ?: search.author))
+                        leaderboardData.author =
+                            parse(tmpData, leaderboard.author ?: search.author, bindings).toString()
+                    if (ObjectUtil.isNotEmpty(leaderboard.cover ?: search.cover))
+                        leaderboardData.cover =
+                            parse(
+                                tmpData,
+                                leaderboard.cover ?: search.cover,
+                                bindings,
+                                url
+                            ).toString()
+                    if (ObjectUtil.isNotEmpty(leaderboard.lastChapter ?: search.lastChapter))
+                        leaderboardData.lastChapter = parse(
+                            tmpData,
+                            leaderboard.lastChapter ?: search.lastChapter,
+                            bindings
+                        ).toString()
+                    if (ObjectUtil.isNotEmpty(leaderboard.intro ?: search.intro))
+                        leaderboardData.intro =
+                            parse(tmpData, leaderboard.intro ?: search.intro, bindings).toString()
+                    leaderboardData.url = parse(
+                        tmpData,
+                        leaderboard.detail ?: search.detail,
+                        bindings,
+                        url,
+                        "href"
+                    ).toString()
+                    al.add(leaderboardData)
+                }
+            }
+            callback.accept(al)
+
+        }
+
+    }
+
 
     override fun bookDetail(url: String, callback: AnalysisCallBack.DetailCallBack) {
 
@@ -495,8 +594,8 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         bindings["java"] = this
         bindings["url"] = url
         bindings["callback"] = callback
-        if (count++>100){
-            return callback.accept(OrderlyMap(),url)
+        if (count++ > 100) {
+            return callback.accept(OrderlyMap(), url)
         }
         http(url) { result ->
             val lhm = OrderlyMap()
@@ -567,7 +666,7 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         val httpResponseBean = HttpResponseBean()
         httpResponseBean.isStatus = true
         bindings["CallBackData"] = httpResponseBean
-        if (count++>100){
+        if (count++ > 100) {
             httpResponseBean.isStatus = false
             httpResponseBean.error = "循环获取已超过100次，请检查规则是否有误"
             return callback.accept(httpResponseBean, label)
@@ -612,7 +711,8 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             //执行js
             if (ObjectUtil.isNotEmpty(json.chapter.js)) {
                 try {
-                    val tempJs = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js), bindings)
+                    val tempJs =
+                        DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js), bindings)
                     s = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     httpResponseBean.isStatus = false

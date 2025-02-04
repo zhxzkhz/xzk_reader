@@ -119,7 +119,7 @@ public class DiskCache {
                 for (File file1 : files) {
                     if (((time - file1.lastModified()) > cache_time)| bool) {
                         if (file1.delete()) {
-                            System.out.println("delete_cache -> 缓存已清除");
+                            LogUtil.info("delete_cache -> 缓存已清除");
                         }
                     }
                 }

@@ -13,38 +13,32 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.zhhz.reader.MyApplication;
 import com.zhhz.reader.R;
-import com.zhhz.reader.bean.SearchResultBean;
+import com.zhhz.reader.bean.ResultListBean;
 import com.zhhz.reader.util.GlideApp;
 
 import java.util.ArrayList;
 
-
 // ① 创建Adapter
-public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapter.ViewHolder> {
+public class ResultListAdapter extends RecyclerView.Adapter<ResultListAdapter.ViewHolder> {
 
     private final Context context;
-    private ArrayList<SearchResultBean> itemData;
+    private ArrayList<ResultListBean> itemData;
     private View.OnClickListener clickListener;
 
-    public SearchResultAdapter(Context context) {
+    public ResultListAdapter(Context context) {
         this.context = context;
         this.itemData = new ArrayList<>();
-    }
-
-    public SearchResultAdapter(Context context, ArrayList<SearchResultBean> data) {
-        this.context = context;
-        this.itemData = data;
     }
 
     public void setOnClickListener(View.OnClickListener clickListener) {
         this.clickListener = clickListener;
     }
 
-    public ArrayList<SearchResultBean> getItemData() {
+    public ArrayList<ResultListBean> getItemData() {
         return itemData;
     }
 
-    public void setItemData(ArrayList<SearchResultBean> mData) {
+    public void setItemData(ArrayList<ResultListBean> mData) {
         this.itemData = mData;
     }
 
@@ -68,14 +62,17 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        SearchResultBean book = itemData.get(position);
+        ResultListBean book = itemData.get(position);
         holder.title.setText(book.getTitle());
-        if (holder.author != null) {
-            if (book.getAuthor() != null) {
-                holder.author.setText(book.getAuthor());
-            } else {
-                holder.author.setText(null);
-            }
+        if (book.getAuthor() != null) {
+            holder.author.setText(book.getAuthor());
+        } else {
+            holder.author.setText(null);
+        }
+        if (book.getLastChapter() != null) {
+            holder.last.setText(book.getLastChapter());
+        } else {
+            holder.last.setText(null);
         }
         if (book.getCover() != null) {
             GlideApp.with(context)

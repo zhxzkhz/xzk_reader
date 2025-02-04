@@ -27,7 +27,7 @@ import com.zhhz.reader.R;
 import com.zhhz.reader.activity.BookReaderActivity;
 import com.zhhz.reader.adapter.CatalogueAdapter;
 import com.zhhz.reader.bean.BookBean;
-import com.zhhz.reader.bean.SearchResultBean;
+import com.zhhz.reader.bean.ResultListBean;
 import com.zhhz.reader.databinding.FragmentDetailedBinding;
 import com.zhhz.reader.sql.SQLiteUtil;
 import com.zhhz.reader.util.GlideApp;
@@ -43,7 +43,7 @@ public class DetailedFragment extends Fragment {
 
     private CatalogueAdapter catalogueAdapter;
 
-    private SearchResultBean searchResultBean;
+    private ResultListBean resultListBean;
 
     private BookBean bookBean;
 
@@ -98,15 +98,15 @@ public class DetailedFragment extends Fragment {
             }
             if (ObjectUtil.isEmpty(bean.getCatalogue())){
                 binding.startRead.setText("目录为空或者获取失败");
-                binding.startRead.setOnClickListener(v -> mViewModel.queryDetailed(searchResultBean, 0));
+                binding.startRead.setOnClickListener(v -> mViewModel.queryDetailed(resultListBean, 0));
             } else {
-                mViewModel.queryCatalogue(bean.getCatalogue(), searchResultBean, 0);
+                mViewModel.queryCatalogue(bean.getCatalogue(), resultListBean, 0);
             }
         });
         mViewModel.getDataCatalogue().observe(getViewLifecycleOwner(), map -> {
             if (map == null || map.isEmpty()) {
                 binding.startRead.setText("目录获取失败");
-                binding.startRead.setOnClickListener(v -> mViewModel.queryCatalogue(bookBean.getCatalogue(), searchResultBean, 0));
+                binding.startRead.setOnClickListener(v -> mViewModel.queryCatalogue(bookBean.getCatalogue(), resultListBean, 0));
             } else {
                 catalogueAdapter.setItemData(map);
                 catalogueAdapter.notifyDataSetChanged();
@@ -117,7 +117,7 @@ public class DetailedFragment extends Fragment {
                     binding.startRead.setOnClickListener(view1 -> {
                         SQLiteUtil.saveBook(bookBean);
                         mViewModel.saveDirectory(bookBean.getBookId());
-                        mViewModel.saveRule(searchResultBean, bookBean.getBookId(), 0);
+                        mViewModel.saveRule(resultListBean, bookBean.getBookId(), 0);
                         Intent intent = new Intent(DetailedFragment.this.getContext(), BookReaderActivity.class);
                         intent.putExtra("book", (Parcelable)bookBean );
                         //DetailedFragment.this.startActivity(intent);
@@ -129,7 +129,7 @@ public class DetailedFragment extends Fragment {
                 }
             }
         });
-        mViewModel.queryDetailed(searchResultBean, 0);
+        mViewModel.queryDetailed(resultListBean, 0);
     }
 
     @SuppressLint("SetTextI18n")
@@ -149,16 +149,16 @@ public class DetailedFragment extends Fragment {
         binding = FragmentDetailedBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        searchResultBean = (SearchResultBean) requireActivity().getIntent().getSerializableExtra("book");
-        assert searchResultBean != null;
-        binding.detailedTitle.setText(searchResultBean.getTitle());
-        binding.detailedLayout.itemTitle.setText(searchResultBean.getTitle());
-        binding.detailedLayout.itemAuthor.setText(searchResultBean.getAuthor());
+        resultListBean = (ResultListBean) requireActivity().getIntent().getSerializableExtra("book");
+        assert resultListBean != null;
+        binding.detailedTitle.setText(resultListBean.getTitle());
+        binding.detailedLayout.itemTitle.setText(resultListBean.getTitle());
+        binding.detailedLayout.itemAuthor.setText(resultListBean.getAuthor());
         binding.detailedLayout.itemLatest.setText(null);
-        if (searchResultBean.getCover() != null && !searchResultBean.getCover().isEmpty()) {
+        if (resultListBean.getCover() != null && !resultListBean.getCover().isEmpty()) {
             GlideApp.with(this)
                     .asBitmap()
-                    .load(searchResultBean.getCover())
+                    .load(resultListBean.getCover())
                     .centerCrop()
                     .diskCacheStrategy(DiskCacheStrategy.DATA)
                     .into(binding.detailedLayout.itemImage);
@@ -191,7 +191,7 @@ public class DetailedFragment extends Fragment {
             //获取点击事件位置
             int position = binding.detailedRv.getChildAdapterPosition(view);
             mViewModel.saveDirectory(bookBean.getBookId());
-            mViewModel.saveRule(searchResultBean, bookBean.getBookId(), 0);
+            mViewModel.saveRule(resultListBean, bookBean.getBookId(), 0);
             mViewModel.saveProgress(bookBean.getBookId(), position);
             intent.putExtra("book", (Parcelable)bookBean);
             //startActivity(intent);

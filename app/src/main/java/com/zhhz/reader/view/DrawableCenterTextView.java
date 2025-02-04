@@ -26,27 +26,25 @@ public class DrawableCenterTextView extends AppCompatTextView {
     @Override
     protected void onDraw(Canvas canvas) {
         Drawable[] drawables = getCompoundDrawables();
-        if (null != drawables) {
-            Drawable drawableLeft = drawables[0];
-            Drawable drawableRight = drawables[2];
-            float textWidth = getPaint().measureText(getText().toString());
-            if (null != drawableLeft) {
-                setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-                float contentWidth = textWidth + getCompoundDrawablePadding() + drawableLeft.getIntrinsicWidth();
-                if (getWidth() - contentWidth > 0) {
-                    canvas.translate((getWidth() - contentWidth - getPaddingRight() - getPaddingLeft()) / 2, 0);
-                }
+        Drawable drawableLeft = drawables[0];
+        Drawable drawableRight = drawables[2];
+        float textWidth = getPaint().measureText(getText().toString());
+        if (null != drawableLeft) {
+            setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+            float contentWidth = textWidth + getCompoundDrawablePadding() + drawableLeft.getIntrinsicWidth();
+            if (getWidth() - contentWidth > 0) {
+                canvas.translate((getWidth() - contentWidth - getPaddingRight() - getPaddingLeft()) / 2, 0);
             }
-            if (null != drawableRight) {
-                setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-                float contentWidth = textWidth + getCompoundDrawablePadding() + drawableRight.getIntrinsicWidth();
-                if (getWidth() - contentWidth > 0) {
-                    canvas.translate(-(getWidth() - contentWidth - getPaddingRight() - getPaddingLeft()) / 2, 0);
-                }
+        }
+        if (null != drawableRight) {
+            setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+            float contentWidth = textWidth + getCompoundDrawablePadding() + drawableRight.getIntrinsicWidth();
+            if (getWidth() - contentWidth > 0) {
+                canvas.translate(-(getWidth() - contentWidth - getPaddingRight() - getPaddingLeft()) / 2, 0);
             }
-            if (null == drawableRight && null == drawableLeft) {
-                setGravity(Gravity.CENTER);
-            }
+        }
+        if (null == drawableRight && null == drawableLeft) {
+            setGravity(Gravity.CENTER);
         }
         super.onDraw(canvas);
     }

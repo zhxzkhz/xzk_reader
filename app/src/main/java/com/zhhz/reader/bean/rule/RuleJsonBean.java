@@ -6,7 +6,7 @@ import com.alibaba.fastjson2.annotation.JSONType;
 
 import cn.hutool.core.util.ObjectUtil;
 
-@JSONType(orders={"name","version","url","encode","dns","type","header","comic","charset","imgHeader","search","detail","catalog","chapter"})
+@JSONType(orders={"name","type","version","url","charset","comic","encode","cache","cookieJar","dns","header","imgHeader","init","jsDecryption","search","leaderboard","detail","catalog","chapter"})
 public class RuleJsonBean {
 
     private String name;
@@ -23,6 +23,7 @@ public class RuleJsonBean {
     private boolean cookieJar;
     private ImgHeader imgHeader;
     private Search search;
+    private Leaderboard leaderboard;
     private Detail detail;
     private Catalog catalog;
     private Chapter chapter;
@@ -143,6 +144,14 @@ public class RuleJsonBean {
 
     public Search getSearch() {
         return search;
+    }
+
+    public void setLeaderboard(Leaderboard leaderboard) {
+        this.leaderboard = leaderboard;
+    }
+
+    public Leaderboard getLeaderboard() {
+        return leaderboard;
     }
 
     public void setDetail(Detail detail) {

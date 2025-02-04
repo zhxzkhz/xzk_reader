@@ -20,6 +20,7 @@ import com.zhhz.reader.rule.Analysis;
 import com.zhhz.reader.rule.RuleAnalysis;
 import com.zhhz.reader.ui.search.SearchResultFragment;
 import com.zhhz.reader.ui.search.SearchViewModel;
+import com.zhhz.reader.util.ToastUtil;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -44,7 +45,7 @@ public class SearchActivity extends AppCompatActivity {
             }
 
             if (RuleAnalysis.analyses_map.isEmpty()) {
-                Toast.makeText(this, "请设置书源", Toast.LENGTH_SHORT).show();
+                ToastUtil.show("请设置书源");
                 return true;
             }
 
@@ -58,7 +59,7 @@ public class SearchActivity extends AppCompatActivity {
                     }
                 }
                 if (bool) {
-                    Toast.makeText(this, "请设置有搜索的书源", Toast.LENGTH_SHORT).show();
+                    ToastUtil.show("请设置有搜索的书源");
                 }
             }
 

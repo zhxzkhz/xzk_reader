@@ -279,7 +279,7 @@ public class BookRackFragment extends Fragment {
                     for (String s : tracker.getSelection()) {
                         ids[index++] = s;
                     }
-                    System.out.println("ss = " + Arrays.toString(ids));
+
                     ArrayList<String> cacheFileList = new ArrayList<>();
                     strings.set(1, "删除书架记录并删除本地缓存文件(大小:计算中)");
                     AlertDialog dialog = new AlertDialog.Builder(requireContext())

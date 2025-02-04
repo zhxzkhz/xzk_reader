@@ -2,9 +2,11 @@ package com.zhhz.reader.rule;
 
 import com.zhhz.reader.bean.BookBean;
 import com.zhhz.reader.bean.HttpResponseBean;
+import com.zhhz.reader.bean.LeaderboardResultBean;
 import com.zhhz.reader.bean.SearchResultBean;
 import com.zhhz.reader.util.OrderlyMap;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AnalysisCallBack {
@@ -15,6 +17,10 @@ public class AnalysisCallBack {
 
     public interface SearchCallBack {
         void accept(List<SearchResultBean> list);
+    }
+
+    public interface LeaderboardCallBack {
+        void accept(ArrayList<LeaderboardResultBean> list);
     }
 
     public interface DetailCallBack {
