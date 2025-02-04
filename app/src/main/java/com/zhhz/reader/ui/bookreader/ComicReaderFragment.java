@@ -155,11 +155,9 @@ public class ComicReaderFragment extends Fragment {
                 errorRetryButton.setVisibility(View.INVISIBLE);
             }
         });
-
-        mViewModel.queryCatalogue();
-        int[] r = mViewModel.readProgress();
-        mViewModel.setProgress(r[0]);
-        mViewModel.setPos(r[1]);
+        binding.progress.show();
+        mViewModel.getTableOfContents();
+        mViewModel.loadReadingProgress();
         mViewModel.getContentComic(true);
 
     }

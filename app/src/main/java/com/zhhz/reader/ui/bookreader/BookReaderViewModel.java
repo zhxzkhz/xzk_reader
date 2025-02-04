@@ -129,7 +129,7 @@ public class BookReaderViewModel extends ViewModel {
     /**
      * 获取章节
      */
-    public void queryCatalogue() {
+    public void getTableOfContents() {
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "chapter");
         try (BufferedReader bufferedWriter = new BufferedReader(new FileReader(file))) {
             OrderlyMap map = JSONObject.parseObject(bufferedWriter.readLine(), OrderlyMap.class);
@@ -289,22 +289,21 @@ public class BookReaderViewModel extends ViewModel {
     /**
      * 获取阅读章节和位置
      *
-     * @return 章节和位置
      */
-    public int[] readProgress() {
+    public void loadReadingProgress() {
         // 0 章节进度 1 阅读进度
         int[] pro = new int[2];
         File file = new File(DiskCache.path + File.separator + "book" + File.separator + book.getBookId() + File.separator + "progress");
         if (!file.isFile()){
             saveProgress(0);
-            return pro;
+            return;
         }
 
         String[] progress = FileUtil.readFileString(file).split(",");
         pro[0] = Integer.parseInt(progress[0]);
         pro[1] = Integer.parseInt(progress[1]);
-
-        return pro;
+        setProgress(pro[0]);
+        setPos(pro[1]);
     }
 
     public ArrayList<GlideUrl> getComicList() {

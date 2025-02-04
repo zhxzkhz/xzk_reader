@@ -31,10 +31,8 @@ public abstract class BookReaderFragmentBase extends Fragment{
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        mViewModel.queryCatalogue();
-        int[] r = mViewModel.readProgress();
-        mViewModel.setProgress(r[0]);
-        mViewModel.setPos(r[1]);
+        mViewModel.getTableOfContents();
+        mViewModel.loadReadingProgress();
         mViewModel.getContent();
     }
 
