@@ -106,8 +106,9 @@ class LeaderboardResultFragment : Fragment() {
                 //失败也会显示，等后续优化
                 binding.progress.visibility = View.VISIBLE
             } else {
+                val size = resultAdapter.itemData.size
                 resultAdapter.itemData.addAll(list)
-                resultAdapter.notifyItemRangeInserted(resultAdapter.itemData.size, list.size)
+                resultAdapter.notifyItemRangeInserted(size, list.size)
             }
         }
 

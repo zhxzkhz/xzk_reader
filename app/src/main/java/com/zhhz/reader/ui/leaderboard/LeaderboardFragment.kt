@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityOptionsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import cn.hutool.core.codec.Base64
@@ -53,30 +52,32 @@ class LeaderboardFragment : Fragment() {
 
         val items = mutableListOf<DrawerItem>()
         RuleAnalysis.analyses_map.entries.forEach {
-            val u = it.value.json.leaderboard.url
-            val rule = if (u.contains("^js@|@js:".toRegex())) {
-                try {
-                    val bindings = SimpleBindings()
-                    bindings["xlua_rule"] = this
-                    bindings["java"] = this
-                    bindings["url"] = u
+            if (it.value.json.leaderboard != null) {
+                val u = it.value.json.leaderboard.url
+                val rule = if (u.contains("^js@|@js:".toRegex())) {
+                    try {
+                        val bindings = SimpleBindings()
+                        bindings["xlua_rule"] = this
+                        bindings["java"] = this
+                        bindings["url"] = u
 
-                    it.value.jsToJavaObject(
-                        DiskCache.SCRIPT_ENGINE.eval(
-                            Base64.decodeStr(u.split("js@|@js:".toRegex())[1]),
-                            bindings
+                        it.value.jsToJavaObject(
+                            DiskCache.SCRIPT_ENGINE.eval(
+                                Base64.decodeStr(u.split("js@|@js:".toRegex())[1]),
+                                bindings
+                            )
                         )
-                    )
-                } catch (e: ScriptException) {
-                    e.printStackTrace()
-                    "{}"
+                    } catch (e: ScriptException) {
+                        e.printStackTrace()
+                        "{}"
+                    }
+                } else {
+                    it.value.json.leaderboard.url
+                }.let {t ->
+                    JSONArray.parse(t).map { a -> a as JSONObject }
                 }
-            } else {
-                it.value.json.leaderboard.url
-            }.let {t ->
-                JSONArray.parse(t).map { a -> a as JSONObject }
+                items.add(DrawerItem(it.value.name, rule,it.key))
             }
-            items.add(DrawerItem(it.value.name, rule,it.key))
         }
 
         val drawerAdapter = DrawerAdapter(items)

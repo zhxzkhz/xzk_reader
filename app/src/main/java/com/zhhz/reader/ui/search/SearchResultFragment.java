@@ -62,8 +62,9 @@ public class SearchResultFragment extends Fragment {
                 //失败也会显示，等后续优化
                 binding.progress.setVisibility(View.VISIBLE);
             } else {
+                int size = resultListAdapter.getItemData().size();
                 resultListAdapter.getItemData().addAll(list);
-                resultListAdapter.notifyItemRangeInserted(resultListAdapter.getItemData().size(), list.size());
+                resultListAdapter.notifyItemRangeInserted(size, list.size());
             }
         });
     }
