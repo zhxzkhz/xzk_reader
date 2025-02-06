@@ -32,10 +32,7 @@ public class Search {
     }
 
     public String getCharset() {
-        if (!ObjectUtil.isEmpty(charset)) {
-            return charset;
-        }
-        return "utf8";
+        return charset;
     }
 
     public void setList(String list) {

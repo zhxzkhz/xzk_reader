@@ -15,6 +15,7 @@ import com.zhhz.reader.util.StringUtil
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
+import org.mozilla.javascript.NativeArray
 import java.util.regex.Pattern
 import javax.script.ScriptException
 import javax.script.SimpleBindings
@@ -698,34 +699,60 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 s = parse(data, json.chapter.content, bindings).toString()
             }
 
-            //屏蔽规则
-            if (ObjectUtil.isNotEmpty(json.chapter.purify)) {
-                for (purify in json.chapter.purify) {
-                    s = s.replace(purify.toRegex(), "")
+            bindings["value"] = s
+            //用于图片二进制解密
+            if (ObjectUtil.isNotEmpty(json.chapter.encrypted)) {
+                var resultTmp = ""
+                var bool = isComic
+                if (json.chapter.encrypted.startsWith("@js:")) {
+                    try {
+                        val tempJs =
+                            DiskCache.SCRIPT_ENGINE.eval(
+                                Base64.decodeStr(json.chapter.encrypted.substring(4)),
+                                bindings
+                            )
+                        val tmp = bindings["result"] ?: tempJs
+                        if (tmp is NativeArray){
+                            bool = false
+                            s = tmp.joinToString("\n")
+                        } else {
+                            resultTmp = jsToJavaObject(tmp)
+                        }
+                    } catch (e: Exception) {
+                        httpResponseBean.isStatus = false
+                        httpResponseBean.error = e.message.toString()
+                        log(e)
+                    }
+                }
+                if (bool){
+                    var tmp = ""
+                    s.split("\n").map {
+                        tmp += "\n"
+                        tmp += it
+                        tmp += if (resultTmp.isEmpty()){
+                            "ImageDecryption:///" + json.chapter.encrypted
+                        } else {
+                            "ImageDecryption:///$resultTmp"
+                        }
+                    }
+                    s = tmp.substring(1)
                 }
             }
 
             bindings["value"] = s
-
-
-            //执行js
-            if (ObjectUtil.isNotEmpty(json.chapter.js)) {
-                try {
-                    val tempJs =
-                        DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js), bindings)
-                    s = jsToJavaObject(bindings["result"] ?: tempJs)
-                } catch (e: Exception) {
-                    httpResponseBean.isStatus = false
-                    httpResponseBean.error = e.message.toString()
-                    log(e)
-                    e.printStackTrace()
-                }
-                //返回false代表 js 内部处理
-                if (s == "false") {
-                    count = 0
-                    return@http
+            //屏蔽规则
+            if (ObjectUtil.isNotEmpty(json.chapter.purify)) {
+                for (purify in json.chapter.purify) {
+                    if (purify.startsWith("@js:")) {
+                        val tempJs = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(purify.substring(4)), bindings)
+                        s = jsToJavaObject(bindings["result"] ?: tempJs)
+                    } else {
+                        s = s.replace(purify.toRegex(), "")
+                    }
                 }
             }
+
+
             httpResponseBean.data = s
             if (ObjectUtil.isNotEmpty(json.chapter.page)) {
                 val page = parse(data, json.chapter.page, bindings, url, "href").toString()
@@ -752,11 +779,18 @@ class XKAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
         }
     }
 
+    private val emptyJson = JSON.parse("{}")
     //根据内容识别返回JSON或者Jsoup
     private fun typeAutoConvert(obj: HttpResponseBean, bindings: SimpleBindings): Any {
         val tmp = obj.data.trim()
         return if (tmp.startsWith("[") || tmp.startsWith("{")) {
-            responseParse(obj, bindings)
+            try {
+                responseParse(obj, bindings)
+            } catch (e: Exception){
+                log(e)
+                emptyJson
+            }
+
         } else {
             val data = Jsoup.parse(tmp)
             bindings["data"] = data

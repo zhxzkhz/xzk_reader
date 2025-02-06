@@ -12,6 +12,7 @@ import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
+import com.bumptech.glide.load.engine.cache.DiskLruCacheFactory
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.module.AppGlideModule
 import com.zhhz.reader.MyApplication
@@ -21,7 +22,9 @@ import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.mozilla.javascript.NativeJavaObject
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.InputStream
 import javax.script.SimpleBindings
 
@@ -39,12 +42,12 @@ class XluaGlideModule : AppGlideModule(),JsExtensionClass{
             LoaderManager.enableDebugLogging(true)
         }
         //储存上限10G图片
-        /*builder.setDiskCache(
+        builder.setDiskCache(
             DiskLruCacheFactory(
                 DiskCache.path + File.separator + "Disc_ImageCache",
                 10L * 1024 * 1024 * 1024
             )
-        )*/
+        )
     }
 
     override fun registerComponents(context: Context, glide: Glide, registry: Registry) {
@@ -66,6 +69,7 @@ class XluaGlideModule : AppGlideModule(),JsExtensionClass{
             var response: Response
             val url = request.url.toString()
             val js: String
+
             if (url.contains("ImageDecryption://")) {
                 val arr = url.split("ImageDecryption://")
                 js = arr[1]
@@ -75,40 +79,60 @@ class XluaGlideModule : AppGlideModule(),JsExtensionClass{
                 return@addInterceptor chain.proceed(request)
             }
 
-            val bt = response.body?.bytes()
-            val options = BitmapFactory.Options()
-            val bitmap = bt?.let { BitmapFactory.decodeByteArray(bt, 0, it.size,options) } ?: return@addInterceptor response
+            var bt = response.body?.bytes() ?: return@addInterceptor response
+
             val simpleBindings = SimpleBindings()
             simpleBindings["xlua_rule"] = this@XluaGlideModule
-            simpleBindings["resource"] = bitmap
-            val bit = Bitmap.createBitmap(bitmap.width, bitmap.height,options.outConfig)
-            val format = when (options.outMimeType){
-                "image/webp" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    Bitmap.CompressFormat.WEBP_LOSSLESS
-                } else {
-                    Bitmap.CompressFormat.WEBP
+            simpleBindings["java"] = this@XluaGlideModule
+
+            lateinit var body: ResponseBody
+
+            // / 开头表示二进制解密
+            if (js.startsWith("/")) {
+                simpleBindings["resource"] = bt
+                var result = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(js.substring(1)), simpleBindings)
+                println("result >> $result")
+                if (result.javaClass == NativeJavaObject::class.java) {
+                    result = (result as NativeJavaObject).unwrap()
                 }
-                "image/jpeg" -> Bitmap.CompressFormat.JPEG
-                else -> Bitmap.CompressFormat.PNG
+                if (result is ByteArray){
+                    bt = result
+                }
+                body = bt.toResponseBody(response.body?.contentType())
+            } else {
+                val options = BitmapFactory.Options()
+                val bitmap = bt.let { BitmapFactory.decodeByteArray(bt, 0, it.size,options) } ?: return@addInterceptor response
+                simpleBindings["resource"] = bitmap
+                val bit = Bitmap.createBitmap(bitmap.width, bitmap.height,options.outConfig)
+                val format = when (options.outMimeType){
+                    "image/webp" -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        Bitmap.CompressFormat.WEBP_LOSSLESS
+                    } else {
+                        Bitmap.CompressFormat.WEBP
+                    }
+                    "image/jpeg" -> Bitmap.CompressFormat.JPEG
+                    else -> Bitmap.CompressFormat.PNG
+                }
+                simpleBindings["bitmap"] = bit
+                body = try {
+                    val byteArrayOutputStream = ByteArrayOutputStream()
+                    DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(js), simpleBindings)
+                    bit.compress(format, 100, byteArrayOutputStream)
+                    byteArrayOutputStream.toByteArray().toResponseBody(response.body?.contentType())
+                } catch (e: Exception) {
+                    LogUtil.error(e)
+                    return@addInterceptor response
+                    //throw new RuntimeException(e);
+                } finally {
+                    if (!bitmap.isRecycled) {
+                        bitmap.recycle()
+                    }
+                    if (!bit.isRecycled) {
+                        bitmap.recycle()
+                    }
+                }
             }
-            simpleBindings["bitmap"] = bit
-            val body: ResponseBody = try {
-                val byteArrayOutputStream = ByteArrayOutputStream()
-                DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(js), simpleBindings)
-                bit.compress(format, 100, byteArrayOutputStream)
-                byteArrayOutputStream.toByteArray().toResponseBody(response.body?.contentType())
-            } catch (e: Exception) {
-                LogUtil.error(e)
-                return@addInterceptor response
-                //throw new RuntimeException(e);
-            } finally {
-                if (!bitmap.isRecycled) {
-                    bitmap.recycle()
-                }
-                if (!bit.isRecycled) {
-                    bitmap.recycle()
-                }
-            }
+
             response = response.newBuilder().body(body).build()
             response
         }

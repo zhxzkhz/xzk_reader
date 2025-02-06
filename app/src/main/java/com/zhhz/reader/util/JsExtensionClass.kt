@@ -12,6 +12,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.mozilla.javascript.NativeArray
+import org.mozilla.javascript.NativeJavaObject
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
 import java.lang.Thread.sleep
@@ -140,6 +142,22 @@ interface JsExtensionClass {
     }
 
     /**
+     * AES 字符串解密
+     * @param str 待解密的字符串
+     * @param key AES 解密的key
+     * @param paddings AES加密类型
+     * @param iv ECB模式的偏移向量
+     */
+    fun aesDecryptBytes(
+        str: ByteArray,
+        key: String,
+        paddings: String = "AES/CBC/PKCS5Padding",
+        iv: String
+    ): ByteArray? {
+        return crypt(str, key, "AES", paddings, iv, false)
+    }
+
+    /**
      * AES 字符串加密
      * @param str 待加密的字符串
      * @param key AES 解密的key
@@ -165,14 +183,34 @@ interface JsExtensionClass {
      * @param isEncrypt 加密 or 解密
      */
     private fun crypt(
-        data: String?,
+        data: String,
         key: String?,
         mode: String,
         paddings: String?,
         iv: String?,
         isEncrypt: Boolean
     ): ByteArray? {
-        if (data.isNullOrEmpty() || key.isNullOrEmpty()) return null
+        return crypt(data.toByteArray(), key, mode, paddings, iv, isEncrypt)
+    }
+
+    /**
+     * 返回对称加密或解密的字节。
+     * @param data 待处理字符串
+     * @param key 解密的key
+     * @param mode 加密的方式
+     * @param paddings 加密的类型
+     * @param iv ECB模式的偏移向量
+     * @param isEncrypt 加密 or 解密
+     */
+    private fun crypt(
+        data: ByteArray,
+        key: String?,
+        mode: String,
+        paddings: String?,
+        iv: String?,
+        isEncrypt: Boolean
+    ): ByteArray? {
+        if (data.isEmpty() || key.isNullOrEmpty()) return null
         val keySpec = SecretKeySpec(key.toByteArray(), mode)
         var params: AlgorithmParameterSpec? = null
         if (!iv.isNullOrEmpty()) {
@@ -180,6 +218,25 @@ interface JsExtensionClass {
         }
         val symmetricCrypto = SymmetricCrypto(paddings, keySpec, params)
         return if (isEncrypt) symmetricCrypto.encrypt(data) else symmetricCrypto.decrypt(data)
+    }
+
+
+    /**
+     * 将js类型转换成java类型
+     *
+     * @param value js类型
+     * @return java类型
+     */
+    fun jsToJavaObject (value: Any?): String {
+        if (value == null) return ""
+        val str: String = if (value is NativeArray) {
+            value.joinToString("\n")
+        } else if (value.javaClass == NativeJavaObject::class.java) {
+            (value as NativeJavaObject).unwrap().toString()
+        } else {
+            value.toString()
+        }
+        return str
     }
 
 }

@@ -109,13 +109,7 @@ public class RuleJsonBean {
     }
 
     public String getCharset() {
-        if (!ObjectUtil.isEmpty(charset)){
-            return charset;
-        }
-        if (ObjectUtil.isNotNull(search)) {
-            return search.getCharset();
-        }
-        return "utf8";
+        return charset;
     }
 
     public void setCharset(String charset) {

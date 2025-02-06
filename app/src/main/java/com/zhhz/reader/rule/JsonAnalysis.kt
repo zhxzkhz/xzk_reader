@@ -177,7 +177,15 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 return@http
             }
 
-            val data = responseParse(result, bindings)
+            val data: JSON
+            
+            try {
+                data = responseParse(result, bindings)
+            } catch (e :Exception){
+                log(e)
+                callback.accept(null)
+                return@http
+            }
 
             val list = parseRule(data, search.list, bindings)
 
@@ -250,7 +258,15 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 return@http
             }
 
-            val data = responseParse(result, bindings)
+            val data: JSON
+            
+            try {
+                data = responseParse(result, bindings)
+            } catch (e :Exception){
+                log(e)
+                callback.accept(null)
+                return@http
+            }
 
             val list = parseRule(data, leaderboard.list ?: search.list, bindings)
 
@@ -335,7 +351,15 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 return@http
             }
 
-            val data = responseParse(result, bindings)
+            val data: JSON
+            
+            try {
+                data = responseParse(result, bindings)
+            } catch (e :Exception){
+                log(e)
+                callback.accept(null)
+                return@http
+            }
 
             book.title = parseRule(data, json.detail.name, bindings).toString()
             book.setComic(json.comic)
@@ -400,7 +424,15 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 return@http
             }
 
-            val data = responseParse(result, bindings)
+            val data: JSON
+            
+            try {
+                data = responseParse(result, bindings)
+            } catch (e :Exception){
+                log(e)
+                callback.accept(null,url)
+                return@http
+            }
 
             if (ObjectUtil.isNotEmpty(json.catalog.js)) {
                 try {
@@ -447,16 +479,26 @@ class JsonAnalysis(jsonObject: RuleJsonBean) : Analysis(jsonObject) {
                 return@http
             }
 
-            val data = responseParse(result, bindings)
+            val data: JSON
+            
+            try {
+                data = responseParse(result, bindings)
+            } catch (e :Exception){
+                log(e)
+                result.isStatus = false
+                result.error = e.message.toString()
+                callback.accept(result, label)
+                return@http
+            }
 
             if (ObjectUtil.isNotEmpty(json.chapter.content)) {
                 s = parseRule(data, json.chapter.content, bindings).toString()
             }
             bindings["value"] = s
             //执行js
-            if (ObjectUtil.isNotEmpty(json.chapter.js)) {
+            if (ObjectUtil.isNotEmpty(json.chapter.encrypted)) {
                 try {
-                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.js), bindings)
+                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(json.chapter.encrypted), bindings)
                     s = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     httpResponseBean.isStatus = false

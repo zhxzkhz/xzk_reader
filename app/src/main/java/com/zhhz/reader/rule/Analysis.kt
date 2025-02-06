@@ -11,8 +11,6 @@ import com.zhhz.reader.util.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.mozilla.javascript.NativeArray
-import org.mozilla.javascript.NativeJavaObject
 import java.io.*
 import java.net.MalformedURLException
 import java.net.URL
@@ -69,7 +67,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
 
     init {
         if (isHaveSearch) {
-            charset = json.search.charset
+            charset = json.search.charset ?: json.charset
             http = json.search.url.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
         } else {
             http = "http"
@@ -327,17 +325,16 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                         charset = contentType.charset()?.name()
                     }
                 }
-                if (this@Analysis.charset != charset) {
-                    charset = this@Analysis.charset
-                }
+
                 var s = ""
                 try {
                     s = if (this@Analysis.charset == charset) {
                         response.body?.string()
                     } else {
+                        charset = this@Analysis.charset
                         response.body?.bytes()?.toString(Charset.forName(charset))
                     }.orEmpty()
-                    DiskCache.FileSave(DiskCache.path, call, s)
+                    if (httpResponseBean.isStatus) DiskCache.FileSave(DiskCache.path, call, s)
                 } catch (e: IOException) {
                     httpResponseBean.isStatus = false
                     httpResponseBean.error = e.message!!
@@ -349,24 +346,6 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                 response.close()
             }
         })
-    }
-
-    /**
-     * 将js类型转换成java类型
-     *
-     * @param value js类型
-     * @return java类型
-     */
-    fun jsToJavaObject (value: Any?): String {
-        if (value == null) return ""
-        val str: String = if (value is NativeArray) {
-            value.joinToString("\n")
-        } else if (value.javaClass == NativeJavaObject::class.java) {
-            (value as NativeJavaObject).unwrap().toString()
-        } else {
-            value.toString()
-        }
-        return str
     }
 
 

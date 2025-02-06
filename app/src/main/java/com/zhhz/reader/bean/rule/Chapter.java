@@ -5,14 +5,14 @@ import com.alibaba.fastjson2.annotation.JSONType;
 
 import java.util.List;
 
-@JSONType(orders={"content","js","page","filter","purify"})
+@JSONType(orders={"content","encrypted","page","filter","purify"})
 public class Chapter {
 
     private List<String> filter;
     private List<String> purify;
     private String page;
     private String content;
-    private String js;
+    private String encrypted;
     public void setFilter(List<String> filter) {
          this.filter = filter;
      }
@@ -41,11 +41,11 @@ public class Chapter {
          return content;
      }
 
-    public void setJs(String js) {
-         this.js = js;
+    public void setEncrypted(String encrypted) {
+         this.encrypted = encrypted;
      }
-     public String getJs() {
-         return js;
+     public String getEncrypted() {
+         return encrypted;
      }
 
     @NonNull
@@ -56,7 +56,7 @@ public class Chapter {
                 ", purify=" + purify +
                 ", page='" + page + '\'' +
                 ", content='" + content + '\'' +
-                ", js='" + js + '\'' +
+                ", js='" + encrypted + '\'' +
                 '}';
     }
 }

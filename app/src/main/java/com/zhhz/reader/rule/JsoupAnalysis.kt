@@ -555,7 +555,7 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
             httpResponseBean.isStatus = true
 
             //执行js
-            if (ObjectUtil.isNotEmpty(chapter.js)) {
+            if (ObjectUtil.isNotEmpty(chapter.encrypted)) {
                 val bindings = SimpleBindings()
                 bindings["xlua_rule"] = this
                 bindings["element"] = element
@@ -566,7 +566,7 @@ class JsoupAnalysis(ruleJsonBean: RuleJsonBean) : Analysis(ruleJsonBean) {
                 bindings["CallBackData"] = httpResponseBean
 
                 try {
-                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(chapter.js), bindings)
+                    val tempJs = SCRIPT_ENGINE.eval(Base64.decodeStr(chapter.encrypted), bindings)
                     str = jsToJavaObject(bindings["result"] ?: tempJs)
                 } catch (e: Exception) {
                     log(e)
