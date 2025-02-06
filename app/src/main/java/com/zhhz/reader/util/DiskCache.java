@@ -129,10 +129,14 @@ public class DiskCache {
     }
 
     public static void FileSave(String pt, @NonNull okhttp3.Call call, String data) {
+        FileSave(pt, call.request().url(), data.getBytes());
+    }
+
+    public static void FileSave(String pt, @NonNull okhttp3.Call call, byte[] data) {
         FileSave(pt, call.request().url(), data);
     }
 
-    public static void FileSave(String pt, HttpUrl call, String data) {
+    public static void FileSave(String pt, HttpUrl call, byte[] data) {
         File file = urlToFile(call, pt);
         if (file == null || file.isFile()) return ;
         try {
@@ -142,9 +146,8 @@ public class DiskCache {
                 }
             }
             FileOutputStream fos = new FileOutputStream(file);
-            fos.write(data.getBytes());
+            fos.write(data);
             fos.close();
-
         } catch (Exception e) {
             LogUtil.error(e);
         }

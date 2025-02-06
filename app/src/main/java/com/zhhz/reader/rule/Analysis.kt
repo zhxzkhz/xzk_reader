@@ -334,7 +334,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
                         charset = this@Analysis.charset
                         response.body?.bytes()?.toString(Charset.forName(charset))
                     }.orEmpty()
-                    if (httpResponseBean.isStatus) DiskCache.FileSave(DiskCache.path, call, s)
+                    if (httpResponseBean.isStatus) DiskCache.FileSave(DiskCache.path, call, s.toByteArray(charset = Charset.forName(charset)))
                 } catch (e: IOException) {
                     httpResponseBean.isStatus = false
                     httpResponseBean.error = e.message!!
