@@ -128,10 +128,6 @@ public class DiskCache {
 
     }
 
-    public static void FileSave(String pt, @NonNull okhttp3.Call call, String data) {
-        FileSave(pt, call.request().url(), data.getBytes());
-    }
-
     public static void FileSave(String pt, @NonNull okhttp3.Call call, byte[] data) {
         FileSave(pt, call.request().url(), data);
     }

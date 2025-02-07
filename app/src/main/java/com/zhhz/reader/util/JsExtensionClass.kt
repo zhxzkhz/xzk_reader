@@ -1,6 +1,8 @@
 package com.zhhz.reader.util
 
 import cn.hutool.core.codec.Base64
+import cn.hutool.crypto.digest.HMac
+import cn.hutool.crypto.digest.HmacAlgorithm
 import cn.hutool.crypto.symmetric.SymmetricCrypto
 import com.alibaba.fastjson.JSON
 import com.alibaba.fastjson.TypeReference
@@ -218,6 +220,16 @@ interface JsExtensionClass {
         }
         val symmetricCrypto = SymmetricCrypto(paddings, keySpec, params)
         return if (isEncrypt) symmetricCrypto.encrypt(data) else symmetricCrypto.decrypt(data)
+    }
+
+    fun hmacSHA256(key: String, data: String): ByteArray {
+        val hmac = HMac(HmacAlgorithm.HmacSHA256, SecretKeySpec(key.toByteArray(),"HmacSHA256"))
+        val result = hmac.digest(data.toByteArray()) as ByteArray
+        return result
+    }
+
+    fun hmacSHA256StoHex(key: String, data: String): String {
+        return hmacSHA256(key, data).joinToString("") { "%02x".format(it) }
     }
 
 

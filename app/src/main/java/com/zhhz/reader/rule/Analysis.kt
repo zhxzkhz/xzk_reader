@@ -12,6 +12,7 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.*
+import java.net.InetAddress
 import java.net.MalformedURLException
 import java.net.URL
 import java.nio.charset.Charset
@@ -66,6 +67,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
     constructor(path: String) : this(readText(path))
 
     init {
+        var share = true
         if (isHaveSearch) {
             charset = json.search.charset ?: json.charset
             http = json.search.url.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
@@ -76,16 +78,29 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
         if (charset.isEmpty()) charset = "utf8"
         val builder = OkHttpClient.Builder().connectTimeout(30,TimeUnit.SECONDS).readTimeout(30,TimeUnit.SECONDS).writeTimeout(30,TimeUnit.SECONDS)
         if (json.cache) {
+            share = false
             builder.addInterceptor(DiskCache.interceptor)
         }
         if (json.cookieJar) {
+            share = false
             builder.cookieJar(CookiesManager())
         }
+        if (json.dns.isNotEmpty()) {
+            share = false
+            builder.dns(object :Dns{
+                override fun lookup(hostname: String): List<InetAddress> {
+                    return JSON.parseArray(json.dns).map {
+                        InetAddress.getByName(it as String)
+                    }
+                }
+            })
+        }
+
         if (ObjectUtil.isEmpty(json.init)) {
-            client = if (json.cookieJar) {
-                builder.build()
-            } else {
+            client = if (share) {
                 share_client
+            } else {
+                builder.build()
             }
         } else {
             val bindings = SimpleBindings()
@@ -310,7 +325,7 @@ abstract class Analysis(var json: RuleJsonBean): JsExtensionClass {
     private fun newCall(request: Request, callback: AnalysisCallBack.CallBack) {
         val httpResponseBean = HttpResponseBean()
         httpResponseBean.requestHeader = request.headers
-        client!!.newCall(request).enqueue(object : Callback {
+        (client ?: share_client).newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 httpResponseBean.isStatus = false
                 httpResponseBean.error = e.message.toString()

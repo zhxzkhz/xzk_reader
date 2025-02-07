@@ -91,7 +91,6 @@ class XluaGlideModule : AppGlideModule(),JsExtensionClass{
             if (js.startsWith("/")) {
                 simpleBindings["resource"] = bt
                 var result = DiskCache.SCRIPT_ENGINE.eval(Base64.decodeStr(js.substring(1)), simpleBindings)
-                println("result >> $result")
                 if (result.javaClass == NativeJavaObject::class.java) {
                     result = (result as NativeJavaObject).unwrap()
                 }

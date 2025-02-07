@@ -21,6 +21,7 @@ public class RuleJsonBean {
     private boolean cache = true;
     private String charset;
     private boolean cookieJar;
+    private String dns;
     private ImgHeader imgHeader;
     private Search search;
     private Leaderboard leaderboard;
@@ -191,5 +192,9 @@ public class RuleJsonBean {
                 "  \"catalog\": " + (catalog == null ? "null" : catalog + ",\n") +
                 "  \"chapter\": " + (chapter == null ? "null" : chapter + "\n") +
                 '}';
+    }
+
+    public String getDns() {
+        return dns;
     }
 }
